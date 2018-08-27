@@ -19,6 +19,8 @@ Validators perTypeValidators;
 std::shared_ptr<const std::vector<std::shared_ptr<Validator>>>
 getValidators(lys_type type);
 
+void parseModule(const lys_module* module);
+
 void parseType(const char* name, lys_type type, Validators& target);
 void parseEnum(const char* name, lys_type_info_enums enums, Validators& target);
 void parseString(const char* name, lys_type_info_str str, Validators& target);
@@ -29,25 +31,25 @@ void parseLeaf(lys_node_leaf* leaf);
 
 int main() {
   auto context = ly_ctx_new("/home/nico/dev/iovnet/services/resources/", 0);
-  if (!context) {
+  auto added = ly_ctx_set_searchdir(context, "/home/nico/dev/iovnet/services/iov-helloworld/resources");
+  if (!context || added == EXIT_FAILURE) {
     throw std::runtime_error("cannot create new context");
   }
-  auto module = ly_ctx_get_module(context, "base-iovnet-service-model",
+
+  auto module = ly_ctx_get_module(context, "helloworld",
                                   nullptr, true);
   if (!module) {
-    module = ly_ctx_load_module(context, "base-iovnet-service-model",
+    module = ly_ctx_load_module(context, "helloworld",
                                 nullptr);
-  } else {
-    throw std::runtime_error("cannot open yang file");
+    if (!module) {
+      throw std::runtime_error("cannot open yang file");
+    }
   }
-  auto typedefs = module->tpdf;
-  for (auto i = 0; i < module->tpdf_size; ++i) {
-    auto current_typedef = typedefs[i];
-    parseType(current_typedef.name, current_typedef.type, perTypeValidators);
-  }
-  parseNode(module->data);
-  // pure C implementation
 
+  for (auto i = 0; i < module->imp_size; ++i) {
+    parseModule(module->imp[i].module);
+  }
+  parseModule(module);
 
   return 0;
 }
@@ -61,6 +63,19 @@ getValidators(lys_type type) {
     return inplace.getValidators(type.base, "");
   }
   return perTypeValidators.getValidators(type.base, type.der->name);
+}
+
+void parseModule(const lys_module* module) {
+  auto typedefs = module->tpdf;
+  for (auto i = 0; i < module->tpdf_size; ++i) {
+    auto current_typedef = typedefs[i];
+    parseType(current_typedef.name, current_typedef.type, perTypeValidators);
+  }
+  auto data = module->data;
+  while (data) {
+    parseNode(data);
+    data = data->next;
+  }
 }
 
 void parseType(const char* name, lys_type type, Validators& target) {
