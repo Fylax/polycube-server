@@ -1,9 +1,16 @@
 cmake_minimum_required(VERSION 3.12)
-project(parser)
+project(parser LANGUAGES C CXX)
+
+list(APPEND CMAKE_MODULE_PATH "${CMAKE_CURRENT_LIST_DIR}/cmake")
+find_package(LibYANG REQUIRED)
+find_package(Pistache CONFIG  REQUIRED)
 
 set(CMAKE_CXX_STANDARD 14)
 
+set(polycube_server_sources main.cpp)
+add_subdirectory(src)
+
 
 add_executable(parser
-        main.cpp Validators/Validator.h Validators/PatternValidator.cpp Validators/PatternValidator.h Validators/Validators.h Validators/Validators.cpp Validators/EnumValidator.cpp Validators/EnumValidator.h)
-target_link_libraries(parser yang)
+        ${polycube_server_sources})
+target_link_libraries(parser yang pistache)

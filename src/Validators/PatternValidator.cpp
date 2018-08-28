@@ -1,4 +1,4 @@
-#include "PatternValidator.h"
+#include "../../include/Validators/PatternValidator.h"
 #include <string>
 
 PatternValidator::PatternValidator(const char* pattern):

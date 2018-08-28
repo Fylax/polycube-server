@@ -8,12 +8,12 @@
 #include <utility>
 #include <vector>
 
-#include "Validators/Validators.h"
-#include "Validators/Validator.h"
-#include "Validators/EnumValidator.h"
-#include "Validators/PatternValidator.h"
+#include "include/Validators/Validators.h"
+#include "include/Validators/Validator.h"
+#include "include/Validators/EnumValidator.h"
+#include "include/Validators/PatternValidator.h"
 
-Validators perTypeValidators;
+Validators perTypeValidators[LY_DATA_TYPE_COUNT];
 
 
 std::shared_ptr<const std::vector<std::shared_ptr<Validator>>>
@@ -21,17 +21,24 @@ getValidators(lys_type type);
 
 void parseModule(const lys_module* module);
 
-void parseType(const char* name, lys_type type, Validators& target);
-void parseEnum(const char* name, lys_type_info_enums enums, Validators& target);
-void parseString(const char* name, lys_type_info_str str, Validators& target);
+std::shared_ptr<Validators> parseType(const char* name, lys_type type);
+
+std::shared_ptr<Validators>
+parseEnum(const char* name, lys_type_info_enums enums);
+
+std::shared_ptr<Validators>
+parseString(const char* name, lys_type_info_str str);
 
 void parseNode(lys_node* data);
+
 void parseGrouping(lys_node_grp* group);
+
 void parseLeaf(lys_node_leaf* leaf);
 
 int main() {
   auto context = ly_ctx_new("/home/nico/dev/iovnet/services/resources/", 0);
-  auto added = ly_ctx_set_searchdir(context, "/home/nico/dev/iovnet/services/iov-helloworld/resources");
+  auto added = ly_ctx_set_searchdir(context,
+                                    "/home/nico/dev/iovnet/services/iov-helloworld/resources");
   if (!context || added == EXIT_FAILURE) {
     throw std::runtime_error("cannot create new context");
   }
@@ -58,18 +65,19 @@ std::shared_ptr<const std::vector<std::shared_ptr<Validator>>>
 getValidators(lys_type type) {
   bool isDerived = (type.der->type.der != nullptr);
   if (!isDerived) {
-    Validators inplace;
-    parseType("", type, inplace);
-    return inplace.getValidators(type.base, "");
+    std::shared_ptr<Validators> inplace = parseType("", type);
+    return inplace->getValidators("");
   }
-  return perTypeValidators.getValidators(type.base, type.der->name);
+  return perTypeValidators[type.base].getValidators(type.der->name);
 }
 
 void parseModule(const lys_module* module) {
   auto typedefs = module->tpdf;
   for (auto i = 0; i < module->tpdf_size; ++i) {
     auto current_typedef = typedefs[i];
-    parseType(current_typedef.name, current_typedef.type, perTypeValidators);
+    perTypeValidators->addValidators(
+        parseType(current_typedef.name, current_typedef.type)
+    );
   }
   auto data = module->data;
   while (data) {
@@ -78,7 +86,7 @@ void parseModule(const lys_module* module) {
   }
 }
 
-void parseType(const char* name, lys_type type, Validators& target) {
+std::shared_ptr<Validators> parseType(const char* name, lys_type type) {
   switch (type.base) {
     case LY_TYPE_DER:
     case LY_TYPE_BINARY:
@@ -87,14 +95,12 @@ void parseType(const char* name, lys_type type, Validators& target) {
     case LY_TYPE_DEC64:
     case LY_TYPE_EMPTY:
     case LY_TYPE_ENUM:
-      parseEnum(name, type.info.enums, target);
-      break;
+      return parseEnum(name, type.info.enums);
     case LY_TYPE_IDENT:
     case LY_TYPE_INST:
     case LY_TYPE_LEAFREF:
     case LY_TYPE_STRING:
-      parseString(name, type.info.str, target);
-      break;
+      return parseString(name, type.info.str);
     case LY_TYPE_UNION:
     case LY_TYPE_INT8:
     case LY_TYPE_UINT8:
@@ -108,7 +114,8 @@ void parseType(const char* name, lys_type type, Validators& target) {
   }
 }
 
-void parseEnum(const char* name, lys_type_info_enums enums, Validators& target) {
+std::shared_ptr<Validators>
+parseEnum(const char* name, lys_type_info_enums enums) {
   std::unordered_set<std::string> allowed;
   for (auto i = 0; i < enums.count; ++i) {
     allowed.insert(enums.enm[i].name);
@@ -116,10 +123,11 @@ void parseEnum(const char* name, lys_type_info_enums enums, Validators& target) 
   std::vector<std::shared_ptr<Validator>> validators = {
       std::make_shared<EnumValidator>(allowed)
   };
-  target.addValidators(LY_TYPE_ENUM, name, validators);
+  return std::make_shared<Validators>(name, validators);
 }
 
-void parseString(const char* name, lys_type_info_str str, Validators& target) {
+std::shared_ptr<Validators>
+parseString(const char* name, lys_type_info_str str) {
   std::vector<std::shared_ptr<Validator>> validators;
   for (auto i = 0; i < str.pat_count; ++i) {
     auto current_pattern = str.patterns[i].expr;
@@ -134,7 +142,7 @@ void parseString(const char* name, lys_type_info_str str, Validators& target) {
         std::make_shared<PatternValidator>(current_pattern))
     );
   }
-  target.addValidators(LY_TYPE_STRING, name, validators);
+  return std::make_shared<Validators>(name, validators);
 }
 
 void parseNode(lys_node* data) {
