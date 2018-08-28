@@ -1,3 +1,6 @@
+#ifndef PARSER_FIELD_H
+#define PARSER_FIELD_H
+
 /*
  * Copyright 2018 The Polycube Authors
  *
@@ -14,16 +17,21 @@
  * limitations under the License.
  */
 #pragma once
-#ifndef PARSER_VALIDATOR_H
-#define PARSER_VALIDATOR_H
+#include <pistache/router.h>
 
-#include <memory>
 #include <string>
+#include <memory>
 #include <vector>
+#include "../Validators/Validators.h"
 
-struct Validator {
-  virtual bool validate(const std::string& value) const = 0;
+class Field {
+ public:
+  Field(std::string& name, std::vector<std::shared_ptr<Validator>>& validators);
+  virtual bool validate(Pistache::Rest::Request request) const = 0;
+ protected:
+  const std::vector<std::shared_ptr<Validator>> validators_;
+  const std::string name_;
 };
 
 
-#endif //PARSER_VALIDATOR_H
+#endif //PARSER_FIELD_H

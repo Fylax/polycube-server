@@ -14,16 +14,20 @@
  * limitations under the License.
  */
 #pragma once
-#ifndef PARSER_VALIDATOR_H
-#define PARSER_VALIDATOR_H
+#ifndef PARSER_JSONBODYFIELD_H
+#define PARSER_JSONBODYFIELD_H
 
-#include <memory>
 #include <string>
+#include <memory>
 #include <vector>
+#include "Field.h"
 
-struct Validator {
-  virtual bool validate(const std::string& value) const = 0;
+class JsonBodyField: public Field {
+ public:
+  JsonBodyField(std::string& name,
+                std::vector<std::shared_ptr<Validator>>& validators);
+
+  bool validate(Pistache::Rest::Request request) const override;
 };
 
-
-#endif //PARSER_VALIDATOR_H
+#endif //PARSER_JSONBODYFIELD_H

@@ -14,16 +14,21 @@
  * limitations under the License.
  */
 #pragma once
-#ifndef PARSER_VALIDATOR_H
-#define PARSER_VALIDATOR_H
+#ifndef PARSER_PATHPARAMFIELD_H
+#define PARSER_PATHPARAMFIELD_H
 
-#include <memory>
 #include <string>
+#include <memory>
 #include <vector>
+#include "Field.h"
 
-struct Validator {
-  virtual bool validate(const std::string& value) const = 0;
+class PathParamField: public Field {
+ public:
+  PathParamField(std::string& name,
+  std::vector<std::shared_ptr<Validator>>& validators);
+
+  bool validate(Pistache::Rest::Request request) const override;
 };
 
 
-#endif //PARSER_VALIDATOR_H
+#endif //PARSER_PATHPARAMFIELD_H

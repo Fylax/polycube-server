@@ -13,17 +13,13 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
-#pragma once
-#ifndef PARSER_VALIDATOR_H
-#define PARSER_VALIDATOR_H
+#include "../../include/Reources/Field.h"
 
-#include <memory>
 #include <string>
+#include <memory>
 #include <vector>
+#include <utility>
 
-struct Validator {
-  virtual bool validate(const std::string& value) const = 0;
-};
-
-
-#endif //PARSER_VALIDATOR_H
+Field::Field(std::string& name,
+             std::vector<std::shared_ptr<Validator>>& validators):
+             name_(std::move(name)), validators_(std::move(validators)) {}
