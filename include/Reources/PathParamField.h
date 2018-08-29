@@ -23,11 +23,9 @@
 #include "Field.h"
 
 class PathParamField: public Field {
- public:
-  PathParamField(std::string& name,
-  std::vector<std::shared_ptr<Validator>>& validators);
-
-  bool validate(Pistache::Rest::Request request) const override;
+public:
+  PathParamField(const std::string& name,
+                 const std::vector<std::shared_ptr<Validator>>& validators);
 };
 
 

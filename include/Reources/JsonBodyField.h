@@ -24,10 +24,8 @@
 
 class JsonBodyField: public Field {
  public:
-  JsonBodyField(std::string& name,
-                std::vector<std::shared_ptr<Validator>>& validators);
-
-  bool validate(Pistache::Rest::Request request) const override;
+  JsonBodyField(const std::string& name,
+                const std::vector<std::shared_ptr<Validator>>& validators);
 };
 
 #endif //PARSER_JSONBODYFIELD_H

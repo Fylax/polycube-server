@@ -20,6 +20,18 @@
 #include <vector>
 #include <utility>
 
-Field::Field(std::string& name,
-             std::vector<std::shared_ptr<Validator>>& validators):
-             name_(std::move(name)), validators_(std::move(validators)) {}
+Field::Field(const std::string& name,
+             const std::vector<std::shared_ptr<Validator>>& validators,
+             const FieldType& type):
+    name_(name), validators_(validators), type_(type) {}
+
+bool Field::validate(const std::string& value) const {
+  for (const auto& validator: validators_) {
+    if (validator->validate(value)) return false;
+  }
+  return true;
+}
+
+std::pair<std::string, FieldType> Field::info() const {
+  return std::make_pair(name_, type_);
+}
