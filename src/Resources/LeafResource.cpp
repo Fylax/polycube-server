@@ -82,3 +82,7 @@ Response LeafResource::Validate(const Pistache::Rest::Request& value) const {
          Response{ErrorTag::kOk, ""} :
          Response{ErrorTag::kBadAttribute, name_.c_str()};
 }
+
+bool LeafResource::IsMandatory() const {
+  return mandatory_;
+}

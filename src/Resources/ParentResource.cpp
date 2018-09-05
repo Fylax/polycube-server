@@ -21,8 +21,10 @@
 ParentResource::ParentResource(const std::string& name,
                                const std::shared_ptr<Pistache::Rest::Router>& router,
                                const std::string& restEndpoint,
-                               const std::shared_ptr<ParentResource>& parent)
-    : Resource(name, router, restEndpoint, parent), children_() {}
+                               const std::shared_ptr<ParentResource>& parent,
+                               bool container_presence)
+    : Resource(name, router, restEndpoint, parent), children_(),
+    container_presence_(container_presence) {}
 
 Response ParentResource::Validate(const Pistache::Rest::Request& request) const {
   using Pistache::Http::Code;
@@ -39,4 +41,12 @@ Response ParentResource::Validate(const Pistache::Rest::Request& request) const 
 
 void ParentResource::AddChild(const std::shared_ptr<Resource>& child) {
   children_.push_back(child);
+}
+
+bool ParentResource::IsMandatory() const {
+  if (!container_presence_) return false;
+  for (const auto& child : children_) {
+    if (child->IsMandatory()) return true;
+  }
+  return false;
 }

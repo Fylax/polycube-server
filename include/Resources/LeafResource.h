@@ -33,6 +33,7 @@ public:
                  const std::shared_ptr<JsonBodyField>& field,
                  bool configurable, bool mandatory);
   Response Validate(const Pistache::Rest::Request& value) const override;
+  bool IsMandatory() const override;
 private:
   const std::shared_ptr<JsonBodyField> field_;
   const bool configurable_;
