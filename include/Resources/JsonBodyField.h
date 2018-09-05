@@ -14,36 +14,33 @@
  * limitations under the License.
  */
 #pragma once
-#ifndef PARSER_FIELD_H
-#define PARSER_FIELD_H
+#ifndef PARSER_JSONBODYFIELD_H
+#define PARSER_JSONBODYFIELD_H
+
+#include <libyang/libyang.h>
+#include "../../externals/include/nlohmann/json.hpp"
 
 #include <string>
 #include <memory>
 #include <vector>
-#include <utility>
-#include "../Validators/Validators.h"
+#include "Field.h"
+#include "../Validators/Validator.h"
 
-enum class FieldType {
-  kPathParam,
-  kJsonBody
+enum class JsonType {
+  kInt, kUint, kString, kDecimal, kBoolean, kEmpty, kList
 };
 
-class Field {
- public:
-  bool validate(const std::string& value) const;
-  /**
-   * @return Name-Type pair.
-   */
-  std::pair<std::string, FieldType> info() const;
- protected:
-  Field(const std::string& name,
-      const std::vector<std::shared_ptr<Validator>>& validators,
-      const FieldType& type);
+class JsonBodyField: public Field<nlohmann::json> {
  private:
-  const std::vector<std::shared_ptr<Validator>> validators_;
-  const std::string name_;
-  const FieldType type_;
+  const JsonType type_;
+
+ public:
+  JsonBodyField(const std::vector<std::shared_ptr<Validator>>& validators,
+                JsonType type);
+  ErrorTag Validate (const nlohmann::json& value) const override;
+  JsonType Type() const;
+
+  static JsonType FromYangType(LY_DATA_TYPE type);
 };
 
-
-#endif //PARSER_FIELD_H
+#endif  // PARSER_JSONBODYFIELD_H

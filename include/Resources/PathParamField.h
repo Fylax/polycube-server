@@ -17,16 +17,24 @@
 #ifndef PARSER_PATHPARAMFIELD_H
 #define PARSER_PATHPARAMFIELD_H
 
+#include <pistache/router.h>
+
 #include <string>
 #include <memory>
 #include <vector>
-#include "Field.h"
 
-class PathParamField: public Field {
+#include "Field.h"
+#include "../Validators/Validator.h"
+
+class PathParamField: public Field<Pistache::Rest::Request> {
+private:
+  const std::string name_;
 public:
   PathParamField(const std::string& name,
                  const std::vector<std::shared_ptr<Validator>>& validators);
+  const std::string Name() const;
+  ErrorTag Validate(const Pistache::Rest::Request& value) const override;
 };
 
 
-#endif //PARSER_PATHPARAMFIELD_H
+#endif  // PARSER_PATHPARAMFIELD_H

@@ -13,7 +13,6 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
-
 #pragma once
 #ifndef PARSER_RESOURCE_H
 #define PARSER_RESOURCE_H
@@ -23,31 +22,26 @@
 #include <memory>
 #include <string>
 #include <vector>
+#include <utility>
 
-#include "Field.h"
+#include "../Error.h"
+
+class ParentResource;
 
 class Resource {
- public:
-  Resource(std::shared_ptr<Pistache::Rest::Router> router,
+public:
+  Resource(const std::string& name,
+           const std::shared_ptr<Pistache::Rest::Router>& router,
            const std::string& restEndpoint,
-           const std::vector<Field>& fields);
+           const std::shared_ptr<ParentResource>& parent = nullptr);
 
-  virtual ~Resource();
-
-private:
+protected:
+  const std::string name_;
   std::shared_ptr<Pistache::Rest::Router> router_;
   const std::string restEndpoint_;
-  const std::vector<Field> fields_;
+  std::shared_ptr<ParentResource> parent_;
 
-  void get(const Pistache::Rest::Request&, Pistache::Http::ResponseWriter);
-
-  void post(const Pistache::Rest::Request&, Pistache::Http::ResponseWriter);
-
-  void put(const Pistache::Rest::Request&, Pistache::Http::ResponseWriter);
-
-  void patch(const Pistache::Rest::Request&, Pistache::Http::ResponseWriter);
-
-  void del(const Pistache::Rest::Request&, Pistache::Http::ResponseWriter);
+  virtual Response Validate(const Pistache::Rest::Request& request) const = 0;
 };
 
-#endif //PARSER_RESOURCE_H
+#endif  // PARSER_RESOURCE_H

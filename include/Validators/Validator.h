@@ -21,8 +21,9 @@
 #include <string>
 #include <vector>
 
-struct Validator {
-  virtual bool validate(const std::string& value) const = 0;
+class Validator {
+ public:
+  virtual bool Validate(const std::string& value) const = 0;
 };
 
 

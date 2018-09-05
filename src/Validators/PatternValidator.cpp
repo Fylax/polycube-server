@@ -20,6 +20,6 @@ PatternValidator::PatternValidator(const char* pattern):
     pattern_(pattern, std::regex_constants::optimize |
                       std::regex_constants::ECMAScript) {}
 
-bool PatternValidator::validate(const std::string& value) const {
+bool PatternValidator::Validate(const std::string& value) const {
   return std::regex_match(value, pattern_);
 }

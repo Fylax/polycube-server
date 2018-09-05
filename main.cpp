@@ -12,12 +12,12 @@
 #include "include/Validators/Validator.h"
 #include "include/Validators/EnumValidator.h"
 #include "include/Validators/PatternValidator.h"
+#include "include/Resources/LeafResource.h"
 
 Validators perTypeValidators[LY_DATA_TYPE_COUNT];
 
 
-std::shared_ptr<const std::vector<std::shared_ptr<Validator>>>
-getValidators(lys_type type);
+const std::vector<std::shared_ptr<Validator>> getValidators(lys_type type);
 
 void parseModule(const lys_module* module);
 
@@ -38,7 +38,7 @@ void parseLeaf(lys_node_leaf* leaf);
 int main() {
   auto context = ly_ctx_new("/home/nico/dev/iovnet/services/resources/", 0);
   auto added = ly_ctx_set_searchdir(context,
-                                    "/home/nico/dev/iovnet/services/iov-helloworld/resources");
+                                   "/home/nico/dev/iovnet/services/iov-helloworld/resources");
   if (!context || added == EXIT_FAILURE) {
     throw std::runtime_error("cannot create new context");
   }
@@ -61,21 +61,21 @@ int main() {
   return 0;
 }
 
-std::shared_ptr<const std::vector<std::shared_ptr<Validator>>>
+const std::vector<std::shared_ptr<Validator>>
 getValidators(lys_type type) {
   bool isDerived = (type.der->type.der != nullptr);
   if (!isDerived) {
     std::shared_ptr<Validators> inplace = parseType("", type);
-    return inplace->getValidators("");
+    return inplace->GetValidators("");
   }
-  return perTypeValidators[type.base].getValidators(type.der->name);
+  return perTypeValidators[type.base].GetValidators(type.der->name);
 }
 
 void parseModule(const lys_module* module) {
   auto typedefs = module->tpdf;
   for (auto i = 0; i < module->tpdf_size; ++i) {
     auto current_typedef = typedefs[i];
-    perTypeValidators->addValidators(
+    perTypeValidators[current_typedef.type.base].AddValidators(
         parseType(current_typedef.name, current_typedef.type)
     );
   }
@@ -198,9 +198,12 @@ void parseGrouping(lys_node_grp* group) {
 }
 
 void parseLeaf(lys_node_leaf* leaf) {
-  bool isConfigTrue = (leaf->flags & LYS_CONFIG_SET) &&
-                      (leaf->flags & LYS_CONFIG_W);
+  bool configurable = ((leaf->flags & LYS_CONFIG_MASK) ^ 2) != 0;
+  bool mandatory = (leaf->flags & LYS_MAND_MASK) != 0;
   auto validators = getValidators(leaf->type);
-
+  auto field = std::make_shared<JsonBodyField>(validators,
+      JsonBodyField::FromYangType(leaf->type.base));
+  auto resource = std::make_shared<LeafResource>(leaf->name, nullptr,
+      "", nullptr, field, configurable, mandatory);
   int x = 0;
 }

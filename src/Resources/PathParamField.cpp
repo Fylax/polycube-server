@@ -17,10 +17,25 @@
 #include <memory>
 #include <vector>
 
-#include "../../include/Reources/PathParamField.h"
+#include "../../include/Resources/Field.h"
+#include "../../include/Resources/PathParamField.h"
 
 PathParamField::PathParamField(const std::string& name,
                                const std::vector<
                                    std::shared_ptr<Validator>
                                >& validators)
-    : Field(name, validators, FieldType::kPathParam) {}
+    : Field<Pistache::Rest::Request>(validators), name_(name)  {}
+
+const std::string PathParamField::Name() const {
+  return name_;
+}
+
+ErrorTag PathParamField::Validate(const Pistache::Rest::Request& value) const {
+  if (!value.hasParam(name_)) return kMissingElement;
+
+  auto parsed = value.param(name_).as<std::string>();
+  for (const auto& validator : validators_) {
+    if (!validator->Validate(parsed)) return ErrorTag::kBadElement;
+  }
+  return ErrorTag::kOk;
+}

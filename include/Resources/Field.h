@@ -13,25 +13,29 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
-#include "../../include/Reources/Field.h"
+#pragma once
+#ifndef PARSER_FIELD_H
+#define PARSER_FIELD_H
+
+#include <pistache/router.h>
+#include "../../externals/include/nlohmann/json.hpp"
 
 #include <string>
 #include <memory>
 #include <vector>
-#include <utility>
+#include "../Validators/Validator.h"
+#include "../Error.h"
 
-Field::Field(const std::string& name,
-             const std::vector<std::shared_ptr<Validator>>& validators,
-             const FieldType& type):
-    name_(name), validators_(validators), type_(type) {}
+template<typename T> class Field {
+protected:
+  explicit Field(const std::vector<std::shared_ptr<Validator>>& validators):
+      validators_(validators) {}
+  const std::vector<std::shared_ptr<Validator>> validators_;
+public:
+  virtual ErrorTag Validate (const T& value) const = 0;
+};
 
-bool Field::validate(const std::string& value) const {
-  for (const auto& validator: validators_) {
-    if (validator->validate(value)) return false;
-  }
-  return true;
-}
+template class Field<Pistache::Rest::Request>;
+template class Field<nlohmann::json>;
 
-std::pair<std::string, FieldType> Field::info() const {
-  return std::make_pair(name_, type_);
-}
+#endif  // PARSER_FIELD_H

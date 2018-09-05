@@ -14,31 +14,18 @@
  * limitations under the License.
  */
 
-#include "../../include/Reources/Resource.h"
+#include "../../include/Resources/Resource.h"
 
 #include <pistache/router.h>
 #include <memory>
 #include <string>
 #include <vector>
 
-Resource::Resource(std::shared_ptr<Pistache::Rest::Router> router,
-                   const std::string& restEndpoint,
-                   const std::vector<Field>& fields): router_(router),
-                   restEndpoint_(restEndpoint),
-                   fields_(fields) {
-  using Pistache::Rest::Routes::bind;
-  router_->get(restEndpoint_, bind(&Resource::get, this));
-  router_->post(restEndpoint_, bind(&Resource::post, this));
-  router_->put(restEndpoint_, bind(&Resource::put, this));
-  router_->patch(restEndpoint_, bind(&Resource::patch, this));
-  router_->del(restEndpoint_, bind(&Resource::del, this));
-}
+#include "../../include/Error.h"
 
-Resource::~Resource() {
-  using Pistache::Http::Method;
-  router_->removeRoute(Method::Get, restEndpoint_);
-  router_->removeRoute(Method::Post, restEndpoint_);
-  router_->removeRoute(Method::Put, restEndpoint_);
-  router_->removeRoute(Method::Patch, restEndpoint_);
-  router_->removeRoute(Method::Delete, restEndpoint_);
-}
+Resource::Resource(const std::string& name,
+                   const std::shared_ptr<Pistache::Rest::Router>& router,
+                   const std::string& restEndpoint,
+                   const std::shared_ptr<ParentResource>& parent):
+    name_(name), router_(router), restEndpoint_(restEndpoint),
+    parent_(parent) {}

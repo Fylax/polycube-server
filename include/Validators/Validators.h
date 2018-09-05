@@ -31,15 +31,13 @@ class Validators {
              const std::vector<
                  std::shared_ptr<Validator>
              >& validators);
-  void addValidators(const std::shared_ptr<Validators>& validators);
+  void AddValidators(const std::shared_ptr<Validators>& validators);
 
-  std::shared_ptr<
-      const std::vector<std::shared_ptr<Validator>>
-  > getValidators(const std::string& name) const;
+  const std::vector<std::shared_ptr<Validator>>
+  GetValidators(const std::string& name) const;
 
  private:
-  std::unordered_map<std::string,
-      std::shared_ptr<const std::vector<std::shared_ptr<Validator>>>
+  std::unordered_map<std::string, const std::vector<std::shared_ptr<Validator>>
   > validators_;
 };
 
