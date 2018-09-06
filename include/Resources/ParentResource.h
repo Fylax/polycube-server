@@ -36,7 +36,7 @@ class ParentResource: public Resource {
                  const std::shared_ptr<ParentResource>& parent,
                  bool container_presence = true);
   Response Validate(const Pistache::Rest::Request& value) const override;
-  void AddChild(std::unique_ptr<Resource>&& child);
+  void AddChild(std::unique_ptr<Resource> child);
   bool IsMandatory() const override;
  private:
   std::list<std::unique_ptr<Resource>> children_;

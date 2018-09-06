@@ -40,7 +40,7 @@ Response ParentResource::Validate(const Pistache::Rest::Request& request) const 
   return {ErrorTag::kOk, ""};
 }
 
-void ParentResource::AddChild(std::unique_ptr<Resource>&& child) {
+void ParentResource::AddChild(std::unique_ptr<Resource> child) {
   children_.push_back(std::move(child));
 }
 

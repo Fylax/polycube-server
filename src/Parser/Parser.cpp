@@ -187,9 +187,9 @@ void parseLeaf(lys_node_leaf* leaf, std::shared_ptr<ParentResource> parent) {
   if (leaf->dflt != nullptr) {
     default_value = std::make_unique<const std::string>(leaf->dflt);
   }
-  parent->AddChild(std::make_unique<LeafResource>(leaf->name, nullptr,
-                                        parent->Endpoint() + ':' + leaf->name,
-                                        nullptr, field, configurable,
-                                        mandatory, std::move(default_value)));
-  int x = 0;
+  auto leaf_res = std::make_unique<LeafResource>(leaf->name, nullptr,
+                                             parent->Endpoint() + ':' + leaf->name,
+                                             nullptr, field, configurable,
+                                             mandatory, std::move(default_value));
+  parent->AddChild(std::move(leaf_res));
 }

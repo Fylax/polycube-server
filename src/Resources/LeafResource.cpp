@@ -18,6 +18,7 @@
 #include <pistache/router.h>
 #include <string>
 #include <memory>
+#include <utility>
 #include "../../include/Error.h"
 #include "../../externals/include/nlohmann/json.hpp"
 
@@ -30,7 +31,7 @@ LeafResource::LeafResource(const std::string& name,
                            std::unique_ptr<const std::string> default_value)
     : Resource(name, router, restEndpoint, parent),
     field_(field), configurable_(configurable), mandatory_(mandatory),
-    default_(default_value) {}
+    default_(std::move(default_value)) {}
 
 Response LeafResource::Validate(const Pistache::Rest::Request& value) const {
   using nlohmann::detail::value_t;

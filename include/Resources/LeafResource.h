@@ -40,7 +40,7 @@ private:
   const std::shared_ptr<JsonBodyField> field_;
   const bool configurable_;
   const bool mandatory_;
-  const std::unique_ptr<const std::string>& default_;
+  const std::unique_ptr<const std::string> default_;
 };
 
 
