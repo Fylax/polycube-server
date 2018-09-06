@@ -10,7 +10,7 @@ set(CMAKE_CXX_FLAGS "${CMAKE_CXX_FLAGS} -Wall -pedantic -Wextra")
 if ("cxx_std_17" IN_LIST CMAKE_CXX_COMPILE_FEATURES)
     set(CMAKE_CXX_STANDARD 17)
 else ()
-    set(CMAKE_CXX_STANDARD 11)
+    set(CMAKE_CXX_STANDARD 14)
 endif ()
 
 set(polycube_server_sources main.cpp)

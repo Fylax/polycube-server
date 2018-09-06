@@ -21,10 +21,13 @@ int main() {
     }
   }
 
+  // module_res will be Cube/Service
+  auto module_res = std::make_shared<ParentResource>(module->name, nullptr,
+      std::string{'/'} + module->name + "/:cube_name/", nullptr);
   for (auto i = 0; i < module->imp_size; ++i) {
-    parseModule(module->imp[i].module);
+    parseModule(module->imp[i].module, module_res);
   }
-  parseModule(module);
+  parseModule(module, module_res);
 
   return 0;
 }

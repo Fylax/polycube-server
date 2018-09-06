@@ -19,6 +19,7 @@
 
 #include <pistache/router.h>
 
+#include <list>
 #include <string>
 #include <memory>
 #include <vector>
@@ -35,10 +36,10 @@ class ParentResource: public Resource {
                  const std::shared_ptr<ParentResource>& parent,
                  bool container_presence = true);
   Response Validate(const Pistache::Rest::Request& value) const override;
-  void AddChild(const std::shared_ptr<Resource>& child);
+  void AddChild(std::unique_ptr<Resource>&& child);
   bool IsMandatory() const override;
  private:
-  std::vector<std::shared_ptr<Resource>> children_;
+  std::list<std::unique_ptr<Resource>> children_;
   std::vector<PathParamField> fields_;
   /**
    * MUST be set to false only if the parent is a container

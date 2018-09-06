@@ -16,6 +16,7 @@
 #include "../../include/Resources/ParentResource.h"
 #include <pistache/router.h>
 #include <string>
+#include <memory>
 #include "../../include/Error.h"
 
 ParentResource::ParentResource(const std::string& name,
@@ -39,8 +40,8 @@ Response ParentResource::Validate(const Pistache::Rest::Request& request) const 
   return {ErrorTag::kOk, ""};
 }
 
-void ParentResource::AddChild(const std::shared_ptr<Resource>& child) {
-  children_.push_back(child);
+void ParentResource::AddChild(std::unique_ptr<Resource>&& child) {
+  children_.push_back(std::move(child));
 }
 
 bool ParentResource::IsMandatory() const {

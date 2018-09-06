@@ -23,17 +23,23 @@
 #include <utility>
 #include <vector>
 
+#include "../../include/Validators/Validator.h"
+#include "../../include/Validators/EnumValidator.h"
+#include "../../include/Validators/PatternValidator.h"
+#include "../../include/Resources/LeafResource.h"
+#include "../../include/Resources/ParentResource.h"
+
 namespace {
-  Validators perTypeValidators[LY_DATA_TYPE_COUNT];
+ValidatorMap perTypeValidators[LY_DATA_TYPE_COUNT];
 }
 
 const std::vector<std::shared_ptr<Validator>>
 getValidators(lys_type type) {
   bool isDerived = (type.der->type.der != nullptr);
   if (!isDerived) {
-        auto inplace = parseType("", type);
-    if (inplace.count("") == 1) {
-      return inplace.at("");
+    auto inplace = parseType("", type);
+    if (inplace->count("") == 1) {
+      return inplace->at("");
     }
     return std::vector<std::shared_ptr<Validator>>();
   }
@@ -43,18 +49,17 @@ getValidators(lys_type type) {
   return std::vector<std::shared_ptr<Validator>>();
 }
 
-void parseModule(const lys_module* module) {
+void parseModule(const lys_module* module, std::shared_ptr<ParentResource> parent) {
   auto typedefs = module->tpdf;
   for (auto i = 0; i < module->tpdf_size; ++i) {
     auto current_typedef = typedefs[i];
     auto validators = parseType(current_typedef.name, current_typedef.type);
     perTypeValidators[current_typedef.type.base].insert(
-        validators.begin(), validators.end()
-    );
+        validators->begin(), validators->end());
   }
   auto data = module->data;
   while (data) {
-    parseNode(data);
+    parseNode(data, parent);
     data = data->next;
   }
 }
@@ -83,7 +88,8 @@ Validators parseType(const char* name, lys_type type) {
     case LY_TYPE_UINT32:
     case LY_TYPE_INT64:
     case LY_TYPE_UINT64:
-    default: throw std::runtime_error("Unsupported Type");
+    default:
+      throw std::runtime_error("Unsupported Type");
   }
 }
 
@@ -95,7 +101,8 @@ Validators parseEnum(const char* name, lys_type_info_enums enums) {
   std::vector<std::shared_ptr<Validator>> validators = {
       std::make_shared<EnumValidator>(allowed)
   };
-  return Validators{{name, validators}};
+  auto map = ValidatorMap{{name, validators}};
+  return std::make_unique<ValidatorMap>(map);
 }
 
 Validators parseString(const char* name, lys_type_info_str str) {
@@ -113,10 +120,11 @@ Validators parseString(const char* name, lys_type_info_str str) {
         std::make_shared<PatternValidator>(current_pattern))
     );
   }
-  return Validators{{name, validators}};
+  auto map = ValidatorMap{{name, validators}};
+  return std::make_unique<ValidatorMap>(map);
 }
 
-void parseNode(lys_node* data) {
+void parseNode(lys_node* data, std::shared_ptr<ParentResource> parent) {
   if (!data) return;
   switch (data->nodetype) {
     case LYS_UNKNOWN:
@@ -126,7 +134,7 @@ void parseNode(lys_node* data) {
     case LYS_CHOICE:
       break;
     case LYS_LEAF:
-      parseLeaf(reinterpret_cast<lys_node_leaf*>(data));
+      parseLeaf(reinterpret_cast<lys_node_leaf*>(data), parent);
       break;
     case LYS_LEAFLIST:
       break;
@@ -145,7 +153,7 @@ void parseNode(lys_node* data) {
     case LYS_OUTPUT:
       break;
     case LYS_GROUPING:
-      parseGrouping(reinterpret_cast<lys_node_grp*>(data));
+      parseGrouping(reinterpret_cast<lys_node_grp*>(data), parent);
       break;
     case LYS_USES:
       break;
@@ -160,21 +168,28 @@ void parseNode(lys_node* data) {
   }
 }
 
-void parseGrouping(lys_node_grp* group) {
+void parseGrouping(lys_node_grp* group, std::shared_ptr<ParentResource> parent) {
   auto child = group->child;
   while (child) {
-    parseNode(child);
+    parseNode(child, parent);
     child = child->next;
   }
 }
 
-void parseLeaf(lys_node_leaf* leaf) {
+void parseLeaf(lys_node_leaf* leaf, std::shared_ptr<ParentResource> parent) {
   bool configurable = ((leaf->flags & LYS_CONFIG_MASK) ^ 2) != 0;
   bool mandatory = (leaf->flags & LYS_MAND_MASK) != 0;
   auto validators = getValidators(leaf->type);
   auto field = std::make_shared<JsonBodyField>(validators,
-                                               JsonBodyField::FromYangType(leaf->type.base));
-  auto resource = std::make_shared<LeafResource>(leaf->name, nullptr,
-                                                 "", nullptr, field, configurable, mandatory);
+                                               JsonBodyField::FromYangType(
+                                                   leaf->type.base));
+  std::unique_ptr<const std::string> default_value = nullptr;
+  if (leaf->dflt != nullptr) {
+    default_value = std::make_unique<const std::string>(leaf->dflt);
+  }
+  parent->AddChild(std::make_unique<LeafResource>(leaf->name, nullptr,
+                                        parent->Endpoint() + ':' + leaf->name,
+                                        nullptr, field, configurable,
+                                        mandatory, std::move(default_value)));
   int x = 0;
 }
