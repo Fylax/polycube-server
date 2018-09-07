@@ -21,8 +21,8 @@
 #include "../../include/Validators/Validator.h"
 
 JsonBodyField::JsonBodyField(
-    const std::vector<std::shared_ptr<Validator>>& validators, JsonType type)
-    : Field<nlohmann::json>(validators), type_(type) {}
+    std::vector<std::shared_ptr<Validator>> validators, JsonType type)
+    : Field<nlohmann::json>(std::move(validators)), type_(type) {}
 
 ErrorTag JsonBodyField::Validate(const nlohmann::json& value) const {
   auto parsed = value.get<std::string>();

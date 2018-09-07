@@ -16,15 +16,16 @@
 #include <string>
 #include <memory>
 #include <vector>
+#include <utility>
 
 #include "../../include/Resources/Field.h"
 #include "../../include/Resources/PathParamField.h"
 
 PathParamField::PathParamField(const std::string& name,
-                               const std::vector<
+                               std::vector<
                                    std::shared_ptr<Validator>
-                               >& validators)
-    : Field<Pistache::Rest::Request>(validators), name_(name)  {}
+                               > validators)
+    : Field<Pistache::Rest::Request>(std::move(validators)), name_(name)  {}
 
 const std::string PathParamField::Name() const {
   return name_;

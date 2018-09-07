@@ -30,14 +30,14 @@ public:
                  const std::shared_ptr<Pistache::Rest::Router>& router,
                  const std::string& restEndpoint,
                  const std::shared_ptr<ParentResource>& parent,
-                 const std::shared_ptr<JsonBodyField>& field,
+                 std::unique_ptr<JsonBodyField> field,
                  bool configurable, bool mandatory,
                  std::unique_ptr<const std::string> default_value);
   Response Validate(const Pistache::Rest::Request& value) const override;
   bool IsMandatory() const override;
   bool HasDefault() const;
 private:
-  const std::shared_ptr<JsonBodyField> field_;
+  const std::unique_ptr<JsonBodyField> field_;
   const bool configurable_;
   const bool mandatory_;
   const std::unique_ptr<const std::string> default_;

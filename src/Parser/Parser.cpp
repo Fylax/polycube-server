@@ -49,7 +49,8 @@ getValidators(lys_type type) {
   return std::vector<std::shared_ptr<Validator>>();
 }
 
-void parseModule(const lys_module* module, std::shared_ptr<ParentResource> parent) {
+void
+parseModule(const lys_module* module, std::shared_ptr<ParentResource> parent) {
   auto typedefs = module->tpdf;
   for (auto i = 0; i < module->tpdf_size; ++i) {
     auto current_typedef = typedefs[i];
@@ -139,6 +140,7 @@ void parseNode(lys_node* data, std::shared_ptr<ParentResource> parent) {
     case LYS_LEAFLIST:
       break;
     case LYS_LIST:
+      parseList(reinterpret_cast<lys_node_list*>(data), parent);
       break;
     case LYS_ANYXML:
       break;
@@ -168,7 +170,8 @@ void parseNode(lys_node* data, std::shared_ptr<ParentResource> parent) {
   }
 }
 
-void parseGrouping(lys_node_grp* group, std::shared_ptr<ParentResource> parent) {
+void
+parseGrouping(lys_node_grp* group, std::shared_ptr<ParentResource> parent) {
   auto child = group->child;
   while (child) {
     parseNode(child, parent);
@@ -176,11 +179,22 @@ void parseGrouping(lys_node_grp* group, std::shared_ptr<ParentResource> parent) 
   }
 }
 
+void parseList(lys_node_list* list, std::shared_ptr<ParentResource> parent) {
+  auto keys = std::vector<PathParamField>();
+  keys.reserve(list->keys_size);
+  auto key = list->keys;
+  for (unsigned i = 0; i < list->keys_size; ++i) {
+    auto validators = getValidators(key[i]->type);
+    keys.emplace_back(key[i]->name, std::move(validators));
+  }
+
+}
+
 void parseLeaf(lys_node_leaf* leaf, std::shared_ptr<ParentResource> parent) {
   bool configurable = ((leaf->flags & LYS_CONFIG_MASK) ^ 2) != 0;
   bool mandatory = (leaf->flags & LYS_MAND_MASK) != 0;
   auto validators = getValidators(leaf->type);
-  auto field = std::make_shared<JsonBodyField>(validators,
+  auto field = std::make_unique<JsonBodyField>(validators,
                                                JsonBodyField::FromYangType(
                                                    leaf->type.base));
   std::unique_ptr<const std::string> default_value = nullptr;
@@ -188,8 +202,10 @@ void parseLeaf(lys_node_leaf* leaf, std::shared_ptr<ParentResource> parent) {
     default_value = std::make_unique<const std::string>(leaf->dflt);
   }
   auto leaf_res = std::make_unique<LeafResource>(leaf->name, nullptr,
-                                             parent->Endpoint() + ':' + leaf->name,
-                                             nullptr, field, configurable,
-                                             mandatory, std::move(default_value));
+                                                 parent->Endpoint() + ':' +
+                                                 leaf->name,
+                                                 parent, std::move(field), configurable,
+                                                 mandatory,
+                                                 std::move(default_value));
   parent->AddChild(std::move(leaf_res));
 }

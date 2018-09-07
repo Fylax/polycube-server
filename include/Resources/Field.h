@@ -23,13 +23,14 @@
 #include <string>
 #include <memory>
 #include <vector>
+#include <utility>
 #include "../Validators/Validator.h"
 #include "../Error.h"
 
 template<typename T> class Field {
 protected:
-  explicit Field(const std::vector<std::shared_ptr<Validator>>& validators):
-      validators_(validators) {}
+  explicit Field(std::vector<std::shared_ptr<Validator>> validators):
+      validators_(std::move(validators)) {}
   const std::vector<std::shared_ptr<Validator>> validators_;
 public:
   virtual ErrorTag Validate (const T& value) const = 0;

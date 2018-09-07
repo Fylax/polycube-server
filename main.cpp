@@ -1,7 +1,7 @@
 #include <libyang/libyang.h>
 
+#include <vector>
 #include "include/Parser/Parser.h"
-
 
 int main() {
   auto context = ly_ctx_new("/home/nico/dev/iovnet/services/resources/", 0);
@@ -23,7 +23,8 @@ int main() {
 
   // module_res will be Cube/Service
   auto module_res = std::make_shared<ParentResource>(module->name, nullptr,
-      std::string{'/'} + module->name + "/:cube_name/", nullptr);
+      std::string{'/'} + module->name + "/:cube_name/",
+      nullptr, std::vector<PathParamField>());
   for (auto i = 0; i < module->imp_size; ++i) {
     parseModule(module->imp[i].module, module_res);
   }

@@ -53,6 +53,8 @@ void parseNode(lys_node* data, std::shared_ptr<ParentResource> parent);
 
 void parseGrouping(lys_node_grp* group, std::shared_ptr<ParentResource> parent);
 
+void parseList(lys_node_list* list, std::shared_ptr<ParentResource> parent);
+
 void parseLeaf(lys_node_leaf* leaf, std::shared_ptr<ParentResource> parent);
 
 

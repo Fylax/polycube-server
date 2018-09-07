@@ -23,9 +23,10 @@ ParentResource::ParentResource(const std::string& name,
                                const std::shared_ptr<Pistache::Rest::Router>& router,
                                const std::string& restEndpoint,
                                const std::shared_ptr<ParentResource>& parent,
+                               std::vector<PathParamField> fields,
                                bool container_presence)
     : Resource(name, router, restEndpoint, parent), children_(),
-    container_presence_(container_presence) {}
+    fields_(std::move(fields)), container_presence_(container_presence) {}
 
 Response ParentResource::Validate(const Pistache::Rest::Request& request) const {
   using Pistache::Http::Code;
