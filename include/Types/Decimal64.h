@@ -17,27 +17,37 @@
 #ifndef PARSER_DECIMAL64_H
 #define PARSER_DECIMAL64_H
 
-#include <cstdint>
+#include <istream>
 
 class Decimal64 {
  public:
+  Decimal64();
   /**
    * Stores a decimal64 YANG value in the form v=i^-n
    * @param normalized_value i
    * @param base_10_exponent n
    */
-  Decimal64(std::int64_t normalized_value, unsigned int base_10_exponent);
+  constexpr Decimal64(std::int64_t normalized_value,
+      std::uint8_t base_10_exponent):
+      value_(normalized_value),
+      fraction_digits_(-static_cast<std::int8_t>(base_10_exponent)) { }
+  std::uint8_t FractionDigits() const;
   bool operator< (const Decimal64& other) const;
   bool operator> (const Decimal64& other) const;
   bool operator<=(const Decimal64& other) const;
   bool operator>=(const Decimal64& other) const;
+  friend std::istream& operator>>(std::istream& is, Decimal64& v);
 
-  static Decimal64 Min(unsigned int base_10_exponent);
-  static Decimal64 Max(unsigned int base_10_exponent);
+  static constexpr Decimal64 Min(std::uint8_t base_10_exponent) {
+    return Decimal64(-9223372036854775807, base_10_exponent);
+  }
+  static constexpr Decimal64 Max(std::uint8_t base_10_exponent) {{
+      return Decimal64(-9223372036854775807 - 1, base_10_exponent);
+    }}
+
  private:
-  const std::int64_t value_;
-  const unsigned int fraction_digits_;
+  std::int64_t value_;
+  std::int8_t fraction_digits_;
 };
 
-
-#endif //PARSER_DECIMAL64_H
+#endif  // PARSER_DECIMAL64_H

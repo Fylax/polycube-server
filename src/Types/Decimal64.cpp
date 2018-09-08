@@ -14,11 +14,8 @@
  * limitations under the License.
  */
 #include "../../include/Types/Decimal64.h"
-
-Decimal64::Decimal64(std::int64_t normalized_value,
-    unsigned int base_10_exponent):
-value_(normalized_value), fraction_digits_(-base_10_exponent) { }
-
+#include <istream>
+#include <string>
 
 bool Decimal64::operator<(const Decimal64& other) const {
   return value_ < other.value_;
@@ -36,12 +33,48 @@ bool Decimal64::operator>=(const Decimal64& other) const {
   return !(*this < other);
 }
 
-Decimal64 Decimal64::Min(unsigned int base_10_exponent) {
-  return Decimal64(-9223372036854775807 - 1, base_10_exponent);
+std::istream& operator>>(std::istream& is, Decimal64& v) {
+  std::string value;
+  is >> value;
+  try {
+    std::size_t idx;
+    auto numerator = std::stoll(value, &idx);
+
+    if (idx == value.length()) {
+      v.fraction_digits_ = 0;
+      v.value_ = numerator;
+      return is;
+    }
+    if (value.at(idx) != '.') {
+      is.unget();
+      is.setstate(std::ios_base::failbit);
+      return is;
+    }
+
+    idx += 1;
+    if (idx == value.length()) return is;
+
+    std::uint8_t fraction_digits = 0;
+    auto denominator = std::stoll(value.substr(idx));
+    std::uint8_t shift = 1;
+    for (std::size_t i = 0; i < fraction_digits; ++i) {
+      shift *= 10;
+    }
+
+    auto parsed = ((numerator * shift) + denominator);
+    v.value_ = parsed;
+    v.fraction_digits_ = fraction_digits;
+    return is;
+  } catch (std::invalid_argument&) {
+    is.unget();
+    is.setstate(std::ios_base::failbit);
+    return is;
+  }
 }
 
-Decimal64 Decimal64::Max(unsigned int base_10_exponent) {
-  return Decimal64(9223372036854775807, base_10_exponent);
-}
+Decimal64::Decimal64():value_(0), fraction_digits_(1) {}
 
+std::uint8_t Decimal64::FractionDigits() const {
+  return static_cast<std::uint8_t>(-fraction_digits_);
+}
 
