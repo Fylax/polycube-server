@@ -34,8 +34,9 @@ class ParentResource: public Resource {
                  const std::shared_ptr<Pistache::Rest::Router>& router,
                  const std::string& restEndpoint,
                  const std::shared_ptr<ParentResource>& parent,
-                 std::vector<PathParamField> fields,
+                 std::vector<PathParamField>&& fields,
                  bool container_presence = true);
+  ParentResource(const ParentResource& other);
   Response Validate(const Pistache::Rest::Request& value) const override;
   void AddChild(std::unique_ptr<Resource> child);
   bool IsMandatory() const override;

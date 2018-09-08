@@ -17,6 +17,7 @@
 
 #include <cstring>
 #include <memory>
+#include <set>
 #include <string>
 #include <unordered_map>
 #include <unordered_set>
@@ -44,13 +45,15 @@ getValidators(lys_type type) {
     return std::vector<std::shared_ptr<Validator>>();
   }
   if (perTypeValidators[type.base].count(type.der->name) == 1) {
-    return perTypeValidators[type.base].at(type.der->name);
+    auto validators = perTypeValidators[type.base].at(type.der->name);
+    // move out a copy of the original vector
+    return std::vector<std::shared_ptr<Validator>>(validators);
   }
   return std::vector<std::shared_ptr<Validator>>();
 }
 
 void
-parseModule(const lys_module* module, std::shared_ptr<ParentResource> parent) {
+parseModule(const lys_module* module, ParentResource& parent) {
   auto typedefs = module->tpdf;
   for (auto i = 0; i < module->tpdf_size; ++i) {
     auto current_typedef = typedefs[i];
@@ -125,7 +128,7 @@ Validators parseString(const char* name, lys_type_info_str str) {
   return std::make_unique<ValidatorMap>(map);
 }
 
-void parseNode(lys_node* data, std::shared_ptr<ParentResource> parent) {
+void parseNode(lys_node* data, ParentResource& parent) {
   if (!data) return;
   switch (data->nodetype) {
     case LYS_UNKNOWN:
@@ -171,7 +174,7 @@ void parseNode(lys_node* data, std::shared_ptr<ParentResource> parent) {
 }
 
 void
-parseGrouping(lys_node_grp* group, std::shared_ptr<ParentResource> parent) {
+parseGrouping(lys_node_grp* group, ParentResource& parent) {
   auto child = group->child;
   while (child) {
     parseNode(child, parent);
@@ -179,22 +182,48 @@ parseGrouping(lys_node_grp* group, std::shared_ptr<ParentResource> parent) {
   }
 }
 
-void parseList(lys_node_list* list, std::shared_ptr<ParentResource> parent) {
+void parseList(lys_node_list* list, ParentResource& parent) {
   auto keys = std::vector<PathParamField>();
-  keys.reserve(list->keys_size);
-  auto key = list->keys;
-  for (unsigned i = 0; i < list->keys_size; ++i) {
-    auto validators = getValidators(key[i]->type);
-    keys.emplace_back(key[i]->name, std::move(validators));
+  auto key_names = std::set<std::string>();
+  auto rest_endpoint = parent.Endpoint() + list->name + '/';
+  if (list->keys_size != 0) {
+    keys.reserve(list->keys_size);
+    std::string item;
+    auto stream = std::stringstream(list->keys_str);
+    while (std::getline(stream, item, ' ')) {
+      rest_endpoint += ':' + item + '/';
+      key_names.insert(item);
+    }
+  }
+  // get all keys
+  auto child = list->child;
+  while (child != nullptr) {
+    if (key_names.count(child->name) != 0) {
+      auto key = reinterpret_cast<lys_node_leaf*>(child);
+      auto validator = getValidators(key->type);
+      keys.emplace_back(std::string {':'} + child->name, std::move(validator));
+    }
+    child = child->next;
   }
 
+  auto resource = ParentResource(list->name, nullptr,
+      rest_endpoint, std::make_shared<ParentResource>(parent), std::move(keys));
+  // get all children
+  child = list->child;
+  while (child != nullptr) {
+    if (key_names.count(child->name) == 0) {
+      parseNode(child, resource);
+    }
+    child = child->next;
+  }
+  parent.AddChild(std::make_unique<ParentResource>(std::move(resource)));
 }
 
-void parseLeaf(lys_node_leaf* leaf, std::shared_ptr<ParentResource> parent) {
+void parseLeaf(lys_node_leaf* leaf, ParentResource& parent) {
   bool configurable = ((leaf->flags & LYS_CONFIG_MASK) ^ 2) != 0;
   bool mandatory = (leaf->flags & LYS_MAND_MASK) != 0;
   auto validators = getValidators(leaf->type);
-  auto field = std::make_unique<JsonBodyField>(validators,
+  auto field = std::make_unique<JsonBodyField>(std::move(validators),
                                                JsonBodyField::FromYangType(
                                                    leaf->type.base));
   std::unique_ptr<const std::string> default_value = nullptr;
@@ -202,10 +231,10 @@ void parseLeaf(lys_node_leaf* leaf, std::shared_ptr<ParentResource> parent) {
     default_value = std::make_unique<const std::string>(leaf->dflt);
   }
   auto leaf_res = std::make_unique<LeafResource>(leaf->name, nullptr,
-                                                 parent->Endpoint() + ':' +
-                                                 leaf->name,
-                                                 parent, std::move(field), configurable,
+                                                 parent.Endpoint() + ':' +
+                                                 leaf->name, std::make_shared<ParentResource>(parent),
+                                                 std::move(field), configurable,
                                                  mandatory,
                                                  std::move(default_value));
-  parent->AddChild(std::move(leaf_res));
+  parent.AddChild(std::move(leaf_res));
 }

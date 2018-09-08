@@ -29,7 +29,7 @@
 
 template<typename T> class Field {
 protected:
-  explicit Field(std::vector<std::shared_ptr<Validator>> validators):
+  explicit Field(std::vector<std::shared_ptr<Validator>>&& validators):
       validators_(std::move(validators)) {}
   const std::vector<std::shared_ptr<Validator>> validators_;
 public:

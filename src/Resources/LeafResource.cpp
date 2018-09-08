@@ -26,9 +26,9 @@ LeafResource::LeafResource(const std::string& name,
                            const std::shared_ptr<Pistache::Rest::Router>& router,
                            const std::string& restEndpoint,
                            const std::shared_ptr<ParentResource>& parent,
-                           std::unique_ptr<JsonBodyField> field,
+                           std::unique_ptr<JsonBodyField>&& field,
                            bool configurable, bool mandatory,
-                           std::unique_ptr<const std::string> default_value)
+                           std::unique_ptr<const std::string>&& default_value)
     : Resource(name, router, restEndpoint, parent),
     field_(std::move(field)), configurable_(configurable), mandatory_(mandatory),
     default_(std::move(default_value)) {}

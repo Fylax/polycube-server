@@ -24,7 +24,7 @@
 PathParamField::PathParamField(const std::string& name,
                                std::vector<
                                    std::shared_ptr<Validator>
-                               > validators)
+                               >&& validators)
     : Field<Pistache::Rest::Request>(std::move(validators)), name_(name)  {}
 
 const std::string PathParamField::Name() const {

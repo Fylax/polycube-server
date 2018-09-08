@@ -22,7 +22,7 @@ int main() {
   }
 
   // module_res will be Cube/Service
-  auto module_res = std::make_shared<ParentResource>(module->name, nullptr,
+  auto module_res = ParentResource(module->name, nullptr,
       std::string{'/'} + module->name + "/:cube_name/",
       nullptr, std::vector<PathParamField>());
   for (auto i = 0; i < module->imp_size; ++i) {

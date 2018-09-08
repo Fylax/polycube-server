@@ -30,6 +30,6 @@ Resource::Resource(const std::string& name,
     name_(name), router_(router), restEndpoint_(restEndpoint),
     parent_(parent) {}
 
-const std::string& Resource::Endpoint() const {
+const std::string Resource::Endpoint() const {
   return restEndpoint_;
 }

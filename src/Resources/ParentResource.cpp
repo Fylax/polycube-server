@@ -17,16 +17,21 @@
 #include <pistache/router.h>
 #include <string>
 #include <memory>
+#include <vector>
 #include "../../include/Error.h"
 
 ParentResource::ParentResource(const std::string& name,
                                const std::shared_ptr<Pistache::Rest::Router>& router,
                                const std::string& restEndpoint,
                                const std::shared_ptr<ParentResource>& parent,
-                               std::vector<PathParamField> fields,
+                               std::vector<PathParamField>&& fields,
                                bool container_presence)
     : Resource(name, router, restEndpoint, parent), children_(),
     fields_(std::move(fields)), container_presence_(container_presence) {}
+
+ParentResource::ParentResource(const ParentResource& other):
+Resource(other.name_, other.router_, other.restEndpoint_, other.parent_),
+fields_(other.fields_), container_presence_(other.container_presence_) {}
 
 Response ParentResource::Validate(const Pistache::Rest::Request& request) const {
   using Pistache::Http::Code;
