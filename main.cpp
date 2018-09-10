@@ -1,5 +1,9 @@
 #include <libyang/libyang.h>
+#include <pistache/http.h>
+#include <pistache/router.h>
+#include <pistache/endpoint.h>
 
+#include <string>
 #include <vector>
 #include "include/Parser/Parser.h"
 

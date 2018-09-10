@@ -54,9 +54,20 @@ std::istream& operator>>(std::istream& is, Decimal64& v) {
     idx += 1;
     if (idx == value.length()) return is;
 
-    std::uint8_t fraction_digits = 0;
-    auto denominator = std::stoll(value.substr(idx));
-    std::uint8_t shift = 1;
+    auto denominator_str = value.substr(idx);
+    std::uint8_t fraction_digits = denominator_str.length();
+    if (fraction_digits > 18) {
+      is.unget();
+      is.setstate(std::ios_base::failbit);
+      return is;
+    }
+    auto denominator = std::stoll(denominator_str, &idx);
+    if (idx != fraction_digits) {
+      is.unget();
+      is.setstate(std::ios_base::failbit);
+      return is;
+    }
+    unsigned shift = 1;
     for (std::size_t i = 0; i < fraction_digits; ++i) {
       shift *= 10;
     }
