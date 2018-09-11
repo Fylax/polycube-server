@@ -1,26 +1,47 @@
-//
-// Created by nico on 10/09/18.
-//
-
+/*
+ * Copyright 2018 The Polycube Authors
+ *
+ * Licensed under the Apache License, Version 2.0 (the "License");
+ * you may not use this file except in compliance with the License.
+ * You may obtain a copy of the License at
+ *
+ * http://www.apache.org/licenses/LICENSE-2.0
+ *
+ * Unless required by applicable law or agreed to in writing, software
+ * distributed under the License is distributed on an "AS IS" BASIS,
+ * WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+ * See the License for the specific language governing permissions and
+ * limitations under the License.
+ */
 #include "../../include/Server/RestServer.h"
+#include <pistache/http.h>
+#include <pistache/router.h>
+#include <pistache/endpoint.h>
 #include <memory>
 
-RestServer::RestServer(Pistache::Address address): httpEndpoint_(
-      std::make_shared<Pistache::Http::Endpoint>(address)) {}
+RestServer::RestServer(Pistache::Address&& address, std::size_t thr):
+    httpEndpoint_(std::make_unique<Pistache::Http::Endpoint>(address)) {
+  router_ = std::make_shared<Pistache::Rest::Router>();
+  init(thr);
+  start();
+}
+
+std::shared_ptr<Pistache::Rest::Router> RestServer::Router() const {
+  return router_;
+}
+
+void RestServer::shutdown() {
+  httpEndpoint_->shutdown();
+}
 
 void RestServer::init(std::size_t thr) {
-    auto opts = Pistache::Http::Endpoint::options()
-        .threads(thr)
-        .flags(Pistache::Tcp::Options::InstallSignalHandler);
-    httpEndpoint_->init(opts);
-  }
+  auto opts = Pistache::Http::Endpoint::options()
+      .threads(thr)
+      .flags(Pistache::Tcp::Options::InstallSignalHandler);
+  httpEndpoint_->init(opts);
+}
 
-  void RestServer::start() {
-    httpEndpoint_->setHandler(router_.handler());
-    httpEndpoint_->serve();
-  }
-
-  void RestServer::shutdown() {
-    httpEndpoint_->shutdown();
-  }
+void RestServer::start() {
+  httpEndpoint_->setHandler(router_->handler());
+  httpEndpoint_->serve();
 }

@@ -21,7 +21,7 @@
 #include <string>
 #include <vector>
 
-#include "../../include/Error.h"
+#include "../../include/Server/Error.h"
 
 Resource::Resource(const std::string& name,
                    const std::shared_ptr<Pistache::Rest::Router>& router,

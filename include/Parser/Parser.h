@@ -33,6 +33,7 @@
 #include "../Resources/LeafResource.h"
 #include "../Resources/ParentResource.h"
 
+using Pistache::Rest::Router;
 using ValidatorMap = std::unordered_map<
     std::string, const std::vector<std::shared_ptr<Validator>>
 >;
@@ -41,7 +42,7 @@ using Validators = std::unique_ptr<ValidatorMap>;
 
 const std::vector<std::shared_ptr<Validator>> getValidators(lys_type type);
 
-void parseModule(const lys_module* module, ParentResource& parent);
+void parseModule(const lys_module* module, ParentResource& parent, std::shared_ptr<Router> router);
 
 Validators parseType(const char* name, lys_type type);
 
@@ -49,13 +50,12 @@ Validators parseEnum(const char* name, lys_type_info_enums enums);
 
 Validators parseString(const char* name, lys_type_info_str str);
 
-void parseNode(lys_node* data, ParentResource& parent);
+void parseNode(lys_node* data, ParentResource& parent, std::shared_ptr<Router> router);
 
-void parseGrouping(lys_node_grp* group, ParentResource& parent);
+void parseGrouping(lys_node_grp* group, ParentResource& parent, std::shared_ptr<Router> router);
 
-void parseList(lys_node_list* list, ParentResource& parent);
+void parseList(lys_node_list* list, ParentResource& parent, std::shared_ptr<Router> router);
 
-void parseLeaf(lys_node_leaf* leaf, ParentResource& parent);
-
+void parseLeaf(lys_node_leaf* leaf, ParentResource& parent, std::shared_ptr<Router> router);
 
 #endif //PARSER_PARSER_H

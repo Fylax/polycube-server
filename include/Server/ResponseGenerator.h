@@ -14,26 +14,9 @@
  * limitations under the License.
  */
 #pragma once
-#ifndef PARSER_ENDPOINT_H
-#define PARSER_ENDPOINT_H
-
-#include <pistache/http.h>
-#include <pistache/router.h>
-#include <pistache/endpoint.h>
-
-#include <memory>
-
-class RestServer {
-public:
-  explicit RestServer(Pistache::Address&& address, std::size_t thr);
-  std::shared_ptr<Pistache::Rest::Router> Router() const;
-  void shutdown();
-private:
-  void start();
-  void init(std::size_t thr);
-  std::unique_ptr<Pistache::Http::Endpoint> httpEndpoint_;
-  std::shared_ptr<Pistache::Rest::Router> router_;
-};
+#ifndef PARSER_RESPONSEGENERATOR_H
+#define PARSER_RESPONSEGENERATOR_H
 
 
-#endif //PARSER_ENDPOINT_H
+
+#endif //PARSER_RESPONSEGENERATOR_H

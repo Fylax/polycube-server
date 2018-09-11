@@ -24,7 +24,7 @@
 #include <vector>
 #include <utility>
 
-#include "../Error.h"
+#include "../Server/Error.h"
 
 class ParentResource;
 
@@ -42,7 +42,7 @@ protected:
   const std::string restEndpoint_;
   std::shared_ptr<ParentResource> parent_;
 
-  virtual Response Validate(const Pistache::Rest::Request& request) const = 0;
+  virtual std::vector<Response> Validate(const Pistache::Rest::Request& request) const = 0;
 };
 
 #endif  // PARSER_RESOURCE_H

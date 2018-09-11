@@ -24,7 +24,7 @@
 #include <memory>
 #include <vector>
 
-#include "../Error.h"
+#include "../Server/Error.h"
 #include "Resource.h"
 #include "PathParamField.h"
 
@@ -37,11 +37,11 @@ class ParentResource: public Resource {
                  std::vector<PathParamField>&& fields,
                  bool container_presence = true);
   ParentResource(const ParentResource& other);
-  Response Validate(const Pistache::Rest::Request& value) const override;
-  void AddChild(std::unique_ptr<Resource> child);
+  std::vector<Response> Validate(const Pistache::Rest::Request& value) const override;
+  void AddChild(std::unique_ptr<Resource>&& child);
   bool IsMandatory() const override;
  private:
-  std::list<std::unique_ptr<Resource>> children_;
+  std::vector<std::unique_ptr<Resource>> children_;
   std::vector<PathParamField> fields_;
   /**
    * MUST be set to false only if the parent is a container

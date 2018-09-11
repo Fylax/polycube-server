@@ -18,7 +18,8 @@
 #include <string>
 #include <memory>
 #include <vector>
-#include "../../include/Error.h"
+#include <utility>
+#include "../../include/Server/Error.h"
 
 ParentResource::ParentResource(const std::string& name,
                                const std::shared_ptr<Pistache::Rest::Router>& router,
@@ -33,20 +34,31 @@ ParentResource::ParentResource(const ParentResource& other):
 Resource(other.name_, other.router_, other.restEndpoint_, other.parent_),
 fields_(other.fields_), container_presence_(other.container_presence_) {}
 
-Response ParentResource::Validate(const Pistache::Rest::Request& request) const {
+std::vector<Response> ParentResource::Validate(const Pistache::Rest::Request& request) const {
   using Pistache::Http::Code;
 
-  if (parent_ != nullptr) return parent_->Validate(request);
+  std::vector<Response> errors;
+  if (parent_ != nullptr) {
+    errors = parent_->Validate(request);
+    if (errors[0].error_tag == kOk) {
+      errors.pop_back();
+    }
+  }
 
   for (const auto& field : fields_) {
     auto valid = field.Validate(request);
-    if (!valid) return {ErrorTag::kBadElement, field.Name().c_str()};
+    if (!valid) {
+      errors.push_back({ErrorTag::kBadElement, field.Name().c_str()});
+    }
   }
 
-  return {ErrorTag::kOk, ""};
+  if (errors.empty()) {
+    errors.push_back({ErrorTag::kOk, ""});
+  }
+  return errors;
 }
 
-void ParentResource::AddChild(std::unique_ptr<Resource> child) {
+void ParentResource::AddChild(std::unique_ptr<Resource>&& child) {
   children_.push_back(std::move(child));
 }
 

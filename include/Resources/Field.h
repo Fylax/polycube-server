@@ -25,7 +25,7 @@
 #include <vector>
 #include <utility>
 #include "../Validators/Validator.h"
-#include "../Error.h"
+#include "../Server/Error.h"
 
 template<typename T> class Field {
 protected:

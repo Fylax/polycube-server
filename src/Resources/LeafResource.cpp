@@ -19,8 +19,13 @@
 #include <string>
 #include <memory>
 #include <utility>
-#include "../../include/Error.h"
+#include "../../include/Server/Error.h"
+#include "../../include/Resources/ParentResource.h"
 #include "../../externals/include/nlohmann/json.hpp"
+
+using Pistache::Rest::Routes::bind;
+using Pistache::Rest::Request;
+using Pistache::Http::ResponseWriter;
 
 LeafResource::LeafResource(const std::string& name,
                            const std::shared_ptr<Pistache::Rest::Router>& router,
@@ -31,23 +36,33 @@ LeafResource::LeafResource(const std::string& name,
                            std::unique_ptr<const std::string>&& default_value)
     : Resource(name, router, restEndpoint, parent),
     field_(std::move(field)), configurable_(configurable), mandatory_(mandatory),
-    default_(std::move(default_value)) {}
+    default_(std::move(default_value)) {
+  router_->get(restEndpoint, bind(&LeafResource::get, this));
+}
 
-Response LeafResource::Validate(const Pistache::Rest::Request& value) const {
+std::vector<Response> LeafResource::Validate(const Pistache::Rest::Request& value) const {
   using nlohmann::detail::value_t;
   nlohmann::json body = nlohmann::json::parse(value.body());
 
-  if (body.empty()) return {ErrorTag::kMissingAttribute, name_.c_str()};
+  auto errors = parent_->Validate(value);
+  if (errors[0].error_tag == kOk) {
+    errors.pop_back();
+  }
+
+  if (body.empty()) {
+    errors.push_back({ErrorTag::kMissingAttribute, name_.c_str()});
+    return errors;
+  }
 
   switch (body.type()) {
     case value_t::null:
     case value_t::object:
     case value_t::discarded:
-      return {ErrorTag::kBadAttribute, name_.c_str()};
+      errors.push_back({ErrorTag::kBadAttribute, name_.c_str()});
     case value_t::array: {
       bool isInvalid = field_->Type() != JsonType::kEmpty &&
           field_->Type() != JsonType::kList;
-      if (isInvalid) return {ErrorTag::kBadAttribute, name_.c_str()};
+      if (isInvalid) errors.push_back({ErrorTag::kBadAttribute, name_.c_str()});
     }
       break;
     case value_t::string: {
@@ -56,34 +71,40 @@ Response LeafResource::Validate(const Pistache::Rest::Request& value) const {
                        fieldType != JsonType::kInt &&
                        fieldType != JsonType::kUint &&
                        fieldType != JsonType::kDecimal;
-      if (isInvalid) return {ErrorTag::kBadAttribute, name_.c_str()};
+      if (isInvalid) errors.push_back({ErrorTag::kBadAttribute, name_.c_str()});
     }
       break;
     case value_t::boolean: {
       bool isInvalid = field_->Type() != JsonType::kBoolean;
-      if (isInvalid) return {ErrorTag::kBadAttribute, name_.c_str()};
+      if (isInvalid) errors.push_back({ErrorTag::kBadAttribute, name_.c_str()});
     }
       break;
     case value_t::number_integer: {
       bool isInvalid = field_->Type() != JsonType::kInt;
-      if (isInvalid) return {ErrorTag::kBadAttribute, name_.c_str()};
+      if (isInvalid) errors.push_back({ErrorTag::kBadAttribute, name_.c_str()});
     }
       break;
     case value_t::number_unsigned: {
       bool isInvalid = field_->Type() != JsonType::kUint;
-      if (isInvalid) return {ErrorTag::kBadAttribute, name_.c_str()};
+      if (isInvalid) errors.push_back({ErrorTag::kBadAttribute, name_.c_str()});
     }
       break;
     case value_t::number_float: {
       bool isInvalid = field_->Type() != JsonType::kDecimal;
-      if (isInvalid) return {ErrorTag::kBadAttribute, name_.c_str()};
+      if (isInvalid) errors.push_back({ErrorTag::kBadAttribute, name_.c_str()});
     }
       break;
   }
 
-  return (field_->Validate(body)) ?
-         Response{ErrorTag::kOk, ""} :
-         Response{ErrorTag::kBadAttribute, name_.c_str()};
+  auto field = field_->Validate(body);
+  if (field == kOk) {
+    if (errors.empty()) {
+      errors.push_back({ErrorTag::kOk, ""});
+    }
+  } else {
+    errors.push_back({field, name_.c_str()});
+  }
+  return errors;
 }
 
 bool LeafResource::IsMandatory() const {
@@ -92,4 +113,9 @@ bool LeafResource::IsMandatory() const {
 
 bool LeafResource::HasDefault() const {
   return default_ != nullptr;
+}
+
+void LeafResource::get(const Request& request, ResponseWriter response) {
+  auto resp = Resource::parent_->Validate(request);
+
 }

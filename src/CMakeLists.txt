@@ -1,5 +1,3 @@
-include_directories(${PROJECT_SOURCE_DIR}/include)
-
 add_subdirectory(Server)
 add_subdirectory(Parser)
 add_subdirectory(Types)

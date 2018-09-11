@@ -1,11 +1,11 @@
 #include <libyang/libyang.h>
 #include <pistache/http.h>
-#include <pistache/router.h>
-#include <pistache/endpoint.h>
 
 #include <string>
 #include <vector>
+#include <utility>
 #include "include/Parser/Parser.h"
+#include "include/Server/RestServer.h"
 
 int main() {
   auto context = ly_ctx_new("/home/nico/dev/iovnet/services/resources/", 0);
@@ -25,15 +25,20 @@ int main() {
     }
   }
 
+  Pistache::Port port{9080};
+  Pistache::Address address{Pistache::Ipv4::any(), port};
+  RestServer server{std::move(address), 1};
+
   // module_res will be Cube/Service
-  auto module_res = ParentResource(module->name, nullptr,
-      std::string{'/'} + module->name + "/:cube_name/",
+  auto module_res = ParentResource(module->name, server.Router(),
+      std::string {'/'} + module->name + "/:cube_name/",
       nullptr, std::vector<PathParamField>());
   for (auto i = 0; i < module->imp_size; ++i) {
-    parseModule(module->imp[i].module, module_res);
+    parseModule(module->imp[i].module, module_res, server.Router());
   }
-  parseModule(module, module_res);
+  parseModule(module, module_res, server.Router());
 
+  server.shutdown();
   return 0;
 }
 

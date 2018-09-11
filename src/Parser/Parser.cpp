@@ -30,6 +30,8 @@
 #include "../../include/Resources/LeafResource.h"
 #include "../../include/Resources/ParentResource.h"
 
+using Pistache::Rest::Router;
+
 namespace {
 ValidatorMap perTypeValidators[LY_DATA_TYPE_COUNT];
 }
@@ -53,7 +55,8 @@ getValidators(lys_type type) {
 }
 
 void
-parseModule(const lys_module* module, ParentResource& parent) {
+parseModule(const lys_module* module, ParentResource& parent,
+            std::shared_ptr<Router> router) {
   auto typedefs = module->tpdf;
   for (auto i = 0; i < module->tpdf_size; ++i) {
     auto current_typedef = typedefs[i];
@@ -63,7 +66,7 @@ parseModule(const lys_module* module, ParentResource& parent) {
   }
   auto data = module->data;
   while (data) {
-    parseNode(data, parent);
+    parseNode(data, parent, router);
     data = data->next;
   }
 }
@@ -128,7 +131,8 @@ Validators parseString(const char* name, lys_type_info_str str) {
   return std::make_unique<ValidatorMap>(map);
 }
 
-void parseNode(lys_node* data, ParentResource& parent) {
+void parseNode(lys_node* data, ParentResource& parent,
+               std::shared_ptr<Router> router) {
   if (!data) return;
   switch (data->nodetype) {
     case LYS_UNKNOWN:
@@ -138,12 +142,12 @@ void parseNode(lys_node* data, ParentResource& parent) {
     case LYS_CHOICE:
       break;
     case LYS_LEAF:
-      parseLeaf(reinterpret_cast<lys_node_leaf*>(data), parent);
+      parseLeaf(reinterpret_cast<lys_node_leaf*>(data), parent, router);
       break;
     case LYS_LEAFLIST:
       break;
     case LYS_LIST:
-      parseList(reinterpret_cast<lys_node_list*>(data), parent);
+      parseList(reinterpret_cast<lys_node_list*>(data), parent, router);
       break;
     case LYS_ANYXML:
       break;
@@ -158,7 +162,7 @@ void parseNode(lys_node* data, ParentResource& parent) {
     case LYS_OUTPUT:
       break;
     case LYS_GROUPING:
-      parseGrouping(reinterpret_cast<lys_node_grp*>(data), parent);
+      parseGrouping(reinterpret_cast<lys_node_grp*>(data), parent, router);
       break;
     case LYS_USES:
       break;
@@ -174,15 +178,17 @@ void parseNode(lys_node* data, ParentResource& parent) {
 }
 
 void
-parseGrouping(lys_node_grp* group, ParentResource& parent) {
+parseGrouping(lys_node_grp* group, ParentResource& parent,
+              std::shared_ptr<Router> router) {
   auto child = group->child;
   while (child) {
-    parseNode(child, parent);
+    parseNode(child, parent, router);
     child = child->next;
   }
 }
 
-void parseList(lys_node_list* list, ParentResource& parent) {
+void parseList(lys_node_list* list, ParentResource& parent,
+               std::shared_ptr<Router> router) {
   auto keys = std::vector<PathParamField>();
   auto key_names = std::set<std::string>();
   auto rest_endpoint = parent.Endpoint() + list->name + '/';
@@ -201,40 +207,40 @@ void parseList(lys_node_list* list, ParentResource& parent) {
     if (key_names.count(child->name) != 0) {
       auto key = reinterpret_cast<lys_node_leaf*>(child);
       auto validator = getValidators(key->type);
-      keys.emplace_back(std::string {':'} + child->name, std::move(validator));
+      keys.emplace_back(std::string{':'} + child->name, std::move(validator));
     }
     child = child->next;
   }
 
-  auto resource = ParentResource(list->name, nullptr,
-      rest_endpoint, std::make_shared<ParentResource>(parent), std::move(keys));
+  auto resource = ParentResource(list->name, router,
+                                 rest_endpoint,
+                                 std::make_shared<ParentResource>(parent),
+                                 std::move(keys));
   // get all children
   child = list->child;
   while (child != nullptr) {
     if (key_names.count(child->name) == 0) {
-      parseNode(child, resource);
+      parseNode(child, resource, router);
     }
     child = child->next;
   }
   parent.AddChild(std::make_unique<ParentResource>(std::move(resource)));
 }
 
-void parseLeaf(lys_node_leaf* leaf, ParentResource& parent) {
+void parseLeaf(lys_node_leaf* leaf, ParentResource& parent,
+               std::shared_ptr<Router> router) {
   bool configurable = ((leaf->flags & LYS_CONFIG_MASK) ^ 2) != 0;
   bool mandatory = (leaf->flags & LYS_MAND_MASK) != 0;
   auto validators = getValidators(leaf->type);
-  auto field = std::make_unique<JsonBodyField>(std::move(validators),
-                                               JsonBodyField::FromYangType(
-                                                   leaf->type.base));
+  auto field = std::make_unique<JsonBodyField>(
+      std::move(validators), JsonBodyField::FromYangType(leaf->type.base));
   std::unique_ptr<const std::string> default_value = nullptr;
   if (leaf->dflt != nullptr) {
     default_value = std::make_unique<const std::string>(leaf->dflt);
   }
-  auto leaf_res = std::make_unique<LeafResource>(leaf->name, nullptr,
-                                                 parent.Endpoint() + ':' +
-                                                 leaf->name, std::make_shared<ParentResource>(parent),
-                                                 std::move(field), configurable,
-                                                 mandatory,
-                                                 std::move(default_value));
+  auto leaf_res = std::make_unique<LeafResource>(
+      leaf->name, router, parent.Endpoint() + ':' + leaf->name,
+      std::make_shared<ParentResource>(parent), std::move(field), configurable,
+      mandatory, std::move(default_value));
   parent.AddChild(std::move(leaf_res));
 }

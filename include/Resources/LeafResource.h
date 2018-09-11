@@ -21,8 +21,11 @@
 #include <pistache/router.h>
 #include <memory>
 #include <string>
-#include "../../include/Error.h"
+#include "../Server/Error.h"
 #include "JsonBodyField.h"
+
+using Pistache::Rest::Request;
+using Pistache::Http::ResponseWriter;
 
 class LeafResource: public Resource {
 public:
@@ -33,7 +36,7 @@ public:
                  std::unique_ptr<JsonBodyField>&& field,
                  bool configurable, bool mandatory,
                  std::unique_ptr<const std::string>&& default_value);
-  Response Validate(const Pistache::Rest::Request& value) const override;
+  std::vector<Response> Validate(const Pistache::Rest::Request& value) const override;
   bool IsMandatory() const override;
   bool HasDefault() const;
 private:
@@ -41,6 +44,7 @@ private:
   const bool configurable_;
   const bool mandatory_;
   const std::unique_ptr<const std::string> default_;
+  void get(const Request& request, ResponseWriter response);
 };
 
 
