@@ -18,7 +18,7 @@
 #include <pistache/mime.h>
 
 void ResponseGenerator::Generate(std::vector<Response>&& response,
-    Pistache::Http::ResponseWriter& writer) {
+    Pistache::Http::ResponseWriter&& writer) {
   using Pistache::Http::Code;
   auto mime = Pistache::Http::Mime::MediaType("application/yang.data+json");
   if (response[0].error_tag == kOk) {

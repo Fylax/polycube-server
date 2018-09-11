@@ -40,7 +40,7 @@ json errors = {
 }
 
 void Generate(std::vector<Response>&& response,
-              Pistache::Http::ResponseWriter& writer);
+              Pistache::Http::ResponseWriter&& writer);
 }  // namespace ResponseGenerator
 
 #endif //PARSER_RESPONSEGENERATOR_H

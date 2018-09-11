@@ -40,9 +40,12 @@ class ParentResource: public Resource {
   std::vector<Response> Validate(const Pistache::Rest::Request& value) const override;
   void AddChild(std::unique_ptr<Resource>&& child);
   bool IsMandatory() const override;
- private:
-  std::vector<std::unique_ptr<Resource>> children_;
+
+protected:
   std::vector<PathParamField> fields_;
+
+private:
+  std::vector<std::unique_ptr<Resource>> children_;
   /**
    * MUST be set to false only if the parent is a container
    * and it has no presence flag (or explicitly set to false).

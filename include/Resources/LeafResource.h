@@ -36,6 +36,7 @@ public:
                  std::unique_ptr<JsonBodyField>&& field,
                  bool configurable, bool mandatory,
                  std::unique_ptr<const std::string>&& default_value);
+  ~LeafResource();
   std::vector<Response> Validate(const Pistache::Rest::Request& value) const override;
   bool IsMandatory() const override;
   bool HasDefault() const;
@@ -45,6 +46,8 @@ private:
   const bool mandatory_;
   const std::unique_ptr<const std::string> default_;
   void get(const Request& request, ResponseWriter response);
+  void post(const Request& request, ResponseWriter response);
+  void put(const Request& request, ResponseWriter response);
 };
 
 

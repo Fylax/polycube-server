@@ -33,7 +33,7 @@ public:
   Resource(const std::string& name,
            const std::shared_ptr<Pistache::Rest::Router>& router,
            const std::string& restEndpoint,
-           const std::shared_ptr<ParentResource>& parent = nullptr);
+           const std::shared_ptr<ParentResource>& parent);
   virtual bool IsMandatory() const = 0;
   const std::string Endpoint() const;
 protected:
