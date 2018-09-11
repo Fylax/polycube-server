@@ -17,6 +17,30 @@
 #ifndef PARSER_RESPONSEGENERATOR_H
 #define PARSER_RESPONSEGENERATOR_H
 
+#include <pistache/http.h>
+#include "../../externals/include/nlohmann/json.hpp"
+#include "Error.h"
 
+namespace ResponseGenerator {
+using nlohmann::json;
+namespace {
+json error = {
+    {
+        "error", {
+                     {"error-type", "application"},
+                     {"error-tag", ""}
+                 }
+    }
+};
+json errors = {
+    {
+        "ietf-restconf:errors", {}
+    }
+};
+}
+
+void Generate(std::vector<Response>&& response,
+              Pistache::Http::ResponseWriter& writer);
+}  // namespace ResponseGenerator
 
 #endif //PARSER_RESPONSEGENERATOR_H

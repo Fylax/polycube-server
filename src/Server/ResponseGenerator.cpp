@@ -14,3 +14,63 @@
  * limitations under the License.
  */
 #include "../../include/Server/ResponseGenerator.h"
+#include <pistache/http.h>
+#include <pistache/mime.h>
+
+void ResponseGenerator::Generate(std::vector<Response>&& response,
+    Pistache::Http::ResponseWriter& writer) {
+  using Pistache::Http::Code;
+  auto mime = Pistache::Http::Mime::MediaType("application/yang.data+json");
+  if (response[0].error_tag == kOk) {
+    writer.send(Code::Ok, response[0].message, mime);
+    return;
+  } else if (response[0].error_tag == kCreated) {
+    writer.send(Code::Created, response[0].message, mime);
+    return;
+  }
+  auto body = errors;
+  Code response_code = Code::Ok;
+  for (const auto& err : response) {
+    auto single = error;
+    switch (err.error_tag){
+      case kOk:
+      case kCreated: break;
+      case kInvalidValue:
+        response_code = Code::Bad_Request;
+        single["error-tag"] = "invalid-value";
+        break;
+      case kMissingAttribute:
+        response_code = Code::Bad_Request;
+        single["error-tag"] = "missing-attribute";
+        break;
+      case kMissingElement:
+        response_code = Code::Bad_Request;
+        single["error-tag"] = "missing-element";
+        break;
+      case kBadAttribute:
+        response_code = Code::Bad_Request;
+        single["error-tag"] = "bad-attribute";
+        break;
+      case kBadElement:
+        response_code = Code::Bad_Request;
+        single["error-tag"] = "bad-element";
+        break;
+      case kDataExists:
+        response_code = Code::Conflict;
+        single["error-tag"] = "data-exists";
+        break;
+      case kDataMissing:
+        response_code = Code::Conflict;
+        single["error-tag"] = "data-missing";
+        break;
+      case kOperationNotSupported:
+        response_code = Code::Method_Not_Allowed;
+        single["error-tag"] = "operation-not-supported";
+        break;
+    }
+    if (std::strlen(err.message)) single["error-message"] = err.message;
+
+    body["ietf-restconf:errors"].push_back(single);
+    writer.send(response_code, body.dump(), mime);
+  }
+}

@@ -24,6 +24,7 @@ enum ErrorTag {
   /** No error.
    * Message will contain the response body. */
   kOk,
+  kCreated,
   /** Generic invalid-value error, no message provided */
   kInvalidValue,
   /** Required body field missing.
