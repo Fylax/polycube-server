@@ -27,8 +27,8 @@ ParentResource::ParentResource(const std::string& name,
                                const std::shared_ptr<ParentResource>& parent,
                                std::vector<PathParamField>&& fields,
                                bool container_presence)
-    : Resource(name, router, restEndpoint, parent), children_(),
-    fields_(std::move(fields)), container_presence_(container_presence) {}
+    : Resource(name, router, restEndpoint, parent), fields_(std::move(fields)),
+    children_(), container_presence_(container_presence) {}
 
 ParentResource::ParentResource(const ParentResource& other):
 Resource(other.name_, other.router_, other.restEndpoint_, other.parent_),

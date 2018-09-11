@@ -17,7 +17,7 @@
 #include <string>
 #include <memory>
 #include <vector>
-#include "../../include/Resources/Cubes.h"
+#include "../../include/Resources/CubeManager.h"
 #include "../../include/Validators/InSetValidator.h"
 #include "../../include/Server/ResponseGenerator.h"
 
@@ -38,7 +38,7 @@ void Cube::post(const Request& request, ResponseWriter response) {
   using nlohmann::detail::value_t;
   nlohmann::json body = nlohmann::json::parse(request.body());
 
-  if (Cubes::CreateCube(body["name"])) {
+  if (CubeManager::CreateCube(body["name"])) {
     auto val = std::static_pointer_cast<InSetValidator>(
         fields_[0].Validators()[0]);
     val->AddValue(body["name"]);

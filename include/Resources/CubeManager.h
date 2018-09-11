@@ -17,20 +17,26 @@
 #ifndef PARSER_CUBES_H
 #define PARSER_CUBES_H
 
+#include <pistache/router.h>
+
 #include <memory>
 #include <string>
 #include <unordered_set>
 
-class Cubes {
+class CubeManager {
 public:
-  static bool CreateCube(std::string name) {
-    return Cubes::existing_cubes.insert(name).second;
-  }
-  static void RemoveCube(std::string name){
-    Cubes::existing_cubes.erase(name);
-  }
+  static bool CreateCube(std::string name);
+  static void RemoveCube(std::string name);
+
+  explicit CubeManager(const std::shared_ptr<Pistache::Rest::Router>& router);
+
+
 private:
-  static std::unordered_set<std::string> existing_cubes;
+  static std::unordered_set<std::string> existing_cubes_impl_;
+  std::unordered_set<std::string> existing_cubes_;
+  std::shared_ptr<Pistache::Rest::Router> router_;
+  void post(const Pistache::Rest::Request& request,
+      Pistache::Http::ResponseWriter response);
 };
 
 
