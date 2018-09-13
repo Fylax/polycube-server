@@ -16,6 +16,7 @@
 #include "../../include/Server/ResponseGenerator.h"
 #include <pistache/http.h>
 #include <pistache/mime.h>
+#include <vector>
 
 void ResponseGenerator::Generate(std::vector<Response>&& response,
     Pistache::Http::ResponseWriter&& writer) {
@@ -68,7 +69,7 @@ void ResponseGenerator::Generate(std::vector<Response>&& response,
         single["error-tag"] = "operation-not-supported";
         break;
     }
-    if (std::strlen(err.message)) single["error-message"] = err.message;
+    if (std::strlen(err.message)) single["error-info"] = err.message;
 
     body["ietf-restconf:errors"].push_back(single);
     writer.send(response_code, body.dump(), mime);

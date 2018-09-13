@@ -26,13 +26,13 @@
 class RestServer {
 public:
   explicit RestServer(Pistache::Address&& address, std::size_t thr);
-  std::shared_ptr<Pistache::Rest::Router> Router() const;
+  static std::shared_ptr<Pistache::Rest::Router> Router();
   void shutdown();
 private:
+  static std::shared_ptr<Pistache::Rest::Router> router_;
   void start();
   void init(std::size_t thr);
   std::unique_ptr<Pistache::Http::Endpoint> httpEndpoint_;
-  std::shared_ptr<Pistache::Rest::Router> router_;
 };
 
 

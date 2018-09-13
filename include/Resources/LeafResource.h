@@ -29,9 +29,7 @@ using Pistache::Http::ResponseWriter;
 
 class LeafResource: public Resource {
 public:
-  LeafResource(const std::string& name,
-                 const std::shared_ptr<Pistache::Rest::Router>& router,
-                 const std::string& restEndpoint,
+  LeafResource(const std::string& name, const std::string& restEndpoint,
                  const std::shared_ptr<ParentResource>& parent,
                  std::unique_ptr<JsonBodyField>&& field,
                  bool configurable, bool mandatory,

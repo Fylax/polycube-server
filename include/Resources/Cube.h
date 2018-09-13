@@ -30,9 +30,7 @@ using Pistache::Http::ResponseWriter;
 
 class Cube: public ParentResource {
 public:
-  Cube(const std::string& name,
-       const std::shared_ptr<Pistache::Rest::Router>& router,
-       const std::string& restEndpoint);
+  Cube(const std::string& name, const std::string& restEndpoint);
 private:
   void post(const Request& request, ResponseWriter response);
 };

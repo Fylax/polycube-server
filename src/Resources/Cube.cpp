@@ -17,22 +17,16 @@
 #include <string>
 #include <memory>
 #include <vector>
+#include <utility>
 #include "../../include/Resources/CubeManager.h"
 #include "../../include/Validators/InSetValidator.h"
 #include "../../include/Server/ResponseGenerator.h"
 
-Cube::Cube(const std::string& name,
-           const std::shared_ptr<Pistache::Rest::Router>& router,
-           const std::string& restEndpoint):
-    ParentResource(name, router, restEndpoint, nullptr,
+Cube::Cube(const std::string& name, const std::string& restEndpoint):
+    ParentResource(name, restEndpoint, nullptr,
                    std::vector<PathParamField>{PathParamField{
-                       name_,
-                       std::vector<std::shared_ptr<Validator>>{
-                           std::static_pointer_cast<Validator>(
-                               std::make_shared<InSetValidator>()
-                           )
-                       }
-                   }}) {}
+                       std::string{'/'} + name_,
+                       InSetValidator::CreateWithInSetValidator()}}) {}
 
 void Cube::post(const Request& request, ResponseWriter response) {
   using nlohmann::detail::value_t;
@@ -45,6 +39,8 @@ void Cube::post(const Request& request, ResponseWriter response) {
     ResponseGenerator::Generate(std::vector<Response>{{kCreated, ""}},
                                 std::move(response));
   } else {
-    // TODO(nico) already existing
+    ResponseGenerator::Generate(
+        std::vector<Response>{{ErrorTag::kDataExists, ""}},
+        std::move(response));
   }
 }

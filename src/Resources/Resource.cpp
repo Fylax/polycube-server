@@ -23,12 +23,9 @@
 
 #include "../../include/Server/Error.h"
 
-Resource::Resource(const std::string& name,
-                   const std::shared_ptr<Pistache::Rest::Router>& router,
-                   const std::string& restEndpoint,
+Resource::Resource(const std::string& name, const std::string& restEndpoint,
                    const std::shared_ptr<ParentResource>& parent):
-    name_(name), router_(router), restEndpoint_(restEndpoint),
-    parent_(parent) {}
+    name_(name), restEndpoint_(restEndpoint), parent_(parent) {}
 
 const std::string Resource::Endpoint() const {
   return restEndpoint_;

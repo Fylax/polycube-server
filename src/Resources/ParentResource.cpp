@@ -22,17 +22,12 @@
 #include "../../include/Server/Error.h"
 
 ParentResource::ParentResource(const std::string& name,
-                               const std::shared_ptr<Pistache::Rest::Router>& router,
                                const std::string& restEndpoint,
                                const std::shared_ptr<ParentResource>& parent,
                                std::vector<PathParamField>&& fields,
                                bool container_presence)
-    : Resource(name, router, restEndpoint, parent), fields_(std::move(fields)),
+    : Resource(name, restEndpoint, parent), fields_(std::move(fields)),
     children_(), container_presence_(container_presence) {}
-
-ParentResource::ParentResource(const ParentResource& other):
-Resource(other.name_, other.router_, other.restEndpoint_, other.parent_),
-fields_(other.fields_), container_presence_(other.container_presence_) {}
 
 std::vector<Response> ParentResource::Validate(const Pistache::Rest::Request& request) const {
   using Pistache::Http::Code;
@@ -58,7 +53,7 @@ std::vector<Response> ParentResource::Validate(const Pistache::Rest::Request& re
   return errors;
 }
 
-void ParentResource::AddChild(std::unique_ptr<Resource>&& child) {
+void ParentResource::AddChild(std::shared_ptr<Resource> child) {
   children_.push_back(std::move(child));
 }
 

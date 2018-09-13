@@ -22,10 +22,12 @@
 #include <memory>
 #include <string>
 #include <unordered_set>
+#include <vector>
 
 class InSetValidator: public Validator {
 public:
-  explicit InSetValidator();
+  static std::vector<std::shared_ptr<Validator>> CreateWithInSetValidator();
+  InSetValidator();
   bool Validate(const std::string& value) const override;
   void AddValue(const std::string& value);
   void RemoveValue(const std::string& value);

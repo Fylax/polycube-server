@@ -30,15 +30,12 @@ class ParentResource;
 
 class Resource {
 public:
-  Resource(const std::string& name,
-           const std::shared_ptr<Pistache::Rest::Router>& router,
-           const std::string& restEndpoint,
+  Resource(const std::string& name, const std::string& restEndpoint,
            const std::shared_ptr<ParentResource>& parent);
   virtual bool IsMandatory() const = 0;
   const std::string Endpoint() const;
 protected:
   const std::string name_;
-  std::shared_ptr<Pistache::Rest::Router> router_;
   const std::string restEndpoint_;
   std::shared_ptr<ParentResource> parent_;
 

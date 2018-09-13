@@ -30,6 +30,7 @@
 #include "../Validators/Validator.h"
 #include "../Validators/EnumValidator.h"
 #include "../Validators/PatternValidator.h"
+#include "../Resources/Cube.h"
 #include "../Resources/LeafResource.h"
 #include "../Resources/ParentResource.h"
 
@@ -37,25 +38,31 @@ using Pistache::Rest::Router;
 using ValidatorMap = std::unordered_map<
     std::string, const std::vector<std::shared_ptr<Validator>>
 >;
-
 using Validators = std::unique_ptr<ValidatorMap>;
 
-const std::vector<std::shared_ptr<Validator>> getValidators(lys_type type);
+class Parser {
+public:
+  explicit Parser(std::string&& yang);
+  const std::vector<std::shared_ptr<Validator>> getValidators(lys_type type);
 
-void parseModule(const lys_module* module, ParentResource& parent, std::shared_ptr<Router> router);
+private:
+  ValidatorMap typedef_validators[LY_DATA_TYPE_COUNT];
 
-Validators parseType(const char* name, lys_type type);
+  void parseModule(const lys_module* module, std::shared_ptr<Cube> cube);
 
-Validators parseEnum(const char* name, lys_type_info_enums enums);
+  Validators parseType(const char* name, lys_type type);
 
-Validators parseString(const char* name, lys_type_info_str str);
+  Validators parseEnum(const char* name, lys_type_info_enums enums);
 
-void parseNode(lys_node* data, ParentResource& parent, std::shared_ptr<Router> router);
+  Validators parseString(const char* name, lys_type_info_str str);
 
-void parseGrouping(lys_node_grp* group, ParentResource& parent, std::shared_ptr<Router> router);
+  void parseNode(lys_node* data, std::shared_ptr<ParentResource> parent);
 
-void parseList(lys_node_list* list, ParentResource& parent, std::shared_ptr<Router> router);
+  void parseGrouping(lys_node_grp* group, std::shared_ptr<ParentResource> parent);
 
-void parseLeaf(lys_node_leaf* leaf, ParentResource& parent, std::shared_ptr<Router> router);
+  void parseList(lys_node_list* list, std::shared_ptr<ParentResource> parent);
+
+  void parseLeaf(lys_node_leaf* leaf, std::shared_ptr<ParentResource> parent);
+};
 
 #endif //PARSER_PARSER_H

@@ -21,7 +21,7 @@ InSetValidator::InSetValidator(): invalid_values_() { }
 
 
 bool InSetValidator::Validate(const std::string& value) const {
-  return invalid_values_.count(value) == 0;
+  return invalid_values_.count(value) == 1;
 }
 
 void InSetValidator::AddValue(const std::string& value) {
@@ -30,4 +30,11 @@ invalid_values_.insert(value);
 
 void InSetValidator::RemoveValue(const std::string& value) {
 invalid_values_.erase(value);
+}
+
+std::vector<std::shared_ptr<Validator>> InSetValidator::CreateWithInSetValidator() {
+  return std::vector<std::shared_ptr<Validator>>{
+    std::static_pointer_cast<Validator>(
+      std::make_shared<InSetValidator>()
+  )};
 }

@@ -31,21 +31,20 @@
 class ParentResource: public Resource {
  public:
   ParentResource(const std::string& name,
-                 const std::shared_ptr<Pistache::Rest::Router>& router,
                  const std::string& restEndpoint,
                  const std::shared_ptr<ParentResource>& parent,
                  std::vector<PathParamField>&& fields,
                  bool container_presence = true);
-  ParentResource(const ParentResource& other);
+
   std::vector<Response> Validate(const Pistache::Rest::Request& value) const override;
-  void AddChild(std::unique_ptr<Resource>&& child);
+  void AddChild(std::shared_ptr<Resource> child);
   bool IsMandatory() const override;
 
 protected:
   std::vector<PathParamField> fields_;
 
 private:
-  std::vector<std::unique_ptr<Resource>> children_;
+  std::vector<std::shared_ptr<Resource>> children_;
   /**
    * MUST be set to false only if the parent is a container
    * and it has no presence flag (or explicitly set to false).
