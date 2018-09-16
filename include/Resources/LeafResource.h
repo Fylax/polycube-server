@@ -35,6 +35,7 @@ public:
                  bool configurable, bool mandatory,
                  std::unique_ptr<const std::string>&& default_value);
   ~LeafResource();
+  std::vector<Response> Validate(const nlohmann::json& body) const override;
   std::vector<Response> Validate(const Pistache::Rest::Request& value) const override;
   bool IsMandatory() const override;
   bool HasDefault() const;

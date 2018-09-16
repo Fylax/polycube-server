@@ -21,8 +21,13 @@
 #include <string>
 #include <memory>
 #include <unordered_set>
+#include <unordered_map>
+#include <utility>
+#include <vector>
 
 #include "../../include/Server/Base64.h"
+#include "../../include/Parser/Parser.h"
+#include "../../include/Server/ResponseGenerator.h"
 
 std::unordered_set<std::string> CubeManager::existing_cubes_impl_ = {};
 
@@ -35,7 +40,7 @@ void CubeManager::RemoveCube(std::string name) {
 }
 
 CubeManager::CubeManager(const std::shared_ptr<Pistache::Rest::Router>& router)
-: existing_cubes_(), router_(router) {
+    : existing_cubes_(), router_(router) {
   using Pistache::Rest::Routes::bind;
   router_->post("/", bind(&CubeManager::post, this));
 }
@@ -45,5 +50,16 @@ void CubeManager::post(const Pistache::Rest::Request& request,
   nlohmann::json body = nlohmann::json::parse(request.body());
 
   auto yang = Base64::decode(body["model"].get<std::string>());
+
+  if (existing_cubes_.count(Parser::GetName(yang)) != 0) {
+    ResponseGenerator::Generate(std::vector<Response>{
+        {ErrorTag::kDataExists, ""}
+    }, std::move(response));
+    return;
+  }
+  auto cube = Parser::Parse(std::move(yang));
+  existing_cubes_[cube->Name()] = cube;
+  ResponseGenerator::Generate(std::vector<Response>{{ErrorTag::kCreated, ""}},
+                              std::move(response));
 }
 

@@ -40,29 +40,11 @@ using ValidatorMap = std::unordered_map<
 >;
 using Validators = std::unique_ptr<ValidatorMap>;
 
-class Parser {
-public:
-  explicit Parser(std::string&& yang);
-  const std::vector<std::shared_ptr<Validator>> getValidators(lys_type type);
+namespace Parser {
+std::shared_ptr<Cube> Parse(std::string&& yang);
+std::string GetName(const std::string& yang);
 
-private:
-  ValidatorMap typedef_validators[LY_DATA_TYPE_COUNT];
-
-  void parseModule(const lys_module* module, std::shared_ptr<Cube> cube);
-
-  Validators parseType(const char* name, lys_type type);
-
-  Validators parseEnum(const char* name, lys_type_info_enums enums);
-
-  Validators parseString(const char* name, lys_type_info_str str);
-
-  void parseNode(lys_node* data, std::shared_ptr<ParentResource> parent);
-
-  void parseGrouping(lys_node_grp* group, std::shared_ptr<ParentResource> parent);
-
-  void parseList(lys_node_list* list, std::shared_ptr<ParentResource> parent);
-
-  void parseLeaf(lys_node_leaf* leaf, std::shared_ptr<ParentResource> parent);
-};
+const std::vector<std::shared_ptr<Validator>> getValidators(lys_type type);
+}
 
 #endif //PARSER_PARSER_H

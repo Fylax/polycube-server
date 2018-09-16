@@ -20,6 +20,7 @@
 #include <vector>
 #include <utility>
 #include "../../include/Server/Error.h"
+#include "../../include/Server/ResponseGenerator.h"
 
 ParentResource::ParentResource(const std::string& name,
                                const std::string& restEndpoint,
@@ -30,8 +31,6 @@ ParentResource::ParentResource(const std::string& name,
     children_(), container_presence_(container_presence) {}
 
 std::vector<Response> ParentResource::Validate(const Pistache::Rest::Request& request) const {
-  using Pistache::Http::Code;
-
   std::vector<Response> errors;
   if (parent_ != nullptr) {
     errors = parent_->Validate(request);
@@ -53,6 +52,14 @@ std::vector<Response> ParentResource::Validate(const Pistache::Rest::Request& re
   return errors;
 }
 
+std::vector<Response>
+ParentResource::Validate(const nlohmann::json& body) const {
+  // foreach child
+    // if mandatory and missing
+      // add error
+    // validate children (relative body)
+}
+
 void ParentResource::AddChild(std::shared_ptr<Resource> child) {
   children_.push_back(std::move(child));
 }
@@ -63,4 +70,32 @@ bool ParentResource::IsMandatory() const {
     if (child->IsMandatory()) return true;
   }
   return false;
+}
+
+void ParentResource::get(const Request& request, ResponseWriter response) {
+  auto resp = parent_->Validate(request);
+  // TODO: call user code
+  ResponseGenerator::Generate(std::move(resp), std::move(response));
+}
+
+void ParentResource::post(const Request& request, ResponseWriter response) {
+  auto body = nlohmann::json::parse(request.body());
+
+  auto errors = parent_->Validate(request);
+  for (const auto& child : children_) {
+    if (child->IsMandatory() && body.count(child->Name()) == 0) {
+      errors.push_back({ErrorTag::kMissingAttribute, child->Name().c_str()});
+    }
+    auto child_valid = child->Validate(body);
+  }
+  // TODO: call user code
+  ResponseGenerator::Generate(std::move(errors), std::move(response));
+}
+
+void ParentResource::put(const Request& request, ResponseWriter response) {
+
+}
+
+void ParentResource::patch(const Request& request, ResponseWriter response) {
+
 }

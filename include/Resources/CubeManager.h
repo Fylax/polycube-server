@@ -22,6 +22,8 @@
 #include <memory>
 #include <string>
 #include <unordered_set>
+#include <unordered_map>
+#include "Cube.h"
 
 class CubeManager {
 public:
@@ -33,7 +35,7 @@ public:
 
 private:
   static std::unordered_set<std::string> existing_cubes_impl_;
-  std::unordered_set<std::string> existing_cubes_;
+  std::unordered_map<std::string, std::shared_ptr<Cube>> existing_cubes_;
   std::shared_ptr<Pistache::Rest::Router> router_;
   void post(const Pistache::Rest::Request& request,
       Pistache::Http::ResponseWriter response);

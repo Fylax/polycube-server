@@ -28,6 +28,9 @@
 #include "Resource.h"
 #include "PathParamField.h"
 
+using Pistache::Rest::Request;
+using Pistache::Http::ResponseWriter;
+
 class ParentResource: public Resource {
  public:
   ParentResource(const std::string& name,
@@ -36,7 +39,8 @@ class ParentResource: public Resource {
                  std::vector<PathParamField>&& fields,
                  bool container_presence = true);
 
-  std::vector<Response> Validate(const Pistache::Rest::Request& value) const override;
+  std::vector<Response> Validate(const nlohmann::json& body) const override;
+  std::vector<Response> Validate(const Request& value) const override;
   void AddChild(std::shared_ptr<Resource> child);
   bool IsMandatory() const override;
 
@@ -50,6 +54,10 @@ private:
    * and it has no presence flag (or explicitly set to false).
    */
   const bool container_presence_;
+  void get(const Request& request, ResponseWriter response);
+  void post(const Request& request, ResponseWriter response);
+  void put(const Request& request, ResponseWriter response);
+  void patch(const Request& request, ResponseWriter response);
 };
 
 

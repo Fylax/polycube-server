@@ -57,15 +57,9 @@ LeafResource::~LeafResource() {
 }
 
 std::vector<Response>
-LeafResource::Validate(const Pistache::Rest::Request& value) const {
+LeafResource::Validate(const nlohmann::json& body) const {
   using nlohmann::detail::value_t;
-  nlohmann::json body = nlohmann::json::parse(value.body());
-
-  auto errors = parent_->Validate(value);
-  if (errors[0].error_tag == kOk) {
-    errors.pop_back();
-  }
-
+  std::vector<Response> errors;
   if (body.empty()) {
     errors.push_back({ErrorTag::kMissingAttribute, name_.c_str()});
     return errors;
@@ -124,6 +118,11 @@ LeafResource::Validate(const Pistache::Rest::Request& value) const {
   return errors;
 }
 
+std::vector<Response>
+LeafResource::Validate(const Pistache::Rest::Request& value) const {
+  return parent_->Validate(value);
+}
+
 bool LeafResource::IsMandatory() const {
   return mandatory_;
 }
@@ -134,28 +133,26 @@ bool LeafResource::HasDefault() const {
 
 void LeafResource::get(const Request& request, ResponseWriter response) {
   auto resp = parent_->Validate(request);
-  // TODO: call user code
+  // TODO: call user code and merge responses
   ResponseGenerator::Generate(std::move(resp), std::move(response));
 }
 
 void LeafResource::post(const Request& request, ResponseWriter response) {
-  auto resp = Validate(request);
-  // TODO call user code
-  auto mess = resp[0].message;
-  if (resp[0].error_tag == kOk) {
-    resp.pop_back();
-    resp.push_back({kCreated, mess});
+  auto errors = Validate(request);
+  auto body = Validate(nlohmann::json::parse(request.body()));
+  if (body[0].error_tag != kOk) {
+    errors.reserve(errors.size() + body.size());
+    errors.insert(errors.end(), body.begin(), body.end());
   }
-  ResponseGenerator::Generate(std::move(resp), std::move(response));
+  // TODO: call user code and merge responses
+  auto mess = errors[0].message;
+  if (errors[0].error_tag == kOk) {
+    errors.pop_back();
+    errors.push_back({kCreated, mess});
+  }
+  ResponseGenerator::Generate(std::move(errors), std::move(response));
 }
 
 void LeafResource::put(const Request& request, ResponseWriter response) {
-  auto resp = Validate(request);
-  // TODO call user code
-  auto mess = resp[0].message;
-  if (resp[0].error_tag == kOk) {
-    resp.pop_back();
-    resp.push_back({kCreated, mess});
-  }
-  ResponseGenerator::Generate(std::move(resp), std::move(response));
+  post(request, std::move(response));
 }

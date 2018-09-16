@@ -27,6 +27,10 @@ Resource::Resource(const std::string& name, const std::string& restEndpoint,
                    const std::shared_ptr<ParentResource>& parent):
     name_(name), restEndpoint_(restEndpoint), parent_(parent) {}
 
-const std::string Resource::Endpoint() const {
+const std::string& Resource::Name() const {
+  return name_;
+}
+
+const std::string& Resource::Endpoint() const {
   return restEndpoint_;
 }

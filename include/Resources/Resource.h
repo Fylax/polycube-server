@@ -18,6 +18,7 @@
 #define PARSER_RESOURCE_H
 
 #include <pistache/router.h>
+#include "../../externals/include/nlohmann/json.hpp"
 
 #include <memory>
 #include <string>
@@ -33,12 +34,14 @@ public:
   Resource(const std::string& name, const std::string& restEndpoint,
            const std::shared_ptr<ParentResource>& parent);
   virtual bool IsMandatory() const = 0;
-  const std::string Endpoint() const;
+  const std::string& Name() const;
+  const std::string& Endpoint() const;
+
+  virtual std::vector<Response> Validate(const nlohmann::json& body) const = 0;
 protected:
   const std::string name_;
   const std::string restEndpoint_;
   std::shared_ptr<ParentResource> parent_;
-
   virtual std::vector<Response> Validate(const Pistache::Rest::Request& request) const = 0;
 };
 
