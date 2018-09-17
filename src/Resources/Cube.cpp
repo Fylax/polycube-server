@@ -25,12 +25,18 @@
 Cube::Cube(const std::string& name, const std::string& restEndpoint):
     ParentResource(name, restEndpoint, nullptr,
                    std::vector<PathParamField>{PathParamField{
-                       std::string{'/'} + name_,
-                       InSetValidator::CreateWithInSetValidator()}}) {}
+                       name, InSetValidator::CreateWithInSetValidator()}}) {}
 
 void Cube::post(const Request& request, ResponseWriter response) {
   using nlohmann::detail::value_t;
   nlohmann::json body = nlohmann::json::parse(request.body());
+
+  if (body.count("name") == 0) {
+    ResponseGenerator::Generate(
+        std::vector<Response>{{ErrorTag::kMissingAttribute, "name"}},
+        std::move(response));
+    return;
+  }
 
   if (CubeManager::CreateCube(body["name"])) {
     auto val = std::static_pointer_cast<InSetValidator>(

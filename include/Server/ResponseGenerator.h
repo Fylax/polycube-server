@@ -20,6 +20,7 @@
 #include <pistache/http.h>
 #include "../../externals/include/nlohmann/json.hpp"
 #include "Error.h"
+#include <vector>
 
 namespace ResponseGenerator {
 using nlohmann::json;

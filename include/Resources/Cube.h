@@ -32,7 +32,7 @@ class Cube: public ParentResource {
 public:
   Cube(const std::string& name, const std::string& restEndpoint);
 private:
-  void post(const Request& request, ResponseWriter response);
+  void post(const Request& request, ResponseWriter response) override;
 };
 
 

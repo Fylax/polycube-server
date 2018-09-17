@@ -14,7 +14,9 @@
  * limitations under the License.
  */
 #include "../../include/Validators/InSetValidator.h"
+#include <memory>
 #include <string>
+#include <vector>
 
 InSetValidator::InSetValidator(): invalid_values_() { }
 

@@ -153,7 +153,7 @@ void parseList(lys_node_list* list, std::shared_ptr<ParentResource> parent) {
     if (key_names.count(child->name) != 0) {
       auto key = reinterpret_cast<lys_node_leaf*>(child);
       auto validator = getValidators(key->type);
-      keys.emplace_back(std::string {':'} + child->name, std::move(validator));
+      keys.emplace_back(child->name, std::move(validator));
     }
     child = child->next;
   }

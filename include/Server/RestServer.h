@@ -22,6 +22,7 @@
 #include <pistache/endpoint.h>
 
 #include <memory>
+#include "../Resources/CubeManager.h"
 
 class RestServer {
 public:
@@ -29,6 +30,7 @@ public:
   static std::shared_ptr<Pistache::Rest::Router> Router();
   void shutdown();
 private:
+  std::unique_ptr<CubeManager> cube_manager_;
   static std::shared_ptr<Pistache::Rest::Router> router_;
   void start();
   void init(std::size_t thr);

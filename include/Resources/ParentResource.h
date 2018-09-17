@@ -55,7 +55,7 @@ private:
    */
   const bool container_presence_;
   void get(const Request& request, ResponseWriter response);
-  void post(const Request& request, ResponseWriter response);
+  virtual void post(const Request& request, ResponseWriter response);
   void put(const Request& request, ResponseWriter response);
   void patch(const Request& request, ResponseWriter response);
 };

@@ -19,9 +19,10 @@
 #include <vector>
 
 void ResponseGenerator::Generate(std::vector<Response>&& response,
-    Pistache::Http::ResponseWriter&& writer) {
+                                 Pistache::Http::ResponseWriter&& writer) {
   using Pistache::Http::Code;
   auto mime = Pistache::Http::Mime::MediaType("application/yang.data+json");
+  writer.headers().add<Pistache::Http::Header::ContentType>(mime);
   if (response[0].error_tag == kOk) {
     writer.send(Code::Ok, response[0].message, mime);
     return;
@@ -33,45 +34,46 @@ void ResponseGenerator::Generate(std::vector<Response>&& response,
   Code response_code = Code::Ok;
   for (const auto& err : response) {
     auto single = error;
-    switch (err.error_tag){
+    switch (err.error_tag) {
       case kOk:
-      case kCreated: break;
+      case kCreated:
+        break;
       case kInvalidValue:
         response_code = Code::Bad_Request;
-        single["error-tag"] = "invalid-value";
+        single["error"]["error-tag"] = "invalid-value";
         break;
       case kMissingAttribute:
         response_code = Code::Bad_Request;
-        single["error-tag"] = "missing-attribute";
+        single["error"]["error-tag"] = "missing-attribute";
         break;
       case kMissingElement:
         response_code = Code::Bad_Request;
-        single["error-tag"] = "missing-element";
+        single["error"]["error-tag"] = "missing-element";
         break;
       case kBadAttribute:
         response_code = Code::Bad_Request;
-        single["error-tag"] = "bad-attribute";
+        single["error"]["error-tag"] = "bad-attribute";
         break;
       case kBadElement:
         response_code = Code::Bad_Request;
-        single["error-tag"] = "bad-element";
+        single["error"]["error-tag"] = "bad-element";
         break;
       case kDataExists:
         response_code = Code::Conflict;
-        single["error-tag"] = "data-exists";
+        single["error"]["error-tag"] = "data-exists";
         break;
       case kDataMissing:
         response_code = Code::Conflict;
-        single["error-tag"] = "data-missing";
+        single["error"]["error-tag"] = "data-missing";
         break;
       case kOperationNotSupported:
         response_code = Code::Method_Not_Allowed;
-        single["error-tag"] = "operation-not-supported";
+        single["error"]["error-tag"] = "operation-not-supported";
         break;
     }
-    if (std::strlen(err.message)) single["error-info"] = err.message;
+    if (std::strlen(err.message)) single["error"]["error-info"] = err.message;
 
-    body["ietf-restconf:errors"].push_back(single);
-    writer.send(response_code, body.dump(), mime);
+    body["ietf-restconf:errors"].push_back(single["error"]);
   }
+  writer.send(response_code, body.dump(), mime);
 }
