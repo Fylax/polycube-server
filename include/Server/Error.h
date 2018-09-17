@@ -55,7 +55,7 @@ enum ErrorTag {
   kOperationNotSupported
 };
 
-typedef struct {
+typedef struct Response {
   const ErrorTag error_tag;
   const char* message;
 } Response;

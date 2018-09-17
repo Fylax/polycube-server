@@ -14,6 +14,7 @@
  * limitations under the License.
  */
 #include "../../include/Resources/ParentResource.h"
+#include <algorithm>
 #include <pistache/router.h>
 #include <string>
 #include <memory>
@@ -28,9 +29,10 @@ ParentResource::ParentResource(const std::string& name,
                                std::vector<PathParamField>&& fields,
                                bool container_presence)
     : Resource(name, restEndpoint, parent), fields_(std::move(fields)),
-    children_(), container_presence_(container_presence) {}
+      children_(), container_presence_(container_presence) {}
 
-std::vector<Response> ParentResource::Validate(const Pistache::Rest::Request& request) const {
+std::vector<Response>
+ParentResource::Validate(const Pistache::Rest::Request& request) const {
   std::vector<Response> errors;
   if (parent_ != nullptr) {
     errors = parent_->Validate(request);
@@ -45,19 +47,25 @@ std::vector<Response> ParentResource::Validate(const Pistache::Rest::Request& re
       errors.push_back({ErrorTag::kBadElement, field.Name().c_str()});
     }
   }
-
-  if (errors.empty()) {
-    errors.push_back({ErrorTag::kOk, ""});
-  }
   return errors;
 }
 
 std::vector<Response>
 ParentResource::Validate(const nlohmann::json& body) const {
-  // foreach child
-    // if mandatory and missing
-      // add error
-    // validate children (relative body)
+  std::vector<Response> errors;
+  for (const auto& child : children_) {
+    if (body.count(child->Name()) == 0) {
+      if (child->IsMandatory()) {
+        errors.push_back({ErrorTag::kMissingAttribute, child->Name().c_str()});
+      }
+    } else {
+      auto child_errors = child->Validate(body.at(child->Name()));
+      errors.reserve(errors.size() + child_errors.size());
+      std::copy(std::begin(child_errors), std::end(child_errors),
+                std::back_inserter(errors));
+    }
+  }
+  return errors;
 }
 
 void ParentResource::AddChild(std::shared_ptr<Resource> child) {
@@ -65,7 +73,7 @@ void ParentResource::AddChild(std::shared_ptr<Resource> child) {
 }
 
 bool ParentResource::IsMandatory() const {
-  if (!container_presence_) return false;
+  if (container_presence_) return true;
   for (const auto& child : children_) {
     if (child->IsMandatory()) return true;
   }
@@ -74,28 +82,46 @@ bool ParentResource::IsMandatory() const {
 
 void ParentResource::get(const Request& request, ResponseWriter response) {
   auto resp = parent_->Validate(request);
-  // TODO: call user code
+  // TODO: call user code and merge responses
+  if (resp.empty()) {
+    resp.push_back({ErrorTag::kOk, ""});
+  }
   ResponseGenerator::Generate(std::move(resp), std::move(response));
 }
 
 void ParentResource::post(const Request& request, ResponseWriter response) {
-  auto body = nlohmann::json::parse(request.body());
-
-  auto errors = parent_->Validate(request);
-  for (const auto& child : children_) {
-    if (child->IsMandatory() && body.count(child->Name()) == 0) {
-      errors.push_back({ErrorTag::kMissingAttribute, child->Name().c_str()});
-    }
-    auto child_valid = child->Validate(body);
+  auto resp = parent_->Validate(request);
+  auto body = Validate(nlohmann::json::parse(request.body()));
+  resp.reserve(resp.size() + body.size());
+  std::copy(std::begin(body), std::end(body),
+            std::back_inserter(resp));
+  // TODO: call user code and merge responses
+  if (resp.empty()) {
+    resp.push_back({ErrorTag::kCreated, ""});
   }
-  // TODO: call user code
-  ResponseGenerator::Generate(std::move(errors), std::move(response));
+  ResponseGenerator::Generate(std::move(resp), std::move(response));
+
 }
 
 void ParentResource::put(const Request& request, ResponseWriter response) {
-
+  post(request, std::move(response));
 }
 
 void ParentResource::patch(const Request& request, ResponseWriter response) {
+  auto resp = parent_->Validate(request);
+  auto body = nlohmann::json::parse(request.body());
 
+  for (const auto& child : children_) {
+    if (body.count(child->Name()) != 0) {
+      auto child_errors = child->Validate(body.at(child->Name()));
+      resp.reserve(resp.size() + child_errors.size());
+      std::copy(std::begin(child_errors), std::end(child_errors),
+                std::back_inserter(resp));
+    }
+  }
+  // TODO: call user code and merge responses
+  if (resp.empty()) {
+    resp.push_back({ErrorTag::kOk, ""});
+  }
+  ResponseGenerator::Generate(std::move(resp), std::move(response));
 }

@@ -16,6 +16,7 @@
 
 #include "../../include/Resources/LeafResource.h"
 #include <pistache/router.h>
+#include <algorithm>
 #include <string>
 #include <memory>
 #include <vector>
@@ -30,13 +31,14 @@ using Pistache::Rest::Request;
 using Pistache::Http::ResponseWriter;
 
 LeafResource::LeafResource(const std::string& name,
-    const std::string& restEndpoint,
-    const std::shared_ptr<ParentResource>& parent,
-    std::unique_ptr<JsonBodyField>&& field, bool configurable, bool mandatory,
-    std::unique_ptr<const std::string>&& default_value):
+                           const std::string& restEndpoint,
+                           const std::shared_ptr<ParentResource>& parent,
+                           std::unique_ptr<JsonBodyField>&& field,
+                           bool configurable, bool mandatory,
+                           std::unique_ptr<const std::string>&& default_value):
     Resource(name, restEndpoint, parent), field_(std::move(field)),
     configurable_(configurable), mandatory_(mandatory),
-      default_(std::move(default_value)) {
+    default_(std::move(default_value)) {
   using Pistache::Rest::Routes::bind;
   auto router = RestServer::Router();
   router->get(restEndpoint_, bind(&LeafResource::get, this));
@@ -108,11 +110,7 @@ LeafResource::Validate(const nlohmann::json& body) const {
   }
 
   auto field = field_->Validate(body);
-  if (field == kOk) {
-    if (errors.empty()) {
-      errors.push_back({ErrorTag::kOk, ""});
-    }
-  } else {
+  if (field != kOk) {
     errors.push_back({field, name_.c_str()});
   }
   return errors;
@@ -140,15 +138,14 @@ void LeafResource::get(const Request& request, ResponseWriter response) {
 void LeafResource::post(const Request& request, ResponseWriter response) {
   auto errors = Validate(request);
   auto body = Validate(nlohmann::json::parse(request.body()));
-  if (body[0].error_tag != kOk) {
-    errors.reserve(errors.size() + body.size());
-    errors.insert(errors.end(), body.begin(), body.end());
-  }
+
+  errors.reserve(errors.size() + body.size());
+  std::copy(std::begin(body), std::end(body),
+            std::back_inserter(errors));
+
   // TODO: call user code and merge responses
-  auto mess = errors[0].message;
-  if (errors[0].error_tag == kOk) {
-    errors.pop_back();
-    errors.push_back({kCreated, mess});
+  if (errors.empty()) {
+    errors.push_back({kCreated, ""});
   }
   ResponseGenerator::Generate(std::move(errors), std::move(response));
 }
