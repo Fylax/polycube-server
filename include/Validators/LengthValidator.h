@@ -14,28 +14,24 @@
  * limitations under the License.
  */
 #pragma once
-#ifndef PARSER_PATTERNVALIDATOR_H
-#define PARSER_PATTERNVALIDATOR_H
+#ifndef PARSER_LENGTHVALIDATOR_H
+#define PARSER_LENGTHVALIDATOR_H
 
-#include <regex>
-#include <string>
 #include "Validator.h"
 
+#include <string>
+#include <unordered_map>
 
-class PatternValidator: public Validator {
- public:
-  /**
-   *
-   * @param pattern
-   * @throws std::regex_error
-   */
-  explicit PatternValidator(const char* pattern, bool inverse);
+class LengthValidator: public Validator {
+public:
+  LengthValidator(bool binary);
+  void AddRange(std::uint64_t min, std::uint64_t max);
+  void AddExact(std::uint64_t exact);
   bool Validate(const std::string& value) const override;
-
- private:
-  const std::regex pattern_;
-  const bool inverse_;
+private:
+  const bool binary_;
+  std::unordered_map<std::uint64_t, std::uint64_t> ranges_;
 };
 
 
-#endif //PARSER_PATTERNVALIDATOR_H
+#endif //PARSER_LENGTHVALIDATOR_H

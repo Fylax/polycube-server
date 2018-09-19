@@ -20,34 +20,61 @@
 #include <istream>
 
 class Decimal64 {
- public:
+public:
   Decimal64();
+
   /**
    * Stores a decimal64 YANG value in the form v=i^-n
    * @param normalized_value i
    * @param base_10_exponent n
    */
   constexpr Decimal64(std::int64_t normalized_value,
-      std::uint8_t base_10_exponent):
+                      std::uint8_t base_10_exponent):
       value_(normalized_value),
-      fraction_digits_(-static_cast<std::int8_t>(base_10_exponent)) { }
+      fraction_digits_(-static_cast<std::int8_t>(base_10_exponent)) {}
+
+  std::int64_t Value() const;
+
   std::uint8_t FractionDigits() const;
-  bool operator< (const Decimal64& other) const;
-  bool operator> (const Decimal64& other) const;
+
+  bool operator==(const Decimal64& other) const;
+
+  bool operator<(const Decimal64& other) const;
+
+  bool operator>(const Decimal64& other) const;
+
   bool operator<=(const Decimal64& other) const;
+
   bool operator>=(const Decimal64& other) const;
+
   friend std::istream& operator>>(std::istream& is, Decimal64& v);
 
   static constexpr Decimal64 Min(std::uint8_t base_10_exponent) {
     return Decimal64(-9223372036854775807, base_10_exponent);
   }
-  static constexpr Decimal64 Max(std::uint8_t base_10_exponent) {{
-      return Decimal64(-9223372036854775807 - 1, base_10_exponent);
-    }}
 
- private:
+  static constexpr Decimal64 Max(std::uint8_t base_10_exponent) {
+    {
+      return Decimal64(-9223372036854775807 - 1, base_10_exponent);
+    }
+  }
+
+private:
   std::int64_t value_;
   std::int8_t fraction_digits_;
 };
 
+namespace std {
+template<>
+struct hash<Decimal64> {
+  /**
+   * Cantor Pairing Function
+   */
+  std::size_t operator()(const Decimal64& k) const {
+
+    return (std::size_t)((((k.Value() + k.FractionDigits()) *
+             (k.Value() + k.FractionDigits() + 1)) >> 1) + k.FractionDigits());
+  }
+};
+}
 #endif  // PARSER_DECIMAL64_H

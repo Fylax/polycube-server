@@ -17,6 +17,10 @@
 #include <istream>
 #include <string>
 
+bool Decimal64::operator==(const Decimal64& other) const {
+  return value_ == other.value_ && fraction_digits_ == other.fraction_digits_;
+}
+
 bool Decimal64::operator<(const Decimal64& other) const {
   return value_ < other.value_;
 }
@@ -84,6 +88,10 @@ std::istream& operator>>(std::istream& is, Decimal64& v) {
 }
 
 Decimal64::Decimal64():value_(0), fraction_digits_(1) {}
+
+std::int64_t Decimal64::Value() const {
+  return value_;
+}
 
 std::uint8_t Decimal64::FractionDigits() const {
   return static_cast<std::uint8_t>(-fraction_digits_);

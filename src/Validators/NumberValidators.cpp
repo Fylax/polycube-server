@@ -40,10 +40,11 @@ bool NumberValidator<T>::Validate(const std::string& value) const {
 
 template<typename T>
 bool NumberValidator<T>::Validate(T parsed) const {
+  unsigned falses = 0;
   for (const auto& range : ranges_) {
-    if (parsed >= range.first && parsed <= range.second) return false;
+    if (parsed >= range.first && parsed <= range.second) falses += 1;
   }
-  return true;
+  return falses != ranges_.size();
 }
 
 template<typename T>
@@ -53,50 +54,50 @@ NumberValidator<T>::NumberValidator(T lower_bound, T upper_bound):
 template<typename T>
 NumberValidator<T>::NumberValidator(T exact): NumberValidator(exact, exact) {}
 
-Int8Validator::Int8Validator(std::int8_t lower_bound, std::int8_t upper_bound)
-    : NumberValidator(lower_bound, upper_bound) {}
+Int8Validator::Int8Validator(std::int8_t lower_bound, std::int8_t upper_bound):
+     NumberValidator(lower_bound, upper_bound) {}
 
 Int8Validator::Int8Validator(std::int8_t exact): NumberValidator(exact) {}
 
 Int16Validator::Int16Validator(std::int16_t lower_bound,
-                               std::int16_t upper_bound)
-    : NumberValidator(lower_bound, upper_bound) {}
+                               std::int16_t upper_bound):
+    NumberValidator(lower_bound, upper_bound) {}
 
 Int16Validator::Int16Validator(std::int16_t exact): NumberValidator(exact) {}
 
 Int32Validator::Int32Validator(std::int32_t lower_bound,
-                               std::int32_t upper_bound)
-    : NumberValidator(lower_bound, upper_bound) {}
+                               std::int32_t upper_bound):
+     NumberValidator(lower_bound, upper_bound) {}
 
 Int32Validator::Int32Validator(std::int32_t exact): NumberValidator(exact) {}
 
 Int64Validator::Int64Validator(std::int64_t lower_bound,
-                               std::int64_t upper_bound)
-    : NumberValidator(lower_bound, upper_bound) {}
+                               std::int64_t upper_bound):
+    NumberValidator(lower_bound, upper_bound) {}
 
 Int64Validator::Int64Validator(std::int64_t exact): NumberValidator(exact) {}
 
 UInt8Validator::UInt8Validator(std::uint8_t lower_bound,
-                               std::uint8_t upper_bound)
-    : NumberValidator(lower_bound, upper_bound) {}
+                               std::uint8_t upper_bound):
+    NumberValidator(lower_bound, upper_bound) {}
 
 UInt8Validator::UInt8Validator(std::uint8_t exact): NumberValidator(exact) {}
 
 UInt16Validator::UInt16Validator(std::uint16_t lower_bound,
-                                 std::uint16_t upper_bound)
-    : NumberValidator(lower_bound, upper_bound) {}
+                                 std::uint16_t upper_bound):
+    NumberValidator(lower_bound, upper_bound) {}
 
 UInt16Validator::UInt16Validator(std::uint16_t exact): NumberValidator(exact) {}
 
 UInt32Validator::UInt32Validator(std::uint32_t lower_bound,
-                                 std::uint32_t upper_bound)
-    : NumberValidator(lower_bound, upper_bound) {}
+                                 std::uint32_t upper_bound):
+     NumberValidator(lower_bound, upper_bound) {}
 
 UInt32Validator::UInt32Validator(std::uint32_t exact): NumberValidator(exact) {}
 
 UInt64Validator::UInt64Validator(std::uint64_t lower_bound,
-                                 std::uint64_t upper_bound)
-    : NumberValidator(lower_bound, upper_bound) {}
+                                 std::uint64_t upper_bound):
+    NumberValidator(lower_bound, upper_bound) {}
 
 UInt64Validator::UInt64Validator(std::uint64_t exact): NumberValidator(exact) {}
 

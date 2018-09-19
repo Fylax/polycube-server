@@ -83,7 +83,7 @@ Validators ParseString(const char* name, lys_type_info_str str) {
   std::vector<std::shared_ptr<Validator>> validators;
   for (unsigned i = 0; i < str.pat_count; ++i) {
     auto current_pattern = str.patterns[i].expr;
-    // check match byte
+
     bool inverse = true;
     if (current_pattern[0] == 0x06) {
       inverse = false;

@@ -6,4 +6,5 @@ set(polycube_server_sources
         ${CMAKE_CURRENT_LIST_DIR}/EnumValidator.cpp
         ${CMAKE_CURRENT_LIST_DIR}/NumberValidators.cpp
         ${CMAKE_CURRENT_LIST_DIR}/InSetValidator.cpp
+        ${CMAKE_CURRENT_LIST_DIR}/LengthValidator.cpp
         PARENT_SCOPE)

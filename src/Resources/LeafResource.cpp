@@ -72,6 +72,7 @@ LeafResource::Validate(const nlohmann::json& body) const {
     case value_t::object:
     case value_t::discarded:
       errors.push_back({ErrorTag::kBadAttribute, name_.data()});
+      break;
     case value_t::array: {
       bool isInvalid = field_->Type() != JsonType::kEmpty &&
                        field_->Type() != JsonType::kList;

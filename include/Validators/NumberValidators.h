@@ -20,7 +20,7 @@
 #include "Validator.h"
 #include <limits>
 #include <string>
-#include <map>
+#include <unordered_map>
 #include "../Types/Decimal64.h"
 
 template <typename T>
@@ -33,7 +33,7 @@ protected:
   bool Validate(T parsed) const;
   NumberValidator(T lower_bound, T upper_bound);
   explicit NumberValidator(T exact);
-  std::map<T, T> ranges_;
+  std::unordered_map<T, T> ranges_;
 };
 
 class Int8Validator: public NumberValidator<std::int8_t> {
