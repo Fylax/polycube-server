@@ -27,7 +27,7 @@
 class RestServer {
 public:
   explicit RestServer(Pistache::Address&& address, std::size_t thr);
-  static std::shared_ptr<Pistache::Rest::Router> Router();
+  static const std::shared_ptr<Pistache::Rest::Router>& Router();
   void shutdown();
 private:
   std::unique_ptr<CubeManager> cube_manager_;

@@ -30,13 +30,12 @@ public:
   static bool CreateCube(std::string name);
   static void RemoveCube(std::string name);
 
-  explicit CubeManager(const std::shared_ptr<Pistache::Rest::Router>& router);
+  explicit CubeManager();
 
 
 private:
   static std::unordered_set<std::string> existing_cubes_impl_;
   std::unordered_map<std::string, std::shared_ptr<Cube>> existing_cubes_;
-  std::shared_ptr<Pistache::Rest::Router> router_;
   void post(const Pistache::Rest::Request& request,
       Pistache::Http::ResponseWriter response);
 };

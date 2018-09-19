@@ -21,13 +21,25 @@
 #include "../../include/Resources/CubeManager.h"
 #include "../../include/Validators/InSetValidator.h"
 #include "../../include/Server/ResponseGenerator.h"
+#include "../../include/Server/RestServer.h"
 
-Cube::Cube(const std::string& name, const std::string& restEndpoint):
-    ParentResource(name, restEndpoint, nullptr,
+Cube::Cube(const std::string& name, const std::string& base_address):
+    ParentResource(name, base_address + name + "/:" + name + '/', nullptr,
                    std::vector<PathParamField>{PathParamField{
-                       name, InSetValidator::CreateWithInSetValidator()}}) {}
+                       name, InSetValidator::CreateWithInSetValidator()}}),
+                       body_rest_endpoint_(base_address + name + '/') {
+  using Pistache::Rest::Routes::bind;
+  auto router = RestServer::Router();
+  router->post(body_rest_endpoint_, bind(&Cube::post_body, this));
+}
 
-void Cube::post(const Request& request, ResponseWriter response) {
+Cube::~Cube() {
+  using Pistache::Http::Method;
+  auto router = RestServer::Router();
+  router->removeRoute(Method::Post, body_rest_endpoint_);
+}
+
+void Cube::post_body(const Request& request, ResponseWriter response) {
   using nlohmann::detail::value_t;
   nlohmann::json body = nlohmann::json::parse(request.body());
 
@@ -42,6 +54,22 @@ void Cube::post(const Request& request, ResponseWriter response) {
     auto val = std::static_pointer_cast<InSetValidator>(
         fields_[0].Validators()[0]);
     val->AddValue(body["name"]);
+    ResponseGenerator::Generate(std::vector<Response>{{kCreated, ""}},
+                                std::move(response));
+  } else {
+    ResponseGenerator::Generate(
+        std::vector<Response>{{ErrorTag::kDataExists, ""}},
+        std::move(response));
+  }
+}
+
+void Cube::post(const Request& request, ResponseWriter response) {
+  auto name = request.param(std::string{':'} + name_).as<std::string>();
+
+  if (CubeManager::CreateCube(name)) {
+    auto val = std::static_pointer_cast<InSetValidator>(
+        fields_[0].Validators()[0]);
+    val->AddValue(name);
     ResponseGenerator::Generate(std::vector<Response>{{kCreated, ""}},
                                 std::move(response));
   } else {

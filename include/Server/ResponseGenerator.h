@@ -23,22 +23,6 @@
 #include <vector>
 
 namespace ResponseGenerator {
-using nlohmann::json;
-namespace {
-json error = {
-    {
-        "error", {
-                     {"error-type", "application"},
-                     {"error-tag", ""}
-                 }
-    }
-};
-json errors = {
-    {
-        "ietf-restconf:errors", {}
-    }
-};
-}
 
 void Generate(std::vector<Response>&& response,
               Pistache::Http::ResponseWriter&& writer);

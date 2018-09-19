@@ -28,7 +28,7 @@ PathParamField::PathParamField(const std::string& name,
     : Field<Pistache::Rest::Request>(std::move(validators)),
         name_(std::string{':'} + name)  {}
 
-const std::string PathParamField::Name() const {
+const std::string& PathParamField::Name() const {
   return name_;
 }
 

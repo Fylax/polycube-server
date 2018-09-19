@@ -28,7 +28,7 @@ RestServer::RestServer(Pistache::Address&& address, std::size_t thr):
   start();
 }
 
-std::shared_ptr<Pistache::Rest::Router> RestServer::Router() {
+const std::shared_ptr<Pistache::Rest::Router>& RestServer::Router() {
   return router_;
 }
 
@@ -41,10 +41,10 @@ void RestServer::init(std::size_t thr) {
       .threads(thr)
       .flags(Pistache::Tcp::Options::InstallSignalHandler);
   httpEndpoint_->init(opts);
-  cube_manager_ = std::make_unique<CubeManager>(RestServer::router_);
+  cube_manager_ = std::make_unique<CubeManager>();
 }
 
 void RestServer::start() {
-  httpEndpoint_->setHandler(router_->handler());
+  httpEndpoint_->setHandler(Pistache::Rest::Router::handler(router_));
   httpEndpoint_->serve();
 }

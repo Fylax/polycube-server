@@ -32,7 +32,7 @@ private:
 public:
   PathParamField(const std::string& name,
                  std::vector<std::shared_ptr<Validator>>&& validators);
-  const std::string Name() const;
+  const std::string& Name() const;
   ErrorTag Validate(const Pistache::Rest::Request& value) const override;
 };
 

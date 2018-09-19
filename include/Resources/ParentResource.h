@@ -39,6 +39,8 @@ class ParentResource: public Resource {
                  std::vector<PathParamField>&& fields,
                  bool container_presence = true);
 
+  ~ParentResource();
+
   std::vector<Response> Validate(const nlohmann::json& body) const override;
   std::vector<Response> Validate(const Request& value) const override;
   void AddChild(std::shared_ptr<Resource> child);

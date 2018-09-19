@@ -18,6 +18,7 @@ add_subdirectory(src)
 
 add_executable(parser
         ${polycube_server_sources})
+#target_link_libraries(parser yang /home/nico/dev/pistache/cmake-build-debug/src/libpistache.a)
 target_link_libraries(parser yang pistache)
 
 target_compile_features(parser PRIVATE cxx_std_17)

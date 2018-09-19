@@ -28,6 +28,7 @@
 #include "../../include/Server/Base64.h"
 #include "../../include/Parser/Parser.h"
 #include "../../include/Server/ResponseGenerator.h"
+#include "../../include/Server/RestServer.h"
 
 std::unordered_set<std::string> CubeManager::existing_cubes_impl_ = {};
 
@@ -39,10 +40,9 @@ void CubeManager::RemoveCube(std::string name) {
   CubeManager::existing_cubes_impl_.erase(name);
 }
 
-CubeManager::CubeManager(const std::shared_ptr<Pistache::Rest::Router>& router)
-    : existing_cubes_(), router_(router) {
+CubeManager::CubeManager(): existing_cubes_() {
   using Pistache::Rest::Routes::bind;
-  router_->post("/", bind(&CubeManager::post, this));
+  RestServer::Router()->post("/", bind(&CubeManager::post, this));
 }
 
 void CubeManager::post(const Pistache::Rest::Request& request,

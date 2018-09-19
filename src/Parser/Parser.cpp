@@ -38,7 +38,21 @@ namespace Parser {
 namespace {
 ValidatorMap typedef_validators_[LY_DATA_TYPE_COUNT];
 
-Validators parseEnum(const char* name, lys_type_info_enums enums) {
+//  BEGIN DECLARATIONS
+void ParseModule(const lys_module* module, const std::shared_ptr<Cube>& cube);
+
+void ParseNode(lys_node* data, const std::shared_ptr<ParentResource>& parent);
+
+void ParseGrouping(lys_node_grp* group,
+                   const std::shared_ptr<ParentResource>& parent);
+
+void ParseList(lys_node_list* list, std::shared_ptr<ParentResource> parent);
+
+void ParseLeaf(lys_node_leaf* leaf, std::shared_ptr<ParentResource> parent);
+// END DECLARATIONS
+
+// BEGIN TYPE VALIDATORS
+Validators ParseEnum(const char* name, lys_type_info_enums enums) {
   std::unordered_set<std::string> allowed;
   for (unsigned i = 0; i < enums.count; ++i) {
     allowed.insert(enums.enm[i].name);
@@ -50,7 +64,7 @@ Validators parseEnum(const char* name, lys_type_info_enums enums) {
   return std::make_unique<ValidatorMap>(map);
 }
 
-Validators parseString(const char* name, lys_type_info_str str) {
+Validators ParseString(const char* name, lys_type_info_str str) {
   std::vector<std::shared_ptr<Validator>> validators;
   for (unsigned i = 0; i < str.pat_count; ++i) {
     auto current_pattern = str.patterns[i].expr;
@@ -69,7 +83,7 @@ Validators parseString(const char* name, lys_type_info_str str) {
   return std::make_unique<ValidatorMap>(map);
 }
 
-Validators parseType(const char* name, lys_type type) {
+Validators ParseType(const char* name, lys_type type) {
   switch (type.base) {
     case LY_TYPE_DER:
     case LY_TYPE_BINARY:
@@ -78,12 +92,12 @@ Validators parseType(const char* name, lys_type type) {
     case LY_TYPE_DEC64:
     case LY_TYPE_EMPTY:
     case LY_TYPE_ENUM:
-      return parseEnum(name, type.info.enums);
+      return ParseEnum(name, type.info.enums);
     case LY_TYPE_IDENT:
     case LY_TYPE_INST:
     case LY_TYPE_LEAFREF:
     case LY_TYPE_STRING:
-      return parseString(name, type.info.str);
+      return ParseString(name, type.info.str);
     case LY_TYPE_UNION:
     case LY_TYPE_INT8:
     case LY_TYPE_UINT8:
@@ -99,10 +113,10 @@ Validators parseType(const char* name, lys_type type) {
 }
 
 const std::vector<std::shared_ptr<Validator>>
-getValidators(lys_type type) {
+GetValidators(lys_type type) {
   bool isDerived = (type.der->type.der != nullptr);
   if (!isDerived) {
-    auto inplace = parseType("", type);
+    auto inplace = ParseType("", type);
     if (inplace->count("") == 1) {
       return inplace->at("");
     }
@@ -115,26 +129,78 @@ getValidators(lys_type type) {
   }
   return std::vector<std::shared_ptr<Validator>>();
 }
+// END TYPE VALIDATORS
 
-void parseNode(lys_node* data, const std::shared_ptr<ParentResource>& parent);
-
-void parseLeaf(lys_node_leaf* leaf, std::shared_ptr<ParentResource> parent) {
-  bool configurable = ((leaf->flags & LYS_CONFIG_MASK) ^ 2) != 0;
-  bool mandatory = (leaf->flags & LYS_MAND_MASK) != 0;
-  auto validators = getValidators(leaf->type);
-  auto field = std::make_unique<JsonBodyField>(
-      std::move(validators), JsonBodyField::FromYangType(leaf->type.base));
-  std::unique_ptr<const std::string> default_value = nullptr;
-  if (leaf->dflt != nullptr) {
-    default_value = std::make_unique<const std::string>(leaf->dflt);
+void ParseModule(const lys_module* module, const std::shared_ptr<Cube>& cube) {
+  auto typedefs = module->tpdf;
+  for (auto i = 0; i < module->tpdf_size; ++i) {
+    auto current_typedef = typedefs[i];
+    auto validators = ParseType(current_typedef.name, current_typedef.type);
+    typedef_validators_[current_typedef.type.base].insert(
+        validators->begin(), validators->end());
   }
-  auto leaf_res = std::make_unique<LeafResource>(
-      leaf->name, parent->Endpoint() + ':' + leaf->name, parent,
-      std::move(field), configurable, mandatory, std::move(default_value));
-  parent->AddChild(std::move(leaf_res));
+  auto data = module->data;
+  while (data) {
+    ParseNode(data, std::static_pointer_cast<ParentResource>(cube));
+    data = data->next;
+  }
 }
 
-void parseList(lys_node_list* list, std::shared_ptr<ParentResource> parent) {
+void ParseNode(lys_node* data, const std::shared_ptr<ParentResource>& parent) {
+  if (!data) return;
+  switch (data->nodetype) {
+    case LYS_UNKNOWN:
+      break;
+    case LYS_CONTAINER:
+      break;
+    case LYS_CHOICE:
+      break;
+    case LYS_LEAF:
+      ParseLeaf(reinterpret_cast<lys_node_leaf*>(data), parent);
+      break;
+    case LYS_LEAFLIST:
+      break;
+    case LYS_LIST:
+      ParseList(reinterpret_cast<lys_node_list*>(data), parent);
+      break;
+    case LYS_ANYXML:
+      break;
+    case LYS_CASE:
+      break;
+    case LYS_NOTIF:
+      break;
+    case LYS_RPC:
+      break;
+    case LYS_INPUT:
+      break;
+    case LYS_OUTPUT:
+      break;
+    case LYS_GROUPING:
+      ParseGrouping(reinterpret_cast<lys_node_grp*>(data), parent);
+      break;
+    case LYS_USES:
+      break;
+    case LYS_AUGMENT:
+      break;
+    case LYS_ACTION:
+      break;
+    case LYS_ANYDATA:
+      break;
+    case LYS_EXT:
+      break;
+  }
+}
+
+void ParseGrouping(lys_node_grp* group,
+                   const std::shared_ptr<ParentResource>& parent) {
+  auto child = group->child;
+  while (child) {
+    ParseNode(child, parent);
+    child = child->next;
+  }
+}
+
+void ParseList(lys_node_list* list, std::shared_ptr<ParentResource> parent) {
   auto keys = std::vector<PathParamField>();
   auto key_names = std::set<std::string>();
   auto rest_endpoint = parent->Endpoint() + list->name + '/';
@@ -152,7 +218,7 @@ void parseList(lys_node_list* list, std::shared_ptr<ParentResource> parent) {
   while (child != nullptr) {
     if (key_names.count(child->name) != 0) {
       auto key = reinterpret_cast<lys_node_leaf*>(child);
-      auto validator = getValidators(key->type);
+      auto validator = GetValidators(key->type);
       keys.emplace_back(child->name, std::move(validator));
     }
     child = child->next;
@@ -164,80 +230,27 @@ void parseList(lys_node_list* list, std::shared_ptr<ParentResource> parent) {
   child = list->child;
   while (child != nullptr) {
     if (key_names.count(child->name) == 0) {
-      parseNode(child, resource);
+      ParseNode(child, resource);
     }
     child = child->next;
   }
   parent->AddChild(resource);
 }
 
-void parseGrouping(lys_node_grp* group,
-    const std::shared_ptr<ParentResource>& parent) {
-  auto child = group->child;
-  while (child) {
-    parseNode(child, parent);
-    child = child->next;
+void ParseLeaf(lys_node_leaf* leaf, std::shared_ptr<ParentResource> parent) {
+  bool configurable = ((leaf->flags & LYS_CONFIG_MASK) ^ 2) != 0;
+  bool mandatory = (leaf->flags & LYS_MAND_MASK) != 0;
+  auto validators = GetValidators(leaf->type);
+  auto field = std::make_unique<JsonBodyField>(
+      std::move(validators), JsonBodyField::FromYangType(leaf->type.base));
+  std::unique_ptr<const std::string> default_value = nullptr;
+  if (leaf->dflt != nullptr) {
+    default_value = std::make_unique<const std::string>(leaf->dflt);
   }
-}
-
-void parseNode(lys_node* data, const std::shared_ptr<ParentResource>& parent) {
-  if (!data) return;
-  switch (data->nodetype) {
-    case LYS_UNKNOWN:
-      break;
-    case LYS_CONTAINER:
-      break;
-    case LYS_CHOICE:
-      break;
-    case LYS_LEAF:
-      parseLeaf(reinterpret_cast<lys_node_leaf*>(data), parent);
-      break;
-    case LYS_LEAFLIST:
-      break;
-    case LYS_LIST:
-      parseList(reinterpret_cast<lys_node_list*>(data), parent);
-      break;
-    case LYS_ANYXML:
-      break;
-    case LYS_CASE:
-      break;
-    case LYS_NOTIF:
-      break;
-    case LYS_RPC:
-      break;
-    case LYS_INPUT:
-      break;
-    case LYS_OUTPUT:
-      break;
-    case LYS_GROUPING:
-      parseGrouping(reinterpret_cast<lys_node_grp*>(data), parent);
-      break;
-    case LYS_USES:
-      break;
-    case LYS_AUGMENT:
-      break;
-    case LYS_ACTION:
-      break;
-    case LYS_ANYDATA:
-      break;
-    case LYS_EXT:
-      break;
-  }
-}
-
-void parseModule(const lys_module* module, const std::shared_ptr<Cube>& cube) {
-  auto typedefs = module->tpdf;
-  for (auto i = 0; i < module->tpdf_size; ++i) {
-    auto current_typedef = typedefs[i];
-    auto validators = parseType(current_typedef.name, current_typedef.type);
-    typedef_validators_[current_typedef.type.base].insert(
-        validators->begin(), validators->end());
-  }
-  auto data = module->data;
-  while (data) {
-    parseNode(data, std::static_pointer_cast<ParentResource>(cube));
-    data = data->next;
-  }
+  auto leaf_res = std::make_unique<LeafResource>(
+      leaf->name, parent->Endpoint() + leaf->name, parent,
+      std::move(field), configurable, mandatory, std::move(default_value));
+  parent->AddChild(std::move(leaf_res));
 }
 
 }
@@ -248,11 +261,11 @@ std::string GetName(const std::string& yang) {
     throw std::runtime_error("cannot create new context");
   }
 
-  auto module = lys_parse_mem(context, yang.c_str(), LYS_IN_YANG);
+  auto module = lys_parse_mem(context, yang.data(), LYS_IN_YANG);
   if (!module) {
     throw std::invalid_argument("invalid yang data");
   }
-  return std::string {module->name};
+  return std::string{module->name};
 }
 
 std::shared_ptr<Cube> Parse(std::string&& yang) {
@@ -261,19 +274,17 @@ std::shared_ptr<Cube> Parse(std::string&& yang) {
     throw std::runtime_error("cannot create new context");
   }
 
-  auto module = lys_parse_mem(context, yang.c_str(), LYS_IN_YANG);
+  auto module = lys_parse_mem(context, yang.data(), LYS_IN_YANG);
 
   if (!module) {
     throw std::invalid_argument("invalid yang data");
   }
 
-  auto cube = std::make_shared<Cube>(module->name,
-                                     std::string{'/'} + module->name +
-                                     "/:cube_name/");
+  auto cube = std::make_shared<Cube>(module->name, std::string{'/'});
   for (auto i = 0; i < module->imp_size; ++i) {
-    parseModule(module->imp[i].module, cube);
+    ParseModule(module->imp[i].module, cube);
   }
-  parseModule(module, cube);
+  ParseModule(module, cube);
   typedef_validators_->clear();
   return cube;
 }

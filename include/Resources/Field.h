@@ -32,7 +32,7 @@ class Field {
 public:
   virtual ErrorTag Validate(const T& value) const = 0;
 
-  const std::vector<std::shared_ptr<Validator>> Validators() const {
+  const std::vector<std::shared_ptr<Validator>>& Validators() const {
     return validators_;
   }
 
