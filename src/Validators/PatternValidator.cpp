@@ -13,13 +13,13 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
- #include "../../include/Validators/PatternValidator.h"
+#include "../../include/Validators/PatternValidator.h"
 #include <string>
 
-PatternValidator::PatternValidator(const char* pattern):
+PatternValidator::PatternValidator(const char* pattern, bool inverse):
     pattern_(pattern, std::regex_constants::optimize |
-                      std::regex_constants::ECMAScript) {}
+                      std::regex_constants::ECMAScript), inverse_(inverse) {}
 
 bool PatternValidator::Validate(const std::string& value) const {
-  return std::regex_match(value, pattern_);
+  return !inverse_ == std::regex_match(value, pattern_);
 }

@@ -29,11 +29,12 @@ class PatternValidator: public Validator {
    * @param pattern
    * @throws std::regex_error
    */
-  explicit PatternValidator(const char* pattern);
+  explicit PatternValidator(const char* pattern, bool inverse);
   bool Validate(const std::string& value) const override;
 
  private:
   const std::regex pattern_;
+  const inverse_;
 };
 
 

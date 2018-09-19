@@ -21,6 +21,7 @@
 #include <memory>
 #include <set>
 #include <string>
+#include <string_view>
 #include <unordered_map>
 #include <unordered_set>
 #include <utility>
@@ -52,6 +53,20 @@ void ParseLeaf(lys_node_leaf* leaf, std::shared_ptr<ParentResource> parent);
 // END DECLARATIONS
 
 // BEGIN TYPE VALIDATORS
+Validators ParseLength(struct lys_restr* length) {
+  std::vector<std::pair<std::uint64_t, std::uint64_t>> ranges; // Change to proper LengthValidator (has multiple lengths)
+  std::string_view expression {length->expr};
+  std::size_t pos = 0;
+  do {
+    pos = expression.find('|');
+    std::string_view current = expression.substr(0, pos);
+    if (pos != std::string_view::npos) {
+      expression = expression.substr(pos + 1);
+    }
+    // parse ranges and add to validator
+  } while (pos != std::string_view::npos);
+}
+
 Validators ParseEnum(const char* name, lys_type_info_enums enums) {
   std::unordered_set<std::string> allowed;
   for (unsigned i = 0; i < enums.count; ++i) {
@@ -69,14 +84,13 @@ Validators ParseString(const char* name, lys_type_info_str str) {
   for (unsigned i = 0; i < str.pat_count; ++i) {
     auto current_pattern = str.patterns[i].expr;
     // check match byte
+    bool inverse = true;
     if (current_pattern[0] == 0x06) {
-      // skip first byte
-      current_pattern = current_pattern + 1;
-    } else {
-      throw std::runtime_error("unsupported NACK patterns");
+      inverse = false;
     }
+    current_pattern = current_pattern + 1;
     validators.push_back(std::static_pointer_cast<Validator>(
-        std::make_shared<PatternValidator>(current_pattern))
+        std::make_shared<PatternValidator>(current_pattern, inverse))
     );
   }
   auto map = ValidatorMap{{name, validators}};
