@@ -14,6 +14,7 @@
  * limitations under the License.
  */
 #include "../../include/Validators/LengthValidator.h"
+#include <string>
 #include "../../include/Server/Base64.h"
 
 LengthValidator::LengthValidator(bool binary):

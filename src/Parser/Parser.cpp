@@ -27,9 +27,17 @@
 #include <utility>
 #include <vector>
 
+#if __has_include(<charconv>) && __cpp_lib_to_chars >= 201611
+#    include <charconv>
+#    define INT_PARSE(a, b) std::from_chars(a.data(), a.data() + a.length(), b);
+#else
+#    define INT_PARSE(a, b) b = std::stoull(std::string {a.data(), a.length()});
+#endif
+
 #include "../../include/Validators/Validator.h"
 #include "../../include/Validators/EnumValidator.h"
 #include "../../include/Validators/PatternValidator.h"
+#include "../../include/Validators/LengthValidator.h"
 #include "../../include/Resources/Cube.h"
 #include "../../include/Resources/LeafResource.h"
 #include "../../include/Resources/ParentResource.h"
@@ -53,18 +61,35 @@ void ParseLeaf(lys_node_leaf* leaf, std::shared_ptr<ParentResource> parent);
 // END DECLARATIONS
 
 // BEGIN TYPE VALIDATORS
-Validators ParseLength(struct lys_restr* length) {
-  std::vector<std::pair<std::uint64_t, std::uint64_t>> ranges; // Change to proper LengthValidator (has multiple lengths)
-  std::string_view expression {length->expr};
-  std::size_t pos = 0;
+std::shared_ptr<LengthValidator>
+ParseLength(struct lys_restr* length, const bool binary) {
+  auto validator = std::make_shared<LengthValidator>(binary);
+  std::string_view expression{length->expr};
+  std::size_t pipe_pos = 0;
   do {
-    pos = expression.find('|');
-    std::string_view current = expression.substr(0, pos);
-    if (pos != std::string_view::npos) {
-      expression = expression.substr(pos + 1);
+    // split string in '|' separated tokens
+    pipe_pos = expression.find('|');
+    std::string_view current = expression.substr(0, pipe_pos);
+    if (pipe_pos != std::string_view::npos) {
+      expression = expression.substr(pipe_pos + 1);
     }
-    // parse ranges and add to validator
-  } while (pos != std::string_view::npos);
+    // split token in '..' separated ranges (if any)
+    std::size_t range_pos = current.find("..");
+    if (range_pos == std::string_view::npos) {  // exact value
+      std::uint64_t exact;
+      INT_PARSE(current, exact);
+      validator->AddExact(exact);
+    } else {  // ranges
+      std::uint64_t min;
+      std::uint64_t max;
+      std::string_view min_ch = current.substr(0, range_pos);
+      std::string_view max_ch = current.substr(range_pos + 2);
+      INT_PARSE(min_ch, min);
+      INT_PARSE(max_ch, max);
+      validator->AddRange(min, max);
+    }
+  } while (pipe_pos != std::string_view::npos);
+  return validator;
 }
 
 Validators ParseEnum(const char* name, lys_type_info_enums enums) {
@@ -83,15 +108,17 @@ Validators ParseString(const char* name, lys_type_info_str str) {
   std::vector<std::shared_ptr<Validator>> validators;
   for (unsigned i = 0; i < str.pat_count; ++i) {
     auto current_pattern = str.patterns[i].expr;
-
     bool inverse = true;
     if (current_pattern[0] == 0x06) {
       inverse = false;
     }
     current_pattern = current_pattern + 1;
     validators.push_back(std::static_pointer_cast<Validator>(
-        std::make_shared<PatternValidator>(current_pattern, inverse))
-    );
+        std::make_shared<PatternValidator>(current_pattern, inverse)));
+  }
+  if (str.length != nullptr) {
+    validators.push_back(std::static_pointer_cast<Validator>(
+        ParseLength(str.length, false)));
   }
   auto map = ValidatorMap{{name, validators}};
   return std::make_unique<ValidatorMap>(map);
