@@ -18,6 +18,7 @@
 #include <libyang/libyang.h>
 
 #include <cstring>
+#include <limits>
 #include <memory>
 #include <set>
 #include <string>
@@ -38,6 +39,7 @@
 #include "../../include/Validators/EnumValidator.h"
 #include "../../include/Validators/PatternValidator.h"
 #include "../../include/Validators/LengthValidator.h"
+#include "../../include/Validators/NumberValidators.h"
 #include "../../include/Resources/Cube.h"
 #include "../../include/Resources/LeafResource.h"
 #include "../../include/Resources/ParentResource.h"
@@ -124,6 +126,43 @@ Validators ParseString(const char* name, lys_type_info_str str) {
   return std::make_unique<ValidatorMap>(map);
 }
 
+template<typename T>
+Validators ParseInteger(const char* name, lys_type_info_num num) {
+  std::vector<std::shared_ptr<Validator>> validators;
+  auto validator = std::make_shared<NumberValidator<T>>(
+      std::numeric_limits<T>::min(),
+      std::numeric_limits<T>::max());
+  if (num.range != nullptr) {
+    std::string_view expression{num.range->expr};
+    std::size_t pipe_pos = 0;
+    do {
+      // split string in '|' separated tokens
+      pipe_pos = expression.find('|');
+      std::string_view current = expression.substr(0, pipe_pos);
+      if (pipe_pos != std::string_view::npos) {
+        expression = expression.substr(pipe_pos + 1);
+      }
+      // split token in '..' separated ranges (if any)
+      std::size_t range_pos = current.find("..");
+      if (range_pos == std::string_view::npos) {  // exact value
+        T exact;
+        INT_PARSE(current, exact);
+        validator->AddExact(exact);
+      } else {  // ranges
+        T min;
+        T max;
+        std::string_view min_ch = current.substr(0, range_pos);
+        std::string_view max_ch = current.substr(range_pos + 2);
+        INT_PARSE(min_ch, min);
+        INT_PARSE(max_ch, max);
+        validator->AddRange(min, max);
+      }
+    } while (pipe_pos != std::string_view::npos);
+  }
+  auto map = ValidatorMap{{name, validators}};
+  return std::make_unique<ValidatorMap>(map);
+}
+
 Validators ParseType(const char* name, lys_type type) {
   switch (type.base) {
     case LY_TYPE_DER:
@@ -141,13 +180,21 @@ Validators ParseType(const char* name, lys_type type) {
       return ParseString(name, type.info.str);
     case LY_TYPE_UNION:
     case LY_TYPE_INT8:
+      return ParseInteger<std::int8_t>(name, type.info.num);
     case LY_TYPE_UINT8:
+      return ParseInteger<std::uint8_t>(name, type.info.num);
     case LY_TYPE_INT16:
+      return ParseInteger<std::int16_t>(name, type.info.num);
     case LY_TYPE_UINT16:
+      return ParseInteger<std::uint16_t>(name, type.info.num);
     case LY_TYPE_INT32:
+      return ParseInteger<std::int32_t>(name, type.info.num);
     case LY_TYPE_UINT32:
+      return ParseInteger<std::uint32_t>(name, type.info.num);
     case LY_TYPE_INT64:
+      return ParseInteger<std::int64_t>(name, type.info.num);
     case LY_TYPE_UINT64:
+      return ParseInteger<std::uint64_t>(name, type.info.num);
     default:
       throw std::runtime_error("Unsupported Type");
   }
