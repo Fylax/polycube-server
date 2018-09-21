@@ -28,6 +28,11 @@ void LengthValidator::AddExact(std::uint64_t exact) {
   ranges_.emplace(exact, exact);
 }
 
+void LengthValidator::AddRanges(
+    std::unordered_map<std::uint64_t, std::uint64_t> ranges) {
+  ranges_.merge(ranges);
+}
+
 bool LengthValidator::Validate(const std::string& value) const {
   std::size_t data_length;
   if (binary_) {

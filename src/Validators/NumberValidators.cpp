@@ -33,6 +33,11 @@ void NumberValidator<T>::AddExact(T exact) {
 }
 
 template<typename T>
+void NumberValidator<T>::AddRanges(std::unordered_map<T, T> ranges) {
+  ranges_.merge(ranges);
+}
+
+template<typename T>
 bool NumberValidator<T>::Validate(const std::string& value) const {
   try {
     return Validate(boost::lexical_cast<T>(value));
@@ -51,11 +56,11 @@ bool NumberValidator<T>::Validate(T parsed) const {
   return falses != ranges_.size();
 }
 
-DecimalValidator::DecimalValidator(unsigned fraction_digits):
+DecimalValidator::DecimalValidator(std::uint8_t fraction_digits):
     DecimalValidator(fraction_digits, Decimal64::Min(fraction_digits),
                      Decimal64::Max(fraction_digits)) {}
 
-DecimalValidator::DecimalValidator(unsigned fraction_digits,
+DecimalValidator::DecimalValidator(std::uint8_t fraction_digits,
                                    const Decimal64& lower_bound,
                                    const Decimal64& upper_bound):
     NumberValidator(lower_bound, upper_bound),

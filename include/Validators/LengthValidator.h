@@ -27,6 +27,7 @@ public:
   LengthValidator(bool binary);
   void AddRange(std::uint64_t min, std::uint64_t max);
   void AddExact(std::uint64_t exact);
+  void AddRanges(std::unordered_map<std::uint64_t, std::uint64_t> ranges);
   bool Validate(const std::string& value) const override;
 private:
   const bool binary_;

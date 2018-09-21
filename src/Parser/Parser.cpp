@@ -17,6 +17,7 @@
 
 #include <libyang/libyang.h>
 
+#include <boost/lexical_cast.hpp>
 #include <cstring>
 #include <limits>
 #include <memory>
@@ -27,13 +28,6 @@
 #include <unordered_set>
 #include <utility>
 #include <vector>
-
-#if __has_include(<charconv>) && __cpp_lib_to_chars >= 201611
-#    include <charconv>
-#    define INT_PARSE(a, b) std::from_chars(a.data(), a.data() + a.length(), b);
-#else
-#    define INT_PARSE(a, b) b = std::stoull(std::string {a.data(), a.length()});
-#endif
 
 #include "../../include/Validators/Validator.h"
 #include "../../include/Validators/EnumValidator.h"
@@ -63,34 +57,38 @@ void ParseLeaf(lys_node_leaf* leaf, std::shared_ptr<ParentResource> parent);
 // END DECLARATIONS
 
 // BEGIN TYPE VALIDATORS
-std::shared_ptr<LengthValidator>
-ParseLength(struct lys_restr* length, const bool binary) {
-  auto validator = std::make_shared<LengthValidator>(binary);
-  std::string_view expression{length->expr};
+template<typename T>
+std::unordered_map<T, T> ParseRange(std::string_view& range) {
+  std::unordered_map<T, T> ranges;
   std::size_t pipe_pos = 0;
   do {
     // split string in '|' separated tokens
-    pipe_pos = expression.find('|');
-    std::string_view current = expression.substr(0, pipe_pos);
+    pipe_pos = range.find('|');
+    std::string_view current = range.substr(0, pipe_pos);
     if (pipe_pos != std::string_view::npos) {
-      expression = expression.substr(pipe_pos + 1);
+      range = range.substr(pipe_pos + 1);
     }
     // split token in '..' separated ranges (if any)
     std::size_t range_pos = current.find("..");
     if (range_pos == std::string_view::npos) {  // exact value
-      std::uint64_t exact;
-      INT_PARSE(current, exact);
-      validator->AddExact(exact);
+      T exact = boost::lexical_cast<T>(current.data(), current.length());
+      ranges.emplace(exact, exact);
     } else {  // ranges
-      std::uint64_t min;
-      std::uint64_t max;
       std::string_view min_ch = current.substr(0, range_pos);
       std::string_view max_ch = current.substr(range_pos + 2);
-      INT_PARSE(min_ch, min);
-      INT_PARSE(max_ch, max);
-      validator->AddRange(min, max);
+      T min = boost::lexical_cast<T>(min_ch.data(), min_ch.length());
+      T max = boost::lexical_cast<T>(max_ch.data(), max_ch.length());
+      ranges.emplace(min, max);
     }
   } while (pipe_pos != std::string_view::npos);
+  return ranges;
+}
+
+std::shared_ptr<LengthValidator>
+ParseLength(struct lys_restr* length, const bool binary) {
+  auto validator = std::make_shared<LengthValidator>(binary);
+  std::string_view expression{length->expr};
+  validator->AddRanges(ParseRange<std::uint64_t>(expression));
   return validator;
 }
 
@@ -134,30 +132,18 @@ Validators ParseInteger(const char* name, lys_type_info_num num) {
       std::numeric_limits<T>::max());
   if (num.range != nullptr) {
     std::string_view expression{num.range->expr};
-    std::size_t pipe_pos = 0;
-    do {
-      // split string in '|' separated tokens
-      pipe_pos = expression.find('|');
-      std::string_view current = expression.substr(0, pipe_pos);
-      if (pipe_pos != std::string_view::npos) {
-        expression = expression.substr(pipe_pos + 1);
-      }
-      // split token in '..' separated ranges (if any)
-      std::size_t range_pos = current.find("..");
-      if (range_pos == std::string_view::npos) {  // exact value
-        T exact;
-        INT_PARSE(current, exact);
-        validator->AddExact(exact);
-      } else {  // ranges
-        T min;
-        T max;
-        std::string_view min_ch = current.substr(0, range_pos);
-        std::string_view max_ch = current.substr(range_pos + 2);
-        INT_PARSE(min_ch, min);
-        INT_PARSE(max_ch, max);
-        validator->AddRange(min, max);
-      }
-    } while (pipe_pos != std::string_view::npos);
+    validator->AddRanges(ParseRange<T>(expression));
+  }
+  auto map = ValidatorMap{{name, validators}};
+  return std::make_unique<ValidatorMap>(map);
+}
+
+Validators ParseDecimal64(const char* name, lys_type_info_dec64 dec64) {
+  std::vector<std::shared_ptr<Validator>> validators;
+  auto validator = std::make_shared<DecimalValidator>(dec64.dig);
+  if (dec64.range != nullptr) {
+    std::string_view expression{dec64.range->expr};
+    validator->AddRanges(ParseRange<Decimal64>(expression));
   }
   auto map = ValidatorMap{{name, validators}};
   return std::make_unique<ValidatorMap>(map);
@@ -170,6 +156,7 @@ Validators ParseType(const char* name, lys_type type) {
     case LY_TYPE_BITS:
     case LY_TYPE_BOOL:
     case LY_TYPE_DEC64:
+      return ParseDecimal64(name, type.info.dec64);
     case LY_TYPE_EMPTY:
     case LY_TYPE_ENUM:
       return ParseEnum(name, type.info.enums);

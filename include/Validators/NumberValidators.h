@@ -29,6 +29,8 @@ public:
 
   void AddExact(T exact);
 
+  void AddRanges(std::unordered_map<T, T> ranges);
+
   bool Validate(const std::string& value) const override;
 
   NumberValidator(T lower_bound, T upper_bound);
@@ -41,15 +43,15 @@ protected:
 
 class DecimalValidator: public NumberValidator<Decimal64> {
 public:
-  explicit DecimalValidator(unsigned fraction_digits);
+  explicit DecimalValidator(std::uint8_t fraction_digits);
 
-  DecimalValidator(unsigned fraction_digits, const Decimal64& lower_bound,
+  DecimalValidator(std::uint8_t fraction_digits, const Decimal64& lower_bound,
                    const Decimal64& upper_bound);
 
   bool Validate(const std::string& value) const override;
 
 private:
-  unsigned fraction_digits_;
+  std::uint8_t fraction_digits_;
 };
 
 template
@@ -75,5 +77,7 @@ class NumberValidator<std::int64_t>;
 
 template
 class NumberValidator<std::uint64_t>;
+template
+class NumberValidator<Decimal64>;
 
 #endif //PARSER_NUMBERVALIDATOR_H
