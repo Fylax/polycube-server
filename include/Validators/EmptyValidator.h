@@ -21,6 +21,7 @@
 #include "Validator.h"
 
 class EmptyValidator: public Validator {
+public:
   bool Validate(const std::string& value) const override;
 };
 

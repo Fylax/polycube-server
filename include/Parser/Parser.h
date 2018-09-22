@@ -22,6 +22,7 @@
 #include <cstring>
 #include <memory>
 #include <string>
+#include <typeindex>
 #include <unordered_map>
 #include <unordered_set>
 #include <utility>
@@ -38,7 +39,8 @@ using Pistache::Rest::Router;
 using ValidatorMap = std::unordered_map<
     std::string, const std::vector<std::shared_ptr<Validator>>
 >;
-using Validators = std::unique_ptr<ValidatorMap>;
+using ValidatorPair = std::pair<ValidatorMap, std::type_index>;
+using Validators = std::unique_ptr<ValidatorPair>;
 
 namespace Parser {
 std::shared_ptr<Cube> Parse(std::string&& yang);
