@@ -13,25 +13,26 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
-#pragma once
-#ifndef PARSER_ENUMVALIDATOR_H
-#define PARSER_ENUMVALIDATOR_H
-
-
-#include "Validator.h"
-
-#include <unordered_set>
+#include "../../include/Validators/BitsValidator.h"
 #include <string>
 
-class EnumValidator: public Validator {
- public:
-  EnumValidator();
-  void AddEnum(const std::string& value);
-  bool Validate(const std::string& value) const override;
+BitsValidator::BitsValidator(): bits_{} {
+}
 
- private:
-  std::unordered_set<std::string> values_;
-};
+void BitsValidator::AddBit(std::uint32_t position, const std::string& name) {
+  bits_.emplace(position, name);
+}
 
-
-#endif //PARSER_ENUMVALIDATOR_H
+bool BitsValidator::Validate(const std::string& value) const {
+  auto lpos = 0ul;
+  auto rpos = value.find(' ');
+  std::string current = value.substr(0, rpos);
+  for (const auto& bit : bits_) {
+    if (bit.second == current) {
+      lpos = rpos + 1;
+      rpos = value.find(' ', lpos);
+      current = value.substr(lpos, rpos);
+    }
+  }
+  return current.find(' ', lpos) != std::string::npos;
+}

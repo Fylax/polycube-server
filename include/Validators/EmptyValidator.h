@@ -14,24 +14,15 @@
  * limitations under the License.
  */
 #pragma once
-#ifndef PARSER_ENUMVALIDATOR_H
-#define PARSER_ENUMVALIDATOR_H
+#ifndef PARSER_EMPTYVALIDATOR_H
+#define PARSER_EMPTYVALIDATOR_H
 
-
+#include <string>
 #include "Validator.h"
 
-#include <unordered_set>
-#include <string>
-
-class EnumValidator: public Validator {
- public:
-  EnumValidator();
-  void AddEnum(const std::string& value);
+class EmptyValidator: public Validator {
   bool Validate(const std::string& value) const override;
-
- private:
-  std::unordered_set<std::string> values_;
 };
 
 
-#endif //PARSER_ENUMVALIDATOR_H
+#endif //PARSER_EMPTYVALIDATOR_H

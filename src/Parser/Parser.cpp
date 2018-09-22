@@ -30,7 +30,9 @@
 #include <vector>
 
 #include "../../include/Validators/Validator.h"
+#include "../../include/Validators/BitsValidator.h"
 #include "../../include/Validators/EnumValidator.h"
+#include "../../include/Validators/EmptyValidator.h"
 #include "../../include/Validators/PatternValidator.h"
 #include "../../include/Validators/LengthValidator.h"
 #include "../../include/Validators/NumberValidators.h"
@@ -57,6 +59,8 @@ void ParseLeaf(lys_node_leaf* leaf, std::shared_ptr<ParentResource> parent);
 // END DECLARATIONS
 
 // BEGIN TYPE VALIDATORS
+Validators ParseType(const char* name, lys_type type);
+
 template<typename T>
 std::unordered_map<T, T> ParseRange(std::string_view& range) {
   std::unordered_map<T, T> ranges;
@@ -93,12 +97,12 @@ ParseLength(struct lys_restr* length, const bool binary) {
 }
 
 Validators ParseEnum(const char* name, lys_type_info_enums enums) {
-  std::unordered_set<std::string> allowed;
+  auto validator = std::make_shared<EnumValidator>();
   for (unsigned i = 0; i < enums.count; ++i) {
-    allowed.insert(enums.enm[i].name);
+    validator->AddEnum(enums.enm[i].name);
   }
   std::vector<std::shared_ptr<Validator>> validators = {
-      std::make_shared<EnumValidator>(allowed)
+      std::static_pointer_cast<Validator>(validator)
   };
   auto map = ValidatorMap{{name, validators}};
   return std::make_unique<ValidatorMap>(map);
@@ -149,20 +153,60 @@ Validators ParseDecimal64(const char* name, lys_type_info_dec64 dec64) {
   return std::make_unique<ValidatorMap>(map);
 }
 
+Validators ParseBits(const char* name, lys_type_info_bits bits) {
+  std::vector<std::shared_ptr<Validator>> validators;
+  auto validator = std::make_shared<BitsValidator>();
+  for (unsigned i = 0; i < bits.count; ++i) {
+    auto bit = bits.bit[i];
+    validator->AddBit(bit.pos, bit.name);
+  }
+  auto map = ValidatorMap{{name, validators}};
+  return std::make_unique<ValidatorMap>(map);
+}
+
+Validators ParseBinary(const char* name, lys_type_info_binary binary) {
+  std::vector<std::shared_ptr<Validator>> validators;
+  if (binary.length != nullptr) {
+    validators.push_back(std::static_pointer_cast<Validator>(
+        ParseLength(binary.length, false)));
+  }
+  auto map = ValidatorMap{{name, validators}};
+  return std::make_unique<ValidatorMap>(map);
+}
+
+Validators ParseLeafRef(const char* name, lys_type_info_lref lref) {
+  return ParseType(name, lref.target->type);
+}
+
+Validators ParseEmpty(const char* name) {
+  std::vector<std::shared_ptr<Validator>> validators{
+      std::static_pointer_cast<Validator>(
+          std::make_shared<EmptyValidator>()
+      )
+  };
+  auto map = ValidatorMap{{name, validators}};
+  return std::make_unique<ValidatorMap>(map);
+}
+
 Validators ParseType(const char* name, lys_type type) {
   switch (type.base) {
     case LY_TYPE_DER:
     case LY_TYPE_BINARY:
+      return ParseBinary(name, type.info.binary);
     case LY_TYPE_BITS:
+      return ParseBits(name, type.info.bits);
     case LY_TYPE_BOOL:
     case LY_TYPE_DEC64:
       return ParseDecimal64(name, type.info.dec64);
     case LY_TYPE_EMPTY:
+      return ParseEmpty(name);
     case LY_TYPE_ENUM:
       return ParseEnum(name, type.info.enums);
     case LY_TYPE_IDENT:
+      // TODO mississing (required identity first!)
     case LY_TYPE_INST:
     case LY_TYPE_LEAFREF:
+      return ParseLeafRef(name, type.info.lref);
     case LY_TYPE_STRING:
       return ParseString(name, type.info.str);
     case LY_TYPE_UNION:
@@ -328,7 +372,7 @@ void ParseLeaf(lys_node_leaf* leaf, std::shared_ptr<ParentResource> parent) {
   parent->AddChild(std::move(leaf_res));
 }
 
-}
+}  // namespace
 
 std::string GetName(const std::string& yang) {
   auto context = ly_ctx_new("/home/nico/dev/iovnet/services/resources/", 0);

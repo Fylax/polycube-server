@@ -19,8 +19,11 @@
 #include <string>
 #include <utility>
 
-EnumValidator::EnumValidator(std::unordered_set<std::string>& enums):
-    values_(std::move(enums)) {}
+EnumValidator::EnumValidator(): values_{} {}
+
+void EnumValidator::AddEnum(const std::string& value) {
+  values_.emplace(value);
+}
 
 bool EnumValidator::Validate(const std::string& value) const {
   return values_.count(value) == 1;

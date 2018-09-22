@@ -26,7 +26,7 @@ JsonBodyField::JsonBodyField(
     : Field<nlohmann::json>(std::move(validators)), type_(type) {}
 
 ErrorTag JsonBodyField::Validate(const nlohmann::json& value) const {
-  auto parsed = value.get<std::string>();
+  auto parsed = value.dump();
   for (const auto& validator : validators_) {
     if (!validator->Validate(parsed)) return ErrorTag::kBadAttribute;
   }

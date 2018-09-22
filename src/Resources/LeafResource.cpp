@@ -69,14 +69,19 @@ LeafResource::Validate(const nlohmann::json& body) const {
 
   switch (body.type()) {
     case value_t::null:
+      // TODO missing
     case value_t::object:
+      // TODO missing
     case value_t::discarded:
       errors.push_back({ErrorTag::kBadAttribute, name_.data()});
-      break;
+      return errors;
     case value_t::array: {
       bool isInvalid = field_->Type() != JsonType::kEmpty &&
                        field_->Type() != JsonType::kList;
-      if (isInvalid) errors.push_back({ErrorTag::kBadAttribute, name_.data()});
+      if (isInvalid) {
+        errors.push_back({ErrorTag::kBadAttribute, name_.data()});
+        return errors;
+      }
     }
       break;
     case value_t::string: {
@@ -85,27 +90,42 @@ LeafResource::Validate(const nlohmann::json& body) const {
                        fieldType != JsonType::kInt &&
                        fieldType != JsonType::kUint &&
                        fieldType != JsonType::kDecimal;
-      if (isInvalid) errors.push_back({ErrorTag::kBadAttribute, name_.data()});
+      if (isInvalid) {
+        errors.push_back({ErrorTag::kBadAttribute, name_.data()});
+        return errors;
+      }
     }
       break;
     case value_t::boolean: {
       bool isInvalid = field_->Type() != JsonType::kBoolean;
-      if (isInvalid) errors.push_back({ErrorTag::kBadAttribute, name_.data()});
+      if (isInvalid) {
+        errors.push_back({ErrorTag::kBadAttribute, name_.data()});
+        return errors;
+      }
     }
       break;
     case value_t::number_integer: {
       bool isInvalid = field_->Type() != JsonType::kInt;
-      if (isInvalid) errors.push_back({ErrorTag::kBadAttribute, name_.data()});
+      if (isInvalid) {
+        errors.push_back({ErrorTag::kBadAttribute, name_.data()});
+        return errors;
+      }
     }
       break;
     case value_t::number_unsigned: {
       bool isInvalid = field_->Type() != JsonType::kUint;
-      if (isInvalid) errors.push_back({ErrorTag::kBadAttribute, name_.data()});
+      if (isInvalid) {
+        errors.push_back({ErrorTag::kBadAttribute, name_.data()});
+        return errors;
+      }
     }
       break;
     case value_t::number_float: {
       bool isInvalid = field_->Type() != JsonType::kDecimal;
-      if (isInvalid) errors.push_back({ErrorTag::kBadAttribute, name_.data()});
+      if (isInvalid) {
+        errors.push_back({ErrorTag::kBadAttribute, name_.data()});
+        return errors;
+      }
     }
       break;
   }
@@ -142,7 +162,7 @@ void LeafResource::get(const Request& request, ResponseWriter response) {
 void LeafResource::post(const Request& request, ResponseWriter response) {
   auto errors = Validate(request);
   std::vector<Response> body;
-  if (request.body().empty()){
+  if (request.body().empty()) {
     body = Validate(nlohmann::json::parse("{}"));
   } else {
     body = Validate(nlohmann::json::parse(request.body()));

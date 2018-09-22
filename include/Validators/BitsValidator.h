@@ -14,24 +14,22 @@
  * limitations under the License.
  */
 #pragma once
-#ifndef PARSER_ENUMVALIDATOR_H
-#define PARSER_ENUMVALIDATOR_H
-
+#ifndef PARSER_BITSVALIDATOR_H
+#define PARSER_BITSVALIDATOR_H
 
 #include "Validator.h"
-
-#include <unordered_set>
 #include <string>
+#include <map>
 
-class EnumValidator: public Validator {
- public:
-  EnumValidator();
-  void AddEnum(const std::string& value);
+class BitsValidator: public Validator {
+public:
+  BitsValidator();
+  void AddBit(std::uint32_t position, const std::string& name);
   bool Validate(const std::string& value) const override;
-
- private:
-  std::unordered_set<std::string> values_;
+private:
+  /** Position, name */
+  std::map<std::uint32_t, std::string> bits_;
 };
 
 
-#endif //PARSER_ENUMVALIDATOR_H
+#endif //PARSER_BITSVALIDATOR_H

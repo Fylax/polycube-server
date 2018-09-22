@@ -13,25 +13,9 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
-#pragma once
-#ifndef PARSER_ENUMVALIDATOR_H
-#define PARSER_ENUMVALIDATOR_H
-
-
-#include "Validator.h"
-
-#include <unordered_set>
+#include "../../include/Validators/EmptyValidator.h"
 #include <string>
 
-class EnumValidator: public Validator {
- public:
-  EnumValidator();
-  void AddEnum(const std::string& value);
-  bool Validate(const std::string& value) const override;
-
- private:
-  std::unordered_set<std::string> values_;
-};
-
-
-#endif //PARSER_ENUMVALIDATOR_H
+bool EmptyValidator::Validate(const std::string& value) const {
+  return value == "[null]";
+}
