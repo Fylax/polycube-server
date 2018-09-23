@@ -43,6 +43,9 @@
 #include "../../include/Resources/LeafResource.h"
 #include "../../include/Resources/ParentResource.h"
 
+#include "../../include/Types/Decimal64.h"
+#include "../../include/Types/Dummies.h"
+
 using Pistache::Rest::Router;
 namespace Parser {
 namespace {
@@ -110,9 +113,7 @@ Validators ParseEnum(const char* name, const lys_type_info_enums enums) {
   std::vector<std::shared_ptr<Validator>> validators = {
       std::static_pointer_cast<Validator>(validator)
   };
-  auto map = ValidatorMap{{name, validators}};
-  return std::make_unique<ValidatorPair>(
-      ValidatorPair{map, std::type_index(typeid(std::string))});
+  return {name, std::move(validators), {std::type_index(typeid(Enum))}};
 }
 
 Validators ParseString(const char* name, const lys_type_info_str str) {
@@ -131,9 +132,7 @@ Validators ParseString(const char* name, const lys_type_info_str str) {
     validators.push_back(std::static_pointer_cast<Validator>(
         ParseLength(str.length, false)));
   }
-  auto map = ValidatorMap{{name, validators}};
-  return std::make_unique<ValidatorPair>(
-      ValidatorPair{map, std::type_index(typeid(std::string))});
+  return {name, std::move(validators), {std::type_index(typeid(std::string))}};
 }
 
 template<typename T>
@@ -146,9 +145,7 @@ Validators ParseInteger(const char* name, const lys_type_info_num num) {
     std::string_view expression{num.range->expr};
     validator->AddRanges(ParseRange<T>(expression));
   }
-  auto map = ValidatorMap{{name, validators}};
-  return std::make_unique<ValidatorPair>(
-      ValidatorPair{map, std::type_index(typeid(T))});
+  return {name, std::move(validators), {std::type_index(typeid(T))}};
 }
 
 Validators ParseDecimal64(const char* name, const lys_type_info_dec64 dec64) {
@@ -158,9 +155,7 @@ Validators ParseDecimal64(const char* name, const lys_type_info_dec64 dec64) {
     std::string_view expression{dec64.range->expr};
     validator->AddRanges(ParseRange<Decimal64>(expression));
   }
-  auto map = ValidatorMap{{name, validators}};
-  return std::make_unique<ValidatorPair>(
-      ValidatorPair{map, std::type_index(typeid(Decimal64))});
+  return {name, std::move(validators), {std::type_index(typeid(Decimal64))}};
 }
 
 Validators ParseBits(const char* name, const lys_type_info_bits bits) {
@@ -170,9 +165,7 @@ Validators ParseBits(const char* name, const lys_type_info_bits bits) {
     auto bit = bits.bit[i];
     validator->AddBit(bit.pos, bit.name);
   }
-  auto map = ValidatorMap{{name, validators}};
-  return std::make_unique<ValidatorPair>(
-      ValidatorPair{map, std::type_index(typeid(std::string))});
+  return {name, std::move(validators), {std::type_index(typeid(Bits))}};
 }
 
 Validators ParseBinary(const char* name, const lys_type_info_binary binary) {
@@ -181,9 +174,7 @@ Validators ParseBinary(const char* name, const lys_type_info_binary binary) {
     validators.push_back(std::static_pointer_cast<Validator>(
         ParseLength(binary.length, false)));
   }
-  auto map = ValidatorMap{{name, validators}};
-  return std::make_unique<ValidatorPair>(
-      ValidatorPair{map, std::type_index(typeid(std::string))});
+  return {name, std::move(validators), {std::type_index(typeid(Binary))}};
 }
 
 Validators ParseLeafRef(const char* name, const lys_type_info_lref lref) {
@@ -195,9 +186,7 @@ Validators ParseBoolean(const char* name) {
   std::vector<std::shared_ptr<Validator>> validators{
       std::static_pointer_cast<Validator>(validator)
   };
-  auto map = ValidatorMap{{name, validators}};
-  return std::make_unique<ValidatorPair>(
-      ValidatorPair{map, std::type_index(typeid(bool))});
+  return {name, std::move(validators), {std::type_index(typeid(bool))}};
 }
 
 Validators ParseEmpty(const char* name) {
@@ -206,19 +195,17 @@ Validators ParseEmpty(const char* name) {
           std::make_shared<EmptyValidator>()
       )
   };
-  auto map = ValidatorMap{{name, validators}};
-  // TODO change to ListType
-  return std::make_unique<ValidatorPair>(
-      ValidatorPair{map, std::type_index(typeid(std::string))});
+  return {name, std::move(validators), {std::type_index(typeid(Empty))}};
 }
 
 Validators ParseUnion(const char* name, const lys_type_info_union yunion) {
   std::vector<std::shared_ptr<Validator>> validators;
   auto validator = std::make_shared<UnionValidator>();
   for (unsigned i = 0; i < yunion.count; ++i) {
-    const auto type = yunion.types[i];
-    const auto& parsed = ParseType(name, type);
-    validator->AddType(parsed->second, parsed->first.at(name));
+    const auto& parsed = ParseType(name, yunion.types[i]);
+    for (const auto& type : std::get<2>(parsed)) {
+      validator->AddType(type, std::get<1>(parsed));
+    }
   }
 }
 

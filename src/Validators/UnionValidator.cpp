@@ -22,6 +22,7 @@
 #include <utility>
 #include <vector>
 #include "../../include/Types/Decimal64.h"
+#include "../../include/Types/Dummies.h"
 
 UnionValidator::UnionValidator(): map_{} {}
 
@@ -54,14 +55,18 @@ UnionValidator::AcceptableTypes(nlohmann::detail::value_t type) {
     case nlohmann::detail::value_t::object:
       break;
     case nlohmann::detail::value_t::array:
+      types.reserve(2);
+      types.insert(std::type_index(typeid(Empty)))
       // TODO not managed (yet)
       // TODO ListType
       break;
     case nlohmann::detail::value_t::string:
-      types.reserve(4);
+      types.reserve(6);
       types.insert(std::type_index(typeid(std::string)));
       types.insert(std::type_index(typeid(std::int64_t)));
       types.insert(std::type_index(typeid(std::uint64_t)));
+      types.insert(std::type_index(typeid(Bits)));
+      types.insert(std::type_index(typeid(Enum)));
       types.insert(std::type_index(typeid(Decimal64)));
       break;
     case nlohmann::detail::value_t::boolean:

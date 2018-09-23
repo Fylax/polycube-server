@@ -20,11 +20,11 @@
 #include <libyang/libyang.h>
 
 #include <cstring>
+#include <map>
 #include <memory>
 #include <string>
+#include <typle>
 #include <typeindex>
-#include <unordered_map>
-#include <unordered_set>
 #include <utility>
 #include <vector>
 
@@ -36,17 +36,19 @@
 #include "../Resources/ParentResource.h"
 
 using Pistache::Rest::Router;
-using ValidatorMap = std::unordered_map<
-    std::string, const std::vector<std::shared_ptr<Validator>>
+
+using Validators = std::tuple<
+    std::string, const std::vector<std::shared_ptr<Validator>>,
+    const std::vector<std::type_index>
 >;
-using ValidatorPair = std::pair<ValidatorMap, std::type_index>;
-using Validators = std::unique_ptr<ValidatorPair>;
+
 
 namespace Parser {
 std::shared_ptr<Cube> Parse(std::string&& yang);
+
 std::string GetName(const std::string& yang);
 
 const std::vector<std::shared_ptr<Validator>> getValidators(lys_type type);
 }
 
-#endif //PARSER_PARSER_H
+#endif  // PARSER_PARSER_H
