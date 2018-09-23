@@ -68,7 +68,7 @@ void ParseLeaf(const lys_node_leaf* leaf,
 // END DECLARATIONS
 
 // BEGIN TYPE VALIDATORS
-Validators ParseType(const char* name, const lys_type type);
+Validators ParseType(const lys_type type);
 
 template<typename T>
 std::unordered_map<T, T> ParseRange(std::string_view& range) {
@@ -105,7 +105,7 @@ ParseLength(const lys_restr* length, const bool binary) {
   return validator;
 }
 
-Validators ParseEnum(const char* name, const lys_type_info_enums enums) {
+Validators ParseEnum(const lys_type_info_enums enums) {
   auto validator = std::make_shared<EnumValidator>();
   for (unsigned i = 0; i < enums.count; ++i) {
     validator->AddEnum(enums.enm[i].name);
@@ -113,10 +113,10 @@ Validators ParseEnum(const char* name, const lys_type_info_enums enums) {
   std::vector<std::shared_ptr<Validator>> validators = {
       std::static_pointer_cast<Validator>(validator)
   };
-  return {name, std::move(validators), {std::type_index(typeid(Enum))}};
+  return {std::move(validators), {std::type_index(typeid(Enum))}};
 }
 
-Validators ParseString(const char* name, const lys_type_info_str str) {
+Validators ParseString(const lys_type_info_str str) {
   std::vector<std::shared_ptr<Validator>> validators;
   for (unsigned i = 0; i < str.pat_count; ++i) {
     auto current_pattern = str.patterns[i].expr;
@@ -132,11 +132,11 @@ Validators ParseString(const char* name, const lys_type_info_str str) {
     validators.push_back(std::static_pointer_cast<Validator>(
         ParseLength(str.length, false)));
   }
-  return {name, std::move(validators), {std::type_index(typeid(std::string))}};
+  return {std::move(validators), {std::type_index(typeid(std::string))}};
 }
 
 template<typename T>
-Validators ParseInteger(const char* name, const lys_type_info_num num) {
+Validators ParseInteger(const lys_type_info_num num) {
   std::vector<std::shared_ptr<Validator>> validators;
   auto validator = std::make_shared<NumberValidator<T>>(
       std::numeric_limits<T>::min(),
@@ -145,111 +145,114 @@ Validators ParseInteger(const char* name, const lys_type_info_num num) {
     std::string_view expression{num.range->expr};
     validator->AddRanges(ParseRange<T>(expression));
   }
-  return {name, std::move(validators), {std::type_index(typeid(T))}};
+  return {std::move(validators), {std::type_index(typeid(T))}};
 }
 
-Validators ParseDecimal64(const char* name, const lys_type_info_dec64 dec64) {
+Validators ParseDecimal64(const lys_type_info_dec64 dec64) {
   std::vector<std::shared_ptr<Validator>> validators;
   auto validator = std::make_shared<DecimalValidator>(dec64.dig);
   if (dec64.range != nullptr) {
     std::string_view expression{dec64.range->expr};
     validator->AddRanges(ParseRange<Decimal64>(expression));
   }
-  return {name, std::move(validators), {std::type_index(typeid(Decimal64))}};
+  return {std::move(validators), {std::type_index(typeid(Decimal64))}};
 }
 
-Validators ParseBits(const char* name, const lys_type_info_bits bits) {
+Validators ParseBits(const lys_type_info_bits bits) {
   std::vector<std::shared_ptr<Validator>> validators;
   auto validator = std::make_shared<BitsValidator>();
   for (unsigned i = 0; i < bits.count; ++i) {
     auto bit = bits.bit[i];
     validator->AddBit(bit.pos, bit.name);
   }
-  return {name, std::move(validators), {std::type_index(typeid(Bits))}};
+  return {std::move(validators), {std::type_index(typeid(Bits))}};
 }
 
-Validators ParseBinary(const char* name, const lys_type_info_binary binary) {
+Validators ParseBinary(const lys_type_info_binary binary) {
   std::vector<std::shared_ptr<Validator>> validators;
   if (binary.length != nullptr) {
     validators.push_back(std::static_pointer_cast<Validator>(
         ParseLength(binary.length, false)));
   }
-  return {name, std::move(validators), {std::type_index(typeid(Binary))}};
+  return {std::move(validators), {std::type_index(typeid(Binary))}};
 }
 
-Validators ParseLeafRef(const char* name, const lys_type_info_lref lref) {
-  return ParseType(name, lref.target->type);
+Validators ParseLeafRef(const lys_type_info_lref lref) {
+  return ParseType(lref.target->type);
 }
 
-Validators ParseBoolean(const char* name) {
+Validators ParseBoolean() {
   auto validator = std::make_shared<BoolValidator>();
   std::vector<std::shared_ptr<Validator>> validators{
       std::static_pointer_cast<Validator>(validator)
   };
-  return {name, std::move(validators), {std::type_index(typeid(bool))}};
+  return {std::move(validators), {std::type_index(typeid(bool))}};
 }
 
-Validators ParseEmpty(const char* name) {
+Validators ParseEmpty() {
   std::vector<std::shared_ptr<Validator>> validators{
       std::static_pointer_cast<Validator>(
           std::make_shared<EmptyValidator>()
       )
   };
-  return {name, std::move(validators), {std::type_index(typeid(Empty))}};
+  return {std::move(validators), {std::type_index(typeid(Empty))}};
 }
 
-Validators ParseUnion(const char* name, const lys_type_info_union yunion) {
+Validators ParseUnion(const lys_type_info_union yunion) {
   std::vector<std::shared_ptr<Validator>> validators;
+  std::unordered_set<std::type_index> types;
   auto validator = std::make_shared<UnionValidator>();
   for (unsigned i = 0; i < yunion.count; ++i) {
-    const auto& parsed = ParseType(name, yunion.types[i]);
-    for (const auto& type : std::get<2>(parsed)) {
-      validator->AddType(type, std::get<1>(parsed));
+    const auto& parsed = ParseType(yunion.types[i]);
+    for (const auto& type : parsed.second) {
+      validator->AddType(type, parsed.first);
+      types.insert(type);
     }
   }
+  return {std::move(validators), std::move(types)};
 }
 
-Validators ParseType(const char* name, const lys_type type) {
+Validators ParseType(const lys_type type) {
   switch (type.base) {
     case LY_TYPE_DER:
       break;  // unreachable
     case LY_TYPE_BINARY:
-      return ParseBinary(name, type.info.binary);
+      return ParseBinary(type.info.binary);
     case LY_TYPE_BITS:
-      return ParseBits(name, type.info.bits);
+      return ParseBits(type.info.bits);
     case LY_TYPE_BOOL:
-      return ParseBoolean(name);
+      return ParseBoolean();
     case LY_TYPE_DEC64:
-      return ParseDecimal64(name, type.info.dec64);
+      return ParseDecimal64(type.info.dec64);
     case LY_TYPE_EMPTY:
-      return ParseEmpty(name);
+      return ParseEmpty();
     case LY_TYPE_ENUM:
-      return ParseEnum(name, type.info.enums);
+      return ParseEnum(type.info.enums);
     case LY_TYPE_IDENT:
       // TODO mississing (required identity first!)
     case LY_TYPE_INST:
     case LY_TYPE_LEAFREF:
-      return ParseLeafRef(name, type.info.lref);
+      return ParseLeafRef(type.info.lref);
     case LY_TYPE_STRING:
-      return ParseString(name, type.info.str);
+      return ParseString(type.info.str);
     case LY_TYPE_UNION:
-      return ParseUnion(name, type.info.uni);
+      return ParseUnion(type.info.uni);
     case LY_TYPE_INT8:
-      return ParseInteger<std::int8_t>(name, type.info.num);
+      return ParseInteger<std::int8_t>(type.info.num);
     case LY_TYPE_UINT8:
-      return ParseInteger<std::uint8_t>(name, type.info.num);
+      return ParseInteger<std::uint8_t>(type.info.num);
     case LY_TYPE_INT16:
-      return ParseInteger<std::int16_t>(name, type.info.num);
+      return ParseInteger<std::int16_t>(type.info.num);
     case LY_TYPE_UINT16:
-      return ParseInteger<std::uint16_t>(name, type.info.num);
+      return ParseInteger<std::uint16_t>(type.info.num);
     case LY_TYPE_INT32:
-      return ParseInteger<std::int32_t>(name, type.info.num);
+      return ParseInteger<std::int32_t>(type.info.num);
     case LY_TYPE_UINT32:
-      return ParseInteger<std::uint32_t>(name, type.info.num);
+      return ParseInteger<std::uint32_t>(type.info.num);
     case LY_TYPE_INT64:
-      return ParseInteger<std::int64_t>(name, type.info.num);
+      return ParseInteger<std::int64_t>(type.info.num);
     case LY_TYPE_UINT64:
-      return ParseInteger<std::uint64_t>(name, type.info.num);
+      return ParseInteger<std::uint64_t>(type.info.num);
     default:
       throw std::runtime_error("Unsupported Type");
   }
@@ -259,7 +262,7 @@ const std::vector<std::shared_ptr<Validator>>
 GetValidators(const lys_type type) {
   bool isDerived = (type.der->type.der != nullptr);
   if (!isDerived) {
-    const auto& inplace = ParseType("", type);
+    const auto& inplace = ParseType(type);
     if (inplace->count("") == 1) {
       return inplace->at("");
     }

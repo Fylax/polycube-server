@@ -56,7 +56,7 @@ UnionValidator::AcceptableTypes(nlohmann::detail::value_t type) {
       break;
     case nlohmann::detail::value_t::array:
       types.reserve(2);
-      types.insert(std::type_index(typeid(Empty)))
+      types.insert(std::type_index(typeid(Empty)));
       // TODO not managed (yet)
       // TODO ListType
       break;

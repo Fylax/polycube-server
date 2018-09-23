@@ -23,9 +23,9 @@
 #include <map>
 #include <memory>
 #include <string>
-#include <typle>
 #include <typeindex>
 #include <utility>
+#include <unordered_set>
 #include <vector>
 
 #include "../Validators/Validator.h"
@@ -37,9 +37,9 @@
 
 using Pistache::Rest::Router;
 
-using Validators = std::tuple<
-    std::string, const std::vector<std::shared_ptr<Validator>>,
-    const std::vector<std::type_index>
+using Validators = std::pair<
+    const std::vector<std::shared_ptr<Validator>>,
+    const std::unordered_set<std::type_index>
 >;
 
 
