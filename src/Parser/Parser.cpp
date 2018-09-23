@@ -49,7 +49,8 @@
 using Pistache::Rest::Router;
 namespace Parser {
 namespace {
-ValidatorMap typedef_validators_[LY_DATA_TYPE_COUNT];
+/** Stores typedef name and associated list of Validators */
+std::unordered_map<std::string, ValidatorList> typedef_validators_[LY_DATA_TYPE_COUNT];
 
 //  BEGIN DECLARATIONS
 void ParseModule(const lys_module* module, const std::shared_ptr<Cube>& cube);
@@ -110,14 +111,14 @@ Validators ParseEnum(const lys_type_info_enums enums) {
   for (unsigned i = 0; i < enums.count; ++i) {
     validator->AddEnum(enums.enm[i].name);
   }
-  std::vector<std::shared_ptr<Validator>> validators = {
+  ValidatorList validators = {
       std::static_pointer_cast<Validator>(validator)
   };
   return {std::move(validators), {std::type_index(typeid(Enum))}};
 }
 
 Validators ParseString(const lys_type_info_str str) {
-  std::vector<std::shared_ptr<Validator>> validators;
+  ValidatorList validators;
   for (unsigned i = 0; i < str.pat_count; ++i) {
     auto current_pattern = str.patterns[i].expr;
     bool inverse = true;
@@ -137,7 +138,7 @@ Validators ParseString(const lys_type_info_str str) {
 
 template<typename T>
 Validators ParseInteger(const lys_type_info_num num) {
-  std::vector<std::shared_ptr<Validator>> validators;
+  ValidatorList validators;
   auto validator = std::make_shared<NumberValidator<T>>(
       std::numeric_limits<T>::min(),
       std::numeric_limits<T>::max());
@@ -149,7 +150,7 @@ Validators ParseInteger(const lys_type_info_num num) {
 }
 
 Validators ParseDecimal64(const lys_type_info_dec64 dec64) {
-  std::vector<std::shared_ptr<Validator>> validators;
+  ValidatorList validators;
   auto validator = std::make_shared<DecimalValidator>(dec64.dig);
   if (dec64.range != nullptr) {
     std::string_view expression{dec64.range->expr};
@@ -159,7 +160,7 @@ Validators ParseDecimal64(const lys_type_info_dec64 dec64) {
 }
 
 Validators ParseBits(const lys_type_info_bits bits) {
-  std::vector<std::shared_ptr<Validator>> validators;
+  ValidatorList validators;
   auto validator = std::make_shared<BitsValidator>();
   for (unsigned i = 0; i < bits.count; ++i) {
     auto bit = bits.bit[i];
@@ -169,7 +170,7 @@ Validators ParseBits(const lys_type_info_bits bits) {
 }
 
 Validators ParseBinary(const lys_type_info_binary binary) {
-  std::vector<std::shared_ptr<Validator>> validators;
+  ValidatorList validators;
   if (binary.length != nullptr) {
     validators.push_back(std::static_pointer_cast<Validator>(
         ParseLength(binary.length, false)));
@@ -183,14 +184,14 @@ Validators ParseLeafRef(const lys_type_info_lref lref) {
 
 Validators ParseBoolean() {
   auto validator = std::make_shared<BoolValidator>();
-  std::vector<std::shared_ptr<Validator>> validators{
+  ValidatorList validators{
       std::static_pointer_cast<Validator>(validator)
   };
   return {std::move(validators), {std::type_index(typeid(bool))}};
 }
 
 Validators ParseEmpty() {
-  std::vector<std::shared_ptr<Validator>> validators{
+  ValidatorList validators{
       std::static_pointer_cast<Validator>(
           std::make_shared<EmptyValidator>()
       )
@@ -199,7 +200,7 @@ Validators ParseEmpty() {
 }
 
 Validators ParseUnion(const lys_type_info_union yunion) {
-  std::vector<std::shared_ptr<Validator>> validators;
+  ValidatorList validators;
   std::unordered_set<std::type_index> types;
   auto validator = std::make_shared<UnionValidator>();
   for (unsigned i = 0; i < yunion.count; ++i) {
@@ -214,8 +215,6 @@ Validators ParseUnion(const lys_type_info_union yunion) {
 
 Validators ParseType(const lys_type type) {
   switch (type.base) {
-    case LY_TYPE_DER:
-      break;  // unreachable
     case LY_TYPE_BINARY:
       return ParseBinary(type.info.binary);
     case LY_TYPE_BITS:
@@ -258,22 +257,19 @@ Validators ParseType(const lys_type type) {
   }
 }
 
-const std::vector<std::shared_ptr<Validator>>
-GetValidators(const lys_type type) {
-  bool isDerived = (type.der->type.der != nullptr);
-  if (!isDerived) {
-    const auto& inplace = ParseType(type);
-    if (inplace->count("") == 1) {
-      return inplace->at("");
-    }
-    return std::vector<std::shared_ptr<Validator>>();
+const ValidatorList GetValidators(const lys_type type) {
+  bool is_derived = (type.der->type.der != nullptr);
+  if (!is_derived) {
+    return ParseType(type).first;
   }
   if (typedef_validators_[type.base].count(type.der->name) == 1) {
     const auto& validators = typedef_validators_[type.base].at(type.der->name);
     // move out a copy of the original vector
-    return std::vector<std::shared_ptr<Validator>>(validators);
+    return ValidatorList(validators);
   }
-  return std::vector<std::shared_ptr<Validator>>();
+  // if it not derived and it is not a typedef, it is a type
+  // without restrictions, thus an empty vector is returned
+  return ValidatorList();
 }
 // END TYPE VALIDATORS
 
@@ -281,10 +277,9 @@ void ParseModule(const lys_module* module, const std::shared_ptr<Cube>& cube) {
   auto typedefs = module->tpdf;
   for (auto i = 0; i < module->tpdf_size; ++i) {
     const auto& current_typedef = typedefs[i];
-    const auto& validators = ParseType(current_typedef.name,
-                                       current_typedef.type);
-    typedef_validators_[current_typedef.type.base].insert(
-        validators->begin(), validators->end());
+    const auto& validators = ParseType(current_typedef.type);
+    typedef_validators_[current_typedef.type.base].emplace(
+        current_typedef.name, validators.first);
   }
   auto data = module->data;
   while (data) {
