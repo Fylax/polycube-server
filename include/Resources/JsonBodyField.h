@@ -37,7 +37,7 @@ class JsonBodyField: public Field<nlohmann::json> {
  public:
   JsonBodyField(std::vector<std::shared_ptr<Validator>>&& validators,
                 JsonType type);
-  ErrorTag Validate (const nlohmann::json& value) const override;
+  ErrorTag Validate (const nlohmann::json& value) const final;
   JsonType Type() const;
 
   static JsonType FromYangType(LY_DATA_TYPE type);

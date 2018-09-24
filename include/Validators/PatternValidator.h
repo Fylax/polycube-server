@@ -30,7 +30,7 @@ class PatternValidator: public Validator {
    * @throws std::regex_error
    */
   explicit PatternValidator(const char* pattern, bool inverse);
-  bool Validate(const std::string& value) const override;
+  bool Validate(const std::string& value) const final;
 
  private:
   const std::regex pattern_;

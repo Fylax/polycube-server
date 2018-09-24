@@ -32,19 +32,22 @@ using Pistache::Rest::Request;
 using Pistache::Http::ResponseWriter;
 
 class ParentResource: public Resource {
- public:
-  ParentResource(const std::string& name,
-                 const std::string& restEndpoint,
+public:
+  ParentResource(const std::string& name, const std::string& module,
+                 const std::string& rest_endpoint,
                  const std::shared_ptr<ParentResource>& parent,
                  std::vector<PathParamField>&& fields,
-                 bool container_presence = true);
+                 bool container_presence = false);
 
   ~ParentResource();
 
-  std::vector<Response> Validate(const nlohmann::json& body) const override;
-  std::vector<Response> Validate(const Request& value) const override;
+  std::vector<Response> Validate(const nlohmann::json& body) const final;
+
+  std::vector<Response> Validate(const Request& value) const final;
+
   void AddChild(std::shared_ptr<Resource> child);
-  bool IsMandatory() const override;
+
+  bool IsMandatory() const final;
 
 protected:
   std::vector<PathParamField> fields_;
@@ -56,9 +59,13 @@ private:
    * and it has no presence flag (or explicitly set to false).
    */
   const bool container_presence_;
+
   void get(const Request& request, ResponseWriter response);
+
   virtual void post(const Request& request, ResponseWriter response);
+
   void put(const Request& request, ResponseWriter response);
+
   void patch(const Request& request, ResponseWriter response);
 };
 

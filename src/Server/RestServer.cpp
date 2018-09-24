@@ -41,7 +41,7 @@ void RestServer::init(std::size_t thr) {
       .threads(thr)
       .flags(Pistache::Tcp::Options::InstallSignalHandler);
   httpEndpoint_->init(opts);
-  cube_manager_ = std::make_unique<CubeManager>();
+  CubeManager::GetInstance();
 }
 
 void RestServer::start() {

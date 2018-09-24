@@ -31,18 +31,29 @@ class ParentResource;
 
 class Resource {
 public:
-  Resource(const std::string& name, const std::string& restEndpoint,
+  Resource(const std::string& name, const std::string& module,
+           const std::string& rest_endpoint,
            const std::shared_ptr<ParentResource>& parent);
+
   virtual bool IsMandatory() const = 0;
+
   const std::string& Name() const;
+
+  const std::string& ModuleName() const;
+
   const std::string& Endpoint() const;
 
   virtual std::vector<Response> Validate(const nlohmann::json& body) const = 0;
+
+  virtual std::vector<Response>
+  Validate(const Pistache::Rest::Request& request) const = 0;
 protected:
   const std::string name_;
-  const std::string restEndpoint_;
+  const std::string rest_endpoint_;
   std::shared_ptr<ParentResource> parent_;
-  virtual std::vector<Response> Validate(const Pistache::Rest::Request& request) const = 0;
+
+private:
+  const std::string module_;
 };
 
 #endif  // PARSER_RESOURCE_H

@@ -24,7 +24,7 @@
 #include "../../include/Server/RestServer.h"
 
 Cube::Cube(const std::string& name, const std::string& base_address):
-    ParentResource(name, base_address + name + "/:" + name + '/', nullptr,
+    ParentResource(name, name, base_address + name + "/:" + name + '/', nullptr,
                    std::vector<PathParamField>{PathParamField{
                        name, InSetValidator::CreateWithInSetValidator()}}),
                        body_rest_endpoint_(base_address + name + '/') {
@@ -49,24 +49,16 @@ void Cube::post_body(const Request& request, ResponseWriter response) {
         std::move(response));
     return;
   }
-
-  if (CubeManager::CreateCube(body["name"])) {
-    auto val = std::static_pointer_cast<InSetValidator>(
-        fields_[0].Validators()[0]);
-    val->AddValue(body["name"]);
-    ResponseGenerator::Generate(std::vector<Response>{{kCreated, ""}},
-                                std::move(response));
-  } else {
-    ResponseGenerator::Generate(
-        std::vector<Response>{{ErrorTag::kDataExists, ""}},
-        std::move(response));
-  }
+  create(body["name"], std::move(response));
 }
 
 void Cube::post(const Request& request, ResponseWriter response) {
   auto name = request.param(std::string{':'} + name_).as<std::string>();
+  create(name, std::move(response));
+}
 
-  if (CubeManager::CreateCube(name)) {
+void Cube::create(const std::string& name, ResponseWriter&& response) {
+  if (CubeManager::GetInstance().CreateCube(name)) {
     auto val = std::static_pointer_cast<InSetValidator>(
         fields_[0].Validators()[0]);
     val->AddValue(name);

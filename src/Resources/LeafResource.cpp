@@ -30,31 +30,31 @@
 using Pistache::Rest::Request;
 using Pistache::Http::ResponseWriter;
 
-LeafResource::LeafResource(const std::string& name,
-                           const std::string& restEndpoint,
+LeafResource::LeafResource(const std::string& name, const std::string& module,
+                           const std::string& rest_endpoint,
                            const std::shared_ptr<ParentResource>& parent,
                            std::unique_ptr<JsonBodyField>&& field,
                            bool configurable, bool mandatory,
                            std::unique_ptr<const std::string>&& default_value):
-    Resource(name, restEndpoint, parent), field_(std::move(field)),
+    Resource(name, module, rest_endpoint, parent), field_(std::move(field)),
     configurable_(configurable), mandatory_(mandatory),
     default_(std::move(default_value)) {
   using Pistache::Rest::Routes::bind;
   auto router = RestServer::Router();
-  router->get(restEndpoint_, bind(&LeafResource::get, this));
+  router->get(rest_endpoint_, bind(&LeafResource::get, this));
   if (configurable_) {
-    router->post(restEndpoint_, bind(&LeafResource::post, this));
-    router->put(restEndpoint_, bind(&LeafResource::put, this));
+    router->post(rest_endpoint_, bind(&LeafResource::post, this));
+    router->put(rest_endpoint_, bind(&LeafResource::put, this));
   }
 }
 
 LeafResource::~LeafResource() {
   using Pistache::Http::Method;
   auto router = RestServer::Router();
-  router->removeRoute(Method::Get, restEndpoint_);
+  router->removeRoute(Method::Get, rest_endpoint_);
   if (configurable_) {
-    router->removeRoute(Method::Post, restEndpoint_);
-    router->removeRoute(Method::Put, restEndpoint_);
+    router->removeRoute(Method::Post, rest_endpoint_);
+    router->removeRoute(Method::Put, rest_endpoint_);
   }
 }
 

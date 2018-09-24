@@ -25,27 +25,28 @@
 #include "../../include/Server/RestServer.h"
 
 ParentResource::ParentResource(const std::string& name,
-                               const std::string& restEndpoint,
+                               const std::string& module,
+                               const std::string& rest_endpoint,
                                const std::shared_ptr<ParentResource>& parent,
                                std::vector<PathParamField>&& fields,
-                               bool container_presence)
-    : Resource(name, restEndpoint, parent), fields_(std::move(fields)),
-      children_(), container_presence_(container_presence) {
+                               bool container_presence):
+    Resource(name, module, rest_endpoint, parent), fields_(std::move(fields)),
+    children_(), container_presence_(container_presence) {
   using Pistache::Rest::Routes::bind;
   auto router = RestServer::Router();
-  router->get(restEndpoint_, bind(&ParentResource::get, this));
-  router->post(restEndpoint_, bind(&ParentResource::post, this));
-  router->put(restEndpoint_, bind(&ParentResource::put, this));
-  router->patch(restEndpoint_, bind(&ParentResource::patch, this));
+  router->get(rest_endpoint_, bind(&ParentResource::get, this));
+  router->post(rest_endpoint_, bind(&ParentResource::post, this));
+  router->put(rest_endpoint_, bind(&ParentResource::put, this));
+  router->patch(rest_endpoint_, bind(&ParentResource::patch, this));
 }
 
 ParentResource::~ParentResource() {
   using Pistache::Http::Method;
   auto router = RestServer::Router();
-  router->removeRoute(Method::Get, restEndpoint_);
-  router->removeRoute(Method::Post, restEndpoint_);
-  router->removeRoute(Method::Put, restEndpoint_);
-  router->removeRoute(Method::Patch, restEndpoint_);
+  router->removeRoute(Method::Get, rest_endpoint_);
+  router->removeRoute(Method::Post, rest_endpoint_);
+  router->removeRoute(Method::Put, rest_endpoint_);
+  router->removeRoute(Method::Patch, rest_endpoint_);
 }
 
 std::vector<Response>

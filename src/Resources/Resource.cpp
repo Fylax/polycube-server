@@ -23,14 +23,20 @@
 
 #include "../../include/Server/Error.h"
 
-Resource::Resource(const std::string& name, const std::string& restEndpoint,
+Resource::Resource(const std::string& name, const std::string& module,
+                   const std::string& rest_endpoint,
                    const std::shared_ptr<ParentResource>& parent):
-    name_(name), restEndpoint_(restEndpoint), parent_(parent) {}
+    name_(name), rest_endpoint_(rest_endpoint), parent_(parent),
+    module_(module) {}
 
 const std::string& Resource::Name() const {
   return name_;
 }
 
+const std::string& Resource::ModuleName() const {
+  return module_;
+}
+
 const std::string& Resource::Endpoint() const {
-  return restEndpoint_;
+  return rest_endpoint_;
 }

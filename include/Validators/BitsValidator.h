@@ -25,7 +25,7 @@ class BitsValidator: public Validator {
 public:
   BitsValidator();
   void AddBit(std::uint32_t position, const std::string& name);
-  bool Validate(const std::string& value) const override;
+  bool Validate(const std::string& value) const final;
 private:
   /** Position, name */
   std::map<std::uint32_t, std::string> bits_;

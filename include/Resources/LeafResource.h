@@ -29,23 +29,34 @@ using Pistache::Http::ResponseWriter;
 
 class LeafResource: public Resource {
 public:
-  LeafResource(const std::string& name, const std::string& restEndpoint,
-                 const std::shared_ptr<ParentResource>& parent,
-                 std::unique_ptr<JsonBodyField>&& field,
-                 bool configurable, bool mandatory,
-                 std::unique_ptr<const std::string>&& default_value);
+  LeafResource(const std::string& name, const std::string& module,
+               const std::string& rest_endpoint,
+               const std::shared_ptr<ParentResource>& parent,
+               std::unique_ptr<JsonBodyField>&& field,
+               bool configurable, bool mandatory,
+               std::unique_ptr<const std::string>&& default_value);
+
   ~LeafResource();
-  std::vector<Response> Validate(const nlohmann::json& body) const override;
-  std::vector<Response> Validate(const Pistache::Rest::Request& value) const override;
-  bool IsMandatory() const override;
+
+  std::vector<Response> Validate(const nlohmann::json& body) const final;
+
+  std::vector<Response>
+  Validate(const Pistache::Rest::Request& value) const final;
+
+  bool IsMandatory() const final;
+
   bool HasDefault() const;
+
 private:
   const std::unique_ptr<JsonBodyField> field_;
   const bool configurable_;
   const bool mandatory_;
   const std::unique_ptr<const std::string> default_;
+
   void get(const Request& request, ResponseWriter response);
+
   void post(const Request& request, ResponseWriter response);
+
   void put(const Request& request, ResponseWriter response);
 };
 

@@ -20,7 +20,7 @@
 #include "Validator.h"
 
 class BoolValidator: public Validator {
-  bool Validate(const std::string& value) const override;
+  bool Validate(const std::string& value) const final;
 };
 
 

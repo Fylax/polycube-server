@@ -25,30 +25,44 @@
 #include <utility>
 #include <vector>
 
+#include <mutex>
+#include <shared_mutex>
+
 #include "../../include/Server/Base64.h"
 #include "../../include/Parser/Parser.h"
 #include "../../include/Server/ResponseGenerator.h"
 #include "../../include/Server/RestServer.h"
 
-std::unordered_set<std::string> CubeManager::existing_cubes_impl_ = {};
 
-bool CubeManager::CreateCube(std::string name) {
-  return CubeManager::existing_cubes_impl_.insert(name).second;
-}
-
-void CubeManager::RemoveCube(std::string name) {
-  CubeManager::existing_cubes_impl_.erase(name);
-}
-
-CubeManager::CubeManager(): existing_cubes_() {
+CubeManager::CubeManager(): cube_mutex_{}, existing_cubes_{},
+                            existing_cubes_impl_{} {
   using Pistache::Rest::Routes::bind;
   RestServer::Router()->post("/", bind(&CubeManager::post, this));
 }
 
+bool CubeManager::CreateCube(const std::string& name) {
+  std::unique_lock<std::mutex> lock(mutex_);
+  return CubeManager::existing_cubes_impl_.insert(name).second;
+}
+
+void CubeManager::RemoveCube(const std::string& name) {
+  std::unique_lock<std::mutex> lock(mutex_);
+  cube_mutex_.erase(name);
+  existing_cubes_impl_.erase(name);
+}
+
+std::pair<std::shared_ptr<Cube>, std::shared_mutex&>
+CubeManager::GetCubeByName(const std::string& name) {
+  // get exclusive lock as Cube specific shared_mutex may not exist yet
+  std::unique_lock<std::mutex> lock(mutex_);
+  return {existing_cubes_.at(name), cube_mutex_[name]};
+}
+
 void CubeManager::post(const Pistache::Rest::Request& request,
                        Pistache::Http::ResponseWriter response) {
-  nlohmann::json body = nlohmann::json::parse(request.body());
+  std::unique_lock<std::mutex> lock(mutex_);
 
+  nlohmann::json body = nlohmann::json::parse(request.body());
   auto yang = Base64::decode(body["model"].get<std::string>());
 
   if (existing_cubes_.count(Parser::GetName(yang)) != 0) {

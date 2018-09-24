@@ -205,12 +205,16 @@ Validators ParseUnion(const lys_type_info_union yunion) {
   auto validator = std::make_shared<UnionValidator>();
   for (unsigned i = 0; i < yunion.count; ++i) {
     const auto& parsed = ParseType(yunion.types[i]);
+    types.insert(std::begin(parsed.second), std::end(parsed.second));
     for (const auto& type : parsed.second) {
       validator->AddType(type, parsed.first);
-      types.insert(type);
     }
   }
   return {std::move(validators), std::move(types)};
+}
+
+Validators ParseInstanceIdentifier(const lys_type_info_inst iid) {
+  //
 }
 
 Validators ParseType(const lys_type type) {
@@ -230,6 +234,7 @@ Validators ParseType(const lys_type type) {
     case LY_TYPE_IDENT:
       // TODO mississing (required identity first!)
     case LY_TYPE_INST:
+      return ParseInstanceIdentifier(type.info.inst);
     case LY_TYPE_LEAFREF:
       return ParseLeafRef(type.info.lref);
     case LY_TYPE_STRING:
@@ -290,7 +295,6 @@ void ParseModule(const lys_module* module, const std::shared_ptr<Cube>& cube) {
 
 void
 ParseNode(const lys_node* data, const std::shared_ptr<ParentResource>& parent) {
-  if (!data) return;
   switch (data->nodetype) {
     case LYS_UNKNOWN:
       break;
@@ -368,11 +372,9 @@ ParseList(const lys_node_list* list, std::shared_ptr<ParentResource> parent) {
     child = child->next;
   }
 
-  const auto& resource = std::make_shared<ParentResource>(list->name,
-                                                          rest_endpoint,
-                                                          parent,
-                                                          std::move(keys));
-  // get all children
+  const auto& resource = std::make_shared<ParentResource>(
+      list->name, list->module->name, rest_endpoint, parent, std::move(keys));
+  // parse each child using the generic "node" parsing function
   child = list->child;
   while (child != nullptr) {
     if (key_names.count(child->name) == 0) {
@@ -395,7 +397,7 @@ ParseLeaf(const lys_node_leaf* leaf, std::shared_ptr<ParentResource> parent) {
     default_value = std::make_unique<const std::string>(leaf->dflt);
   }
   auto leaf_res = std::make_unique<LeafResource>(
-      leaf->name, parent->Endpoint() + leaf->name, parent,
+      leaf->name, leaf->module->name, parent->Endpoint() + leaf->name, parent,
       std::move(field), configurable, mandatory, std::move(default_value));
   parent->AddChild(std::move(leaf_res));
 }

@@ -19,6 +19,7 @@
 
 #include <pistache/router.h>
 
+#include <shared_mutex>
 #include <string>
 #include <unordered_set>
 #include <memory>
@@ -31,11 +32,18 @@ using Pistache::Http::ResponseWriter;
 class Cube: public ParentResource {
 public:
   Cube(const std::string& name, const std::string& base_address);
+
   ~Cube();
+
 private:
+  mutable std::shared_mutex mutex_;
   const std::string body_rest_endpoint_;
-  void post(const Request& request, ResponseWriter response) override;
+
+  void post(const Request& request, ResponseWriter response) final;
+
   void post_body(const Request& request, ResponseWriter response);
+
+  void create(const std::string& name, ResponseWriter&& response);
 };
 
 

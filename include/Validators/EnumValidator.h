@@ -27,7 +27,7 @@ class EnumValidator: public Validator {
  public:
   EnumValidator();
   void AddEnum(const std::string& value);
-  bool Validate(const std::string& value) const override;
+  bool Validate(const std::string& value) const final;
 
  private:
   std::unordered_set<std::string> values_;

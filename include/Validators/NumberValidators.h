@@ -48,7 +48,7 @@ public:
   DecimalValidator(std::uint8_t fraction_digits, const Decimal64& lower_bound,
                    const Decimal64& upper_bound);
 
-  bool Validate(const std::string& value) const override;
+  bool Validate(const std::string& value) const final;
 
 private:
   std::uint8_t fraction_digits_;
