@@ -24,6 +24,7 @@
 #include <string>
 #include <vector>
 #include <utility>
+#include <shared_mutex>
 
 #include "../Server/Error.h"
 
@@ -47,6 +48,7 @@ public:
 
   virtual std::vector<Response>
   Validate(const Pistache::Rest::Request& request) const = 0;
+
 protected:
   const std::string name_;
   const std::string rest_endpoint_;

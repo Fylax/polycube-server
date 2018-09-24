@@ -19,10 +19,11 @@
 
 #include <pistache/router.h>
 
-#include <shared_mutex>
 #include <string>
 #include <unordered_set>
+#include <unordered_map>
 #include <memory>
+#include <shared_mutex>
 
 #include "ParentResource.h"
 
@@ -36,8 +37,8 @@ public:
   ~Cube();
 
 private:
-  mutable std::shared_mutex mutex_;
   const std::string body_rest_endpoint_;
+  std::unordered_map<std::string, std::shared_mutex> mutex_;
 
   void post(const Request& request, ResponseWriter response) final;
 

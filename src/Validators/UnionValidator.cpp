@@ -21,8 +21,7 @@
 #include <unordered_set>
 #include <utility>
 #include <vector>
-#include "../../include/Types/Decimal64.h"
-#include "../../include/Types/Dummies.h"
+#include "../../include/Resources/JsonBodyField.h"
 
 UnionValidator::UnionValidator(): map_{} {}
 
@@ -35,7 +34,7 @@ void UnionValidator::AddType(std::type_index type,
 
 bool UnionValidator::Validate(const std::string& value) const {
   auto data = nlohmann::json::parse(value);
-  const auto& allowed = UnionValidator::AcceptableTypes(data.type());
+  const auto& allowed = JsonBodyField::AcceptableTypes(data.type());
   for (const auto& union_type : map_) {
     if (allowed.count(union_type.first) != 0) {
       for (const auto& validator : union_type.second) {
@@ -44,55 +43,4 @@ bool UnionValidator::Validate(const std::string& value) const {
     }
   }
   return false;
-}
-
-const std::unordered_set<std::type_index>
-UnionValidator::AcceptableTypes(nlohmann::detail::value_t type) {
-  std::unordered_set<std::type_index> types;
-  switch (type) {
-    case nlohmann::detail::value_t::null:
-      break;
-    case nlohmann::detail::value_t::object:
-      break;
-    case nlohmann::detail::value_t::array:
-      types.reserve(2);
-      types.insert(std::type_index(typeid(Empty)));
-      // TODO not managed (yet)
-      // TODO ListType
-      break;
-    case nlohmann::detail::value_t::string:
-      types.reserve(6);
-      types.insert(std::type_index(typeid(std::string)));
-      types.insert(std::type_index(typeid(std::int64_t)));
-      types.insert(std::type_index(typeid(std::uint64_t)));
-      types.insert(std::type_index(typeid(Bits)));
-      types.insert(std::type_index(typeid(Enum)));
-      types.insert(std::type_index(typeid(Decimal64)));
-      break;
-    case nlohmann::detail::value_t::boolean:
-      types.reserve(1);
-      types.insert(std::type_index(typeid(bool)));
-      break;
-    case nlohmann::detail::value_t::number_integer:
-      types.reserve(4);
-      types.insert(std::type_index(typeid(std::int8_t)));
-      types.insert(std::type_index(typeid(std::int16_t)));
-      types.insert(std::type_index(typeid(std::int32_t)));
-      types.insert(std::type_index(typeid(std::int64_t)));
-      break;
-    case nlohmann::detail::value_t::number_unsigned:
-      types.reserve(4);
-      types.insert(std::type_index(typeid(std::uint8_t)));
-      types.insert(std::type_index(typeid(std::uint16_t)));
-      types.insert(std::type_index(typeid(std::uint8_t)));
-      types.insert(std::type_index(typeid(std::uint64_t)));
-      break;
-    case nlohmann::detail::value_t::number_float:
-      types.reserve(1);
-      types.insert(std::type_index(typeid(Decimal64)));
-      break;
-    case nlohmann::detail::value_t::discarded:
-      break;
-  }
-  return types;
 }

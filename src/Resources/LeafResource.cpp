@@ -67,69 +67,6 @@ LeafResource::Validate(const nlohmann::json& body) const {
     return errors;
   }
 
-  switch (body.type()) {
-    case value_t::null:
-      // TODO missing
-    case value_t::object:
-      // TODO missing
-    case value_t::discarded:
-      errors.push_back({ErrorTag::kBadAttribute, name_.data()});
-      return errors;
-    case value_t::array: {
-      bool isInvalid = field_->Type() != JsonType::kEmpty &&
-                       field_->Type() != JsonType::kList;
-      if (isInvalid) {
-        errors.push_back({ErrorTag::kBadAttribute, name_.data()});
-        return errors;
-      }
-    }
-      break;
-    case value_t::string: {
-      auto fieldType = field_->Type();
-      bool isInvalid = fieldType != JsonType::kString &&
-                       fieldType != JsonType::kInt &&
-                       fieldType != JsonType::kUint &&
-                       fieldType != JsonType::kDecimal;
-      if (isInvalid) {
-        errors.push_back({ErrorTag::kBadAttribute, name_.data()});
-        return errors;
-      }
-    }
-      break;
-    case value_t::boolean: {
-      bool isInvalid = field_->Type() != JsonType::kBoolean;
-      if (isInvalid) {
-        errors.push_back({ErrorTag::kBadAttribute, name_.data()});
-        return errors;
-      }
-    }
-      break;
-    case value_t::number_integer: {
-      bool isInvalid = field_->Type() != JsonType::kInt;
-      if (isInvalid) {
-        errors.push_back({ErrorTag::kBadAttribute, name_.data()});
-        return errors;
-      }
-    }
-      break;
-    case value_t::number_unsigned: {
-      bool isInvalid = field_->Type() != JsonType::kUint;
-      if (isInvalid) {
-        errors.push_back({ErrorTag::kBadAttribute, name_.data()});
-        return errors;
-      }
-    }
-      break;
-    case value_t::number_float: {
-      bool isInvalid = field_->Type() != JsonType::kDecimal;
-      if (isInvalid) {
-        errors.push_back({ErrorTag::kBadAttribute, name_.data()});
-        return errors;
-      }
-    }
-      break;
-  }
-
   auto field = field_->Validate(body);
   if (field != kOk) {
     errors.push_back({field, name_.data()});

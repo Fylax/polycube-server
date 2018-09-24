@@ -390,8 +390,8 @@ ParseLeaf(const lys_node_leaf* leaf, std::shared_ptr<ParentResource> parent) {
   bool configurable = ((leaf->flags & LYS_CONFIG_MASK) ^ 2) != 0;
   bool mandatory = (leaf->flags & LYS_MAND_MASK) != 0;
   auto validators = GetValidators(leaf->type);
-  auto field = std::make_unique<JsonBodyField>(
-      std::move(validators), JsonBodyField::FromYangType(leaf->type.base));
+  auto field = std::make_unique<JsonBodyField>(leaf->type.base,
+      std::move(validators));
   std::unique_ptr<const std::string> default_value = nullptr;
   if (leaf->dflt != nullptr) {
     default_value = std::make_unique<const std::string>(leaf->dflt);

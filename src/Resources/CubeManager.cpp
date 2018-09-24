@@ -34,8 +34,7 @@
 #include "../../include/Server/RestServer.h"
 
 
-CubeManager::CubeManager(): cube_mutex_{}, existing_cubes_{},
-                            existing_cubes_impl_{} {
+CubeManager::CubeManager(): existing_cubes_{}, existing_cubes_impl_{} {
   using Pistache::Rest::Routes::bind;
   RestServer::Router()->post("/", bind(&CubeManager::post, this));
 }
@@ -47,15 +46,7 @@ bool CubeManager::CreateCube(const std::string& name) {
 
 void CubeManager::RemoveCube(const std::string& name) {
   std::unique_lock<std::mutex> lock(mutex_);
-  cube_mutex_.erase(name);
   existing_cubes_impl_.erase(name);
-}
-
-std::pair<std::shared_ptr<Cube>, std::shared_mutex&>
-CubeManager::GetCubeByName(const std::string& name) {
-  // get exclusive lock as Cube specific shared_mutex may not exist yet
-  std::unique_lock<std::mutex> lock(mutex_);
-  return {existing_cubes_.at(name), cube_mutex_[name]};
 }
 
 void CubeManager::post(const Pistache::Rest::Request& request,

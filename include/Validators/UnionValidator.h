@@ -42,9 +42,6 @@ public:
   bool Validate(const std::string& value) const;
 private:
   std::map<std::type_index, std::vector<std::shared_ptr<Validator>>> map_;
-
-  static const std::unordered_set<std::type_index>
-  AcceptableTypes(nlohmann::detail::value_t type);
 };
 
 

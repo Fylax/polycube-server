@@ -35,5 +35,8 @@ class Empty {
 class Enum {
 };
 
+class XPath {
+};
+
 
 #endif //PARSER_DUMMIES_H

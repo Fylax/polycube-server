@@ -41,18 +41,8 @@ public:
 
   void RemoveCube(const std::string& name);
 
-  /**
-   * Fetches a pair containing the Cube and it's associated shared mutex
-   * @param name
-   * @throws std::out_of_range if the provided name is not a Cube
-   * @return
-   */
-  std::pair<std::shared_ptr<Cube>, std::shared_mutex&>
-  GetCubeByName(const std::string& name);
-
 private:
   mutable std::mutex mutex_;
-  mutable std::map<std::string, std::shared_mutex> cube_mutex_;
   std::unordered_map<std::string, std::shared_ptr<Cube>> existing_cubes_;
   std::unordered_set<std::string> existing_cubes_impl_;
 
