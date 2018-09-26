@@ -39,6 +39,8 @@
 #include "../../include/Validators/LengthValidator.h"
 #include "../../include/Validators/NumberValidators.h"
 #include "../../include/Validators/UnionValidator.h"
+#include "../../include/Validators/XPathValidator.h"
+
 #include "../../include/Resources/Cube.h"
 #include "../../include/Resources/LeafResource.h"
 #include "../../include/Resources/ParentResource.h"
@@ -180,6 +182,7 @@ Validators ParseBinary(const lys_type_info_binary binary) {
 }
 
 Validators ParseLeafRef(const lys_type_info_lref lref) {
+  // TODO lref contains info about require-instance, missing ATM
   return ParseType(lref.target->type);
 }
 
@@ -214,8 +217,14 @@ Validators ParseUnion(const lys_type_info_union yunion) {
   return {std::move(validators), std::move(types)};
 }
 
-Validators ParseInstanceIdentifier(const lys_type_info_inst iid) {
-  //
+Validators ParseInstanceIdentifier(const lys_type_info_inst iid,
+                                   const char* context) {
+  // TODO iid contains info about require-instance, missing ATM
+  ValidatorList validators{
+      std::static_pointer_cast<Validator>(
+          std::make_shared<XPathValidator>(context))
+  };
+  return {std::move(validators), {std::type_index(typeid(std::string))}};
 }
 
 Validators ParseType(const lys_type type) {
@@ -235,7 +244,7 @@ Validators ParseType(const lys_type type) {
     case LY_TYPE_IDENT:
       // TODO mississing (required identity first!)
     case LY_TYPE_INST:
-      return ParseInstanceIdentifier(type.info.inst);
+      return ParseInstanceIdentifier(type.info.inst, type.parent->module->name);
     case LY_TYPE_LEAFREF:
       return ParseLeafRef(type.info.lref);
     case LY_TYPE_STRING:
@@ -392,7 +401,7 @@ ParseLeaf(const lys_node_leaf* leaf, std::shared_ptr<ParentResource> parent) {
   bool mandatory = (leaf->flags & LYS_MAND_MASK) != 0;
   auto validators = GetValidators(leaf->type);
   auto field = std::make_unique<JsonBodyField>(leaf->type.base,
-      std::move(validators));
+                                               std::move(validators));
   std::unique_ptr<const std::string> default_value = nullptr;
   if (leaf->dflt != nullptr) {
     default_value = std::make_unique<const std::string>(leaf->dflt);
