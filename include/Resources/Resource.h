@@ -44,6 +44,8 @@ public:
 
   const std::string& Endpoint() const;
 
+  virtual bool ValidateXPath(const std::string& xpath) const = 0;
+
   virtual std::vector<Response> Validate(const nlohmann::json& body) const = 0;
 
   virtual std::vector<Response>
@@ -53,8 +55,6 @@ protected:
   const std::string name_;
   const std::string rest_endpoint_;
   std::shared_ptr<ParentResource> parent_;
-
-private:
   const std::string module_;
 };
 

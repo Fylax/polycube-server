@@ -20,13 +20,20 @@
 
 #include "../../include/Resources/Field.h"
 #include "../../include/Resources/PathParamField.h"
+#include "../../include/Validators/EmptyValidator.h"
 
 PathParamField::PathParamField(const std::string& name,
                                std::vector<
                                    std::shared_ptr<Validator>
                                >&& validators)
     : Field<Pistache::Rest::Request>(std::move(validators)),
-        name_(std::string{':'} + name)  {}
+      name_(std::string{':'} + name) {
+  for (const auto& validator : validators_) {
+    if (auto test = std::dynamic_pointer_cast<EmptyValidator>(validator)) {
+      test->IsPath(true);
+    }
+  }
+}
 
 const std::string& PathParamField::Name() const {
   return name_;
@@ -34,10 +41,13 @@ const std::string& PathParamField::Name() const {
 
 ErrorTag PathParamField::Validate(const Pistache::Rest::Request& value) const {
   if (!value.hasParam(name_)) return kMissingElement;
+  if (Validate(value.param(name_).as<std::string>())) return ErrorTag::kOk;
+  return ErrorTag::kBadElement;
+}
 
-  auto parsed = value.param(name_).as<std::string>();
+bool PathParamField::Validate(const std::string& value) const {
   for (const auto& validator : validators_) {
-    if (!validator->Validate(parsed)) return ErrorTag::kBadElement;
+    if (!validator->Validate(value)) return false;
   }
-  return ErrorTag::kOk;
+  return true;
 }

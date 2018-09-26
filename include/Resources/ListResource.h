@@ -14,40 +14,25 @@
  * limitations under the License.
  */
 #pragma once
-#ifndef PARSER_CUBE_H
-#define PARSER_CUBE_H
-
-#include <pistache/router.h>
-
-#include <string>
-#include <unordered_set>
-#include <unordered_map>
-#include <memory>
-#include <shared_mutex>
+#ifndef PARSER_LISTRESOURCE_H
+#define PARSER_LISTRESOURCE_H
 
 #include "ParentResource.h"
 
-using Pistache::Rest::Request;
-using Pistache::Http::ResponseWriter;
+#include <memory>
+#include <set>
+#include <string>
+#include <vector>
 
-class Cube: public ParentResource {
+class ListResource: public ParentResource {
 public:
-  Cube(const std::string& name, const std::string& base_address);
-
-  ~Cube();
+  ListResource(const std::string& name, const std::string& module,
+               const std::string& rest_endpoint,
+               const std::shared_ptr<ParentResource>& parent,
+               std::vector<PathParamField>&& fields);
 
   bool ValidateXPath(const std::string& xpath) const final;
-
-private:
-  const std::string body_rest_endpoint_;
-  std::unordered_map<std::string, std::shared_mutex> mutex_;
-
-  void post(const Request& request, ResponseWriter response) final;
-
-  void post_body(const Request& request, ResponseWriter response);
-
-  void create(const std::string& name, ResponseWriter&& response);
 };
 
 
-#endif //PARSER_CUBE_H
+#endif //PARSER_LISTRESOURCE_H

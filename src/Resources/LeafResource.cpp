@@ -87,6 +87,17 @@ bool LeafResource::HasDefault() const {
   return default_ != nullptr;
 }
 
+bool LeafResource::ValidateXPath(const std::string& xpath) const {
+  auto ns_pos = xpath.find(':');  // current namespace delimiter
+  std::string name;
+  if (ns_pos != std::string::npos) {  // fully-qualified name
+    name = xpath.substr(ns_pos + 1);
+  } else {
+    name = xpath;
+  }
+  return name == name_;
+}
+
 void LeafResource::get(const Request& request, ResponseWriter response) {
   auto errors = parent_->Validate(request);
   // TODO: call user code and merge responses

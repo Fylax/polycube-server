@@ -16,6 +16,14 @@
 #include "../../include/Validators/EmptyValidator.h"
 #include <string>
 
+EmptyValidator::EmptyValidator(): is_path_(false) {}
+
 bool EmptyValidator::Validate(const std::string& value) const {
-  return value == "[null]";
+  return (is_path_) ?
+         value.empty() :
+         value == "[null]";
+}
+
+void EmptyValidator::IsPath(const bool is_path) {
+  is_path_ = is_path;
 }

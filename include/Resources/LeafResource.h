@@ -47,6 +47,8 @@ public:
 
   bool HasDefault() const;
 
+  bool ValidateXPath(const std::string& xpath) const final;
+
 private:
   const std::unique_ptr<JsonBodyField> field_;
   const bool configurable_;

@@ -14,28 +14,26 @@
  * limitations under the License.
  */
 #pragma once
-#ifndef PARSER_PATHPARAMFIELD_H
-#define PARSER_PATHPARAMFIELD_H
-
-#include <pistache/router.h>
+#ifndef PARSER_XPATHVALIDATOR_H
+#define PARSER_XPATHVALIDATOR_H
 
 #include <string>
-#include <memory>
-#include <vector>
+#include "Validator.h"
 
-#include "Field.h"
-#include "../Validators/Validator.h"
-
-class PathParamField: public Field<Pistache::Rest::Request> {
-private:
-  const std::string name_;
+class XPathValidator: public Validator {
 public:
-  PathParamField(const std::string& name,
-                 std::vector<std::shared_ptr<Validator>>&& validators);
-  const std::string& Name() const;
-  ErrorTag Validate(const Pistache::Rest::Request& value) const final;
-  bool Validate(const std::string& value) const;
+  /**
+   * Creates a XPathValidator.
+   * @param context The namespace (module name) where the element
+   * to validate (i.e. an ~instance-identified~) resides.
+   */
+  explicit XPathValidator(const std::string& context);
+
+  bool Validate(const std::string& value) const final;
+
+private:
+  const std::string context_;
 };
 
 
-#endif  // PARSER_PATHPARAMFIELD_H
+#endif //PARSER_XPATHVALIDATOR_H

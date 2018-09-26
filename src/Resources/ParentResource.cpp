@@ -95,6 +95,47 @@ bool ParentResource::IsMandatory() const {
   return false;
 }
 
+bool ParentResource::ValidateXPath(const std::string& xpath) const {
+  auto del_pos = xpath.find('/');  // current delimiter
+  auto ns_pos = xpath.find(':');  // current namespace delimiter
+  std::string name;
+  if (ns_pos < del_pos) {  // fully-qualified name
+    name = xpath.substr(ns_pos + 1, del_pos);
+  } else {
+    name = xpath.substr(0, del_pos);
+  }
+  if (name != name_) return false;
+
+  return ValidateXPathChildren(xpath, del_pos);
+}
+
+bool ParentResource::ValidateXPathChildren(const std::string& xpath,
+                                           std::size_t delimiter) const {
+  auto del_pos = xpath.find('/', delimiter + 1);  // next token delimiter
+  auto ns_pos = xpath.find(':', delimiter + 1);  // next namespace delimiter
+  std::string ns;
+  if (ns_pos < del_pos) {  // fully-qualified name
+    ns = xpath.substr(del_pos + 1, ns_pos);
+    // RFC 7951#6.11 states that fully-qualified names are mandatory
+    // if the node is in a different module, forbidden otherwise.
+    if (ns == module_) return false;
+  } else {
+    // sets namespace to current one to validate XPath only
+    // among the children into the same namespace.
+    ns = module_;
+  }
+
+  // child resources expect XPath without leading '/' character
+  // and that namespace is already validated
+  auto child_xpath = xpath.substr(del_pos + 1);
+  for (const auto& child : children_) {
+    if (child->ModuleName() == ns) {
+      if (child->ValidateXPath(child_xpath)) return true;
+    }
+  }
+  return false;
+}
+
 void ParentResource::get(const Request& request, ResponseWriter response) {
   std::vector<Response> errors;
   if (parent_ != nullptr) errors = parent_->Validate(request);

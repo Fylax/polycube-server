@@ -40,18 +40,25 @@ CubeManager::CubeManager(): existing_cubes_{}, existing_cubes_impl_{} {
 }
 
 bool CubeManager::CreateCube(const std::string& name) {
-  std::unique_lock<std::mutex> lock(mutex_);
+  std::unique_lock<std::shared_mutex> lock(mutex_);
   return CubeManager::existing_cubes_impl_.insert(name).second;
 }
 
 void CubeManager::RemoveCube(const std::string& name) {
-  std::unique_lock<std::mutex> lock(mutex_);
+  std::unique_lock<std::shared_mutex> lock(mutex_);
   existing_cubes_impl_.erase(name);
+}
+
+bool CubeManager::ValidateXpath(const std::string& xpath,
+                                const std::string& context) const {
+  std::shared_lock<std::shared_mutex> lock(mutex_);
+  if (existing_cubes_.count(context) == 0) return false;
+  return existing_cubes_.at(context)->ValidateXPath(xpath);
 }
 
 void CubeManager::post(const Pistache::Rest::Request& request,
                        Pistache::Http::ResponseWriter response) {
-  std::unique_lock<std::mutex> lock(mutex_);
+  std::unique_lock<std::shared_mutex> lock(mutex_);
 
   nlohmann::json body = nlohmann::json::parse(request.body());
   auto yang = Base64::decode(body["model"].get<std::string>());

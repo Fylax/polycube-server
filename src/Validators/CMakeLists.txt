@@ -11,4 +11,5 @@ set(polycube_server_sources
         ${CMAKE_CURRENT_LIST_DIR}/NumberValidators.cpp
         ${CMAKE_CURRENT_LIST_DIR}/PatternValidator.cpp
         ${CMAKE_CURRENT_LIST_DIR}/UnionValidator.cpp
+        ${CMAKE_CURRENT_LIST_DIR}/XPathValidator.cpp
         PARENT_SCOPE)

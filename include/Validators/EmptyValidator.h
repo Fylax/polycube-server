@@ -22,7 +22,11 @@
 
 class EmptyValidator: public Validator {
 public:
+  EmptyValidator();
   bool Validate(const std::string& value) const final;
+  void IsPath(bool is_path);
+private:
+  bool is_path_;
 };
 
 

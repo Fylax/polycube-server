@@ -45,6 +45,7 @@
 
 #include "../../include/Types/Decimal64.h"
 #include "../../include/Types/Dummies.h"
+#include "../../include/Resources/ListResource.h"
 
 using Pistache::Rest::Router;
 namespace Parser {
@@ -372,7 +373,7 @@ ParseList(const lys_node_list* list, std::shared_ptr<ParentResource> parent) {
     child = child->next;
   }
 
-  const auto& resource = std::make_shared<ParentResource>(
+  const auto& resource = std::make_shared<ListResource>(
       list->name, list->module->name, rest_endpoint, parent, std::move(keys));
   // parse each child using the generic "node" parsing function
   child = list->child;

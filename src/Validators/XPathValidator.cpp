@@ -13,29 +13,13 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
-#pragma once
-#ifndef PARSER_PATHPARAMFIELD_H
-#define PARSER_PATHPARAMFIELD_H
-
-#include <pistache/router.h>
-
+#include "../../include/Validators/XPathValidator.h"
 #include <string>
-#include <memory>
-#include <vector>
 
-#include "Field.h"
-#include "../Validators/Validator.h"
+#include "../../include/Resources/CubeManager.h"
 
-class PathParamField: public Field<Pistache::Rest::Request> {
-private:
-  const std::string name_;
-public:
-  PathParamField(const std::string& name,
-                 std::vector<std::shared_ptr<Validator>>&& validators);
-  const std::string& Name() const;
-  ErrorTag Validate(const Pistache::Rest::Request& value) const final;
-  bool Validate(const std::string& value) const;
-};
+XPathValidator::XPathValidator(const std::string& context): context_(context) {}
 
-
-#endif  // PARSER_PATHPARAMFIELD_H
+bool XPathValidator::Validate(const std::string& value) const {
+  return CubeManager::GetInstance().ValidateXpath(value, context_);
+}

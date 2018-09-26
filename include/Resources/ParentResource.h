@@ -49,11 +49,16 @@ public:
 
   bool IsMandatory() const final;
 
+  bool ValidateXPath(const std::string& xpath) const override;
+
 protected:
   std::vector<PathParamField> fields_;
+  std::vector<std::shared_ptr<Resource>> children_;
+
+  bool ValidateXPathChildren(const std::string& xpath,
+                             std::size_t delimiter) const;
 
 private:
-  std::vector<std::shared_ptr<Resource>> children_;
   /**
    * MUST be set to false only if the parent is a container
    * and it has no presence flag (or explicitly set to false).

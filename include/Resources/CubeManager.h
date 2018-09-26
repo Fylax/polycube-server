@@ -41,8 +41,16 @@ public:
 
   void RemoveCube(const std::string& name);
 
+  /**
+   * Validates an XPath in a given context.
+   * @param xpath XPath to validate.
+   * @param context Context (service name).
+   * @return Whether the XPath is valid
+   */
+  bool ValidateXpath(const std::string& xpath, const std::string& context) const;
+
 private:
-  mutable std::mutex mutex_;
+  mutable std::shared_mutex mutex_;
   std::unordered_map<std::string, std::shared_ptr<Cube>> existing_cubes_;
   std::unordered_set<std::string> existing_cubes_impl_;
 

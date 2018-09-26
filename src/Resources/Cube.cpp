@@ -39,6 +39,23 @@ Cube::~Cube() {
   router->removeRoute(Method::Post, body_rest_endpoint_);
 }
 
+bool Cube::ValidateXPath(const std::string& xpath) const {
+  if (xpath[0] != '/') return false;
+  auto del_pos = xpath.find('/', 1);
+  auto ns_pos = xpath.find(':', 1);
+  // first element MUST be fully-qualified.
+  if (ns_pos < del_pos) return false;
+  auto ns = xpath.substr(1, ns_pos);
+  // resources expect XPath without leading '/' character
+  auto child_xpath = xpath.substr(1);
+  for (const auto& child : children_) {
+    if (child->ModuleName() == ns) {
+      if (child->ValidateXPath(child_xpath)) return true;
+    }
+  }
+  return false;
+}
+
 void Cube::post_body(const Request& request, ResponseWriter response) {
   using nlohmann::detail::value_t;
   nlohmann::json body = nlohmann::json::parse(request.body());
