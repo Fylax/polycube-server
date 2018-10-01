@@ -17,7 +17,10 @@
 #ifndef PARSER_UNIONVALIDATOR_H
 #define PARSER_UNIONVALIDATOR_H
 
+#pragma GCC diagnostic push
+#pragma GCC diagnostic ignored "-Weffc++"
 #include "../../externals/include/nlohmann/json.hpp"
+#pragma GCC diagnostic pop
 
 #include <map>
 #include <memory>

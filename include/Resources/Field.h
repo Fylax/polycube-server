@@ -18,7 +18,10 @@
 #define PARSER_FIELD_H
 
 #include <pistache/router.h>
+#pragma GCC diagnostic push
+#pragma GCC diagnostic ignored "-Weffc++"
 #include "../../externals/include/nlohmann/json.hpp"
+#pragma GCC diagnostic pop
 
 #include <string>
 #include <memory>
@@ -30,6 +33,7 @@
 template<typename T>
 class Field {
 public:
+  virtual ~Field() = default;
   virtual ErrorTag Validate(const T& value) const = 0;
 
   const std::vector<std::shared_ptr<Validator>>& Validators() const {

@@ -18,7 +18,10 @@
 #define PARSER_JSONBODYFIELD_H
 
 #include <libyang/libyang.h>
+#pragma GCC diagnostic push
+#pragma GCC diagnostic ignored "-Weffc++"
 #include "../../externals/include/nlohmann/json.hpp"
+#pragma GCC diagnostic pop
 
 #include <memory>
 #include <string>

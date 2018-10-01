@@ -14,7 +14,13 @@
  * limitations under the License.
  */
 #include "../../include/Resources/CubeManager.h"
+
+#pragma GCC diagnostic push
+#pragma GCC diagnostic ignored "-Weffc++"
+
 #include "../../externals/include/nlohmann/json.hpp"
+
+#pragma GCC diagnostic pop
 
 #include <pistache/router.h>
 
@@ -34,7 +40,8 @@
 #include "../../include/Server/RestServer.h"
 
 
-CubeManager::CubeManager(): existing_cubes_{}, existing_cubes_impl_{} {
+CubeManager::CubeManager(): mutex_{}, existing_cubes_{},
+                            existing_cubes_impl_{} {
   using Pistache::Rest::Routes::bind;
   RestServer::Router()->post("/", bind(&CubeManager::post, this));
 }

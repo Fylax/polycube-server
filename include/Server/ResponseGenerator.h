@@ -18,7 +18,10 @@
 #define PARSER_RESPONSEGENERATOR_H
 
 #include <pistache/http.h>
+#pragma GCC diagnostic push
+#pragma GCC diagnostic ignored "-Weffc++"
 #include "../../externals/include/nlohmann/json.hpp"
+#pragma GCC diagnostic pop
 #include "Error.h"
 #include <vector>
 

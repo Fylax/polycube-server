@@ -23,6 +23,7 @@
 
 class Validator {
  public:
+  virtual ~Validator() = default;
   virtual bool Validate(const std::string& value) const = 0;
 };
 

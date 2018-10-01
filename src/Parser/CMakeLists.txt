@@ -1,6 +1,5 @@
-include_directories(${PROJECT_SOURCE_DIR}/include/Parser)
+set(parser_sources ${CMAKE_CURRENT_LIST_DIR}/Parser.cpp)
 
-set(polycube_server_sources
-        ${polycube_server_sources}
-        ${CMAKE_CURRENT_LIST_DIR}/Parser.cpp
-        PARENT_SCOPE)
+add_library(parser OBJECT ${parser_sources})
+
+target_include_directories(parser PRIVATE ${PROJECT_SOURCE_DIR}/include/Parser)

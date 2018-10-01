@@ -18,7 +18,10 @@
 #define PARSER_RESOURCE_H
 
 #include <pistache/router.h>
+#pragma GCC diagnostic push
+#pragma GCC diagnostic ignored "-Weffc++"
 #include "../../externals/include/nlohmann/json.hpp"
+#pragma GCC diagnostic pop
 
 #include <memory>
 #include <string>
@@ -35,6 +38,8 @@ public:
   Resource(const std::string& name, const std::string& module,
            const std::string& rest_endpoint,
            const std::shared_ptr<ParentResource>& parent);
+
+  virtual ~Resource() = default;
 
   virtual bool IsMandatory() const = 0;
 
