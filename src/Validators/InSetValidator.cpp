@@ -20,8 +20,6 @@
 
 InSetValidator::InSetValidator(): invalid_values_() { }
 
-
-
 bool InSetValidator::Validate(const std::string& value) const {
   return invalid_values_.count(value) == 1;
 }

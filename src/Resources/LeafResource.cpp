@@ -40,7 +40,7 @@ LeafResource::LeafResource(const std::string& name, const std::string& module,
                            std::unique_ptr<const std::string>&& default_value):
     Resource(name, module, rest_endpoint, parent), field_(std::move(field)),
     configurable_(configurable), mandatory_(mandatory),
-    default_(std::move(default_value)) {
+    default_(std::move(default_value)), created_per_cube_{} {
   using Pistache::Rest::Routes::bind;
   auto router = RestServer::Router();
   router->get(rest_endpoint_, bind(&LeafResource::get, this));
@@ -61,12 +61,21 @@ LeafResource::~LeafResource() {
 }
 
 std::vector<Response>
-LeafResource::Validate(const nlohmann::json& body) const {
+LeafResource::Validate(const std::string& cube_name, const nlohmann::json& body,
+                       bool is_overwritable) const {
   using nlohmann::detail::value_t;
   std::vector<Response> errors;
   if (body.empty()) {
     errors.push_back({ErrorTag::kMissingAttribute, name_.data()});
     return errors;
+  }
+
+  if (!is_overwritable) {
+    if (created_per_cube_.count(cube_name) != 0 &&
+        created_per_cube_.at(cube_name).Validate(body.get<std::string>())) {
+      errors.push_back({ErrorTag::kDataExists, ""});
+      return errors;
+    }
   }
 
   auto field = field_->Validate(body);
@@ -90,6 +99,12 @@ void LeafResource::SetDefaultIfMissing(nlohmann::json& body) const {
 }
 
 
+void
+LeafResource::SetValue(const std::string& cube_name,
+                       const nlohmann::json& body) {
+  created_per_cube_[cube_name].AddValue(body.get<std::string>());
+}
+
 bool LeafResource::ValidateXPath(const std::string& xpath) const {
   auto ns_pos = xpath.find(':');  // current namespace delimiter
   std::string name;
@@ -110,7 +125,9 @@ void LeafResource::get(const Request& request, ResponseWriter response) {
   ResponseGenerator::Generate(std::move(errors), std::move(response));
 }
 
-void LeafResource::post(const Request& request, ResponseWriter response) {
+void
+LeafResource::CreateOrReplace(const Request& request, ResponseWriter response,
+                              bool replace) {
   auto errors = Validate(request);
   nlohmann::json jbody;
   if (request.body().empty()) {
@@ -121,7 +138,8 @@ void LeafResource::post(const Request& request, ResponseWriter response) {
 
   SetDefaultIfMissing(jbody);
 
-  auto body = Validate(jbody);
+  auto cube_name = request.param(":cube_name").as<std::string>();
+  auto body = Validate(cube_name, jbody, replace);
   errors.reserve(errors.size() + body.size());
   std::copy(std::begin(body), std::end(body),
             std::back_inserter(errors));
@@ -129,10 +147,15 @@ void LeafResource::post(const Request& request, ResponseWriter response) {
   // TODO: call user code and merge responses
   if (errors.empty()) {
     errors.push_back({kCreated, ""});
+    SetValue(cube_name, jbody);
   }
   ResponseGenerator::Generate(std::move(errors), std::move(response));
 }
 
+void LeafResource::post(const Request& request, ResponseWriter response) {
+  CreateOrReplace(request, std::move(response), false);
+}
+
 void LeafResource::put(const Request& request, ResponseWriter response) {
-  post(request, std::move(response));
+  CreateOrReplace(request, std::move(response), true);
 }

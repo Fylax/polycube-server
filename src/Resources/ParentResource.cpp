@@ -68,7 +68,9 @@ ParentResource::Validate(const Pistache::Rest::Request& request) const {
 }
 
 std::vector<Response>
-ParentResource::Validate(const nlohmann::json& body) const {
+ParentResource::Validate(const std::string& cube_name,
+                         const nlohmann::json& body,
+                         bool is_overwritable) const {
   std::vector<Response> errors;
   for (const auto& child : children_) {
     if (body.count(child->Name()) == 0) {
@@ -76,7 +78,8 @@ ParentResource::Validate(const nlohmann::json& body) const {
         errors.push_back({ErrorTag::kMissingAttribute, child->Name().data()});
       }
     } else {
-      auto child_errors = child->Validate(body.at(child->Name()));
+      auto child_errors = child->Validate(cube_name, body.at(child->Name()),
+                                          is_overwritable);
       errors.reserve(errors.size() + child_errors.size());
       std::copy(std::begin(child_errors), std::end(child_errors),
                 std::back_inserter(errors));
@@ -98,8 +101,16 @@ bool ParentResource::IsMandatory() const {
 }
 
 void ParentResource::SetDefaultIfMissing(nlohmann::json& body) const {
-  for(const auto& child : children_) {
+  for (const auto& child : children_) {
     child->SetDefaultIfMissing(body[child->Name()]);
+  }
+}
+
+void
+ParentResource::SetValue(const std::string& cube_name,
+                         const nlohmann::json& body) {
+  for (const auto& child : children_) {
+    child->SetValue(cube_name, body[child->Name()]);
   }
 }
 
@@ -154,7 +165,9 @@ void ParentResource::get(const Request& request, ResponseWriter response) {
   ResponseGenerator::Generate(std::move(errors), std::move(response));
 }
 
-void ParentResource::post(const Request& request, ResponseWriter response) {
+void
+ParentResource::CreateOrReplace(const Request& request, ResponseWriter response,
+                                bool replace) {
   std::vector<Response> errors;
   if (parent_ != nullptr) errors = parent_->Validate(request);
 
@@ -167,20 +180,25 @@ void ParentResource::post(const Request& request, ResponseWriter response) {
 
   SetDefaultIfMissing(jbody);
 
-  auto body = Validate(jbody);
+  auto cube_name = request.param(":cube_name").as<std::string>();
+  auto body = Validate(cube_name, jbody, replace);
   errors.reserve(errors.size() + body.size());
   std::copy(std::begin(body), std::end(body),
             std::back_inserter(errors));
   // TODO: call user code and merge responses
   if (errors.empty()) {
     errors.push_back({ErrorTag::kCreated, ""});
+    SetValue(cube_name, jbody);
   }
   ResponseGenerator::Generate(std::move(errors), std::move(response));
+}
 
+void ParentResource::post(const Request& request, ResponseWriter response) {
+  CreateOrReplace(request, std::move(response), false);
 }
 
 void ParentResource::put(const Request& request, ResponseWriter response) {
-  post(request, std::move(response));
+  CreateOrReplace(request, std::move(response), true);
 }
 
 void ParentResource::patch(const Request& request, ResponseWriter response) {
@@ -188,9 +206,11 @@ void ParentResource::patch(const Request& request, ResponseWriter response) {
   if (parent_ != nullptr) errors = parent_->Validate(request);
   auto body = nlohmann::json::parse(request.body());
 
+  auto cube_name = request.param(":cube_name").as<std::string>();
   for (const auto& child : children_) {
     if (body.count(child->Name()) != 0) {
-      auto child_errors = child->Validate(body.at(child->Name()));
+      auto child_errors = child->Validate(cube_name, body.at(child->Name()),
+                                          true);
       errors.reserve(errors.size() + child_errors.size());
       std::copy(std::begin(child_errors), std::end(child_errors),
                 std::back_inserter(errors));
