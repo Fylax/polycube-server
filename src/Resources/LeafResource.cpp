@@ -21,6 +21,8 @@
 #include <memory>
 #include <vector>
 #include <utility>
+#include <LeafResource.h>
+
 #include "../../include/Server/Error.h"
 #include "../../include/Resources/ParentResource.h"
 #include "../../include/Server/ResponseGenerator.h"
@@ -83,9 +85,10 @@ bool LeafResource::IsMandatory() const {
   return mandatory_;
 }
 
-bool LeafResource::HasDefault() const {
-  return default_ != nullptr;
+void LeafResource::SetDefaultIfMissing(nlohmann::json& body) const {
+  if (body.empty() && default_ != nullptr) body = *default_;
 }
+
 
 bool LeafResource::ValidateXPath(const std::string& xpath) const {
   auto ns_pos = xpath.find(':');  // current namespace delimiter
@@ -109,13 +112,16 @@ void LeafResource::get(const Request& request, ResponseWriter response) {
 
 void LeafResource::post(const Request& request, ResponseWriter response) {
   auto errors = Validate(request);
-  std::vector<Response> body;
+  nlohmann::json jbody;
   if (request.body().empty()) {
-    body = Validate(nlohmann::json::parse("{}"));
+    jbody = nlohmann::json::parse("{}");
   } else {
-    body = Validate(nlohmann::json::parse(request.body()));
+    jbody = nlohmann::json::parse(request.body());
   }
 
+  SetDefaultIfMissing(jbody);
+
+  auto body = Validate(jbody);
   errors.reserve(errors.size() + body.size());
   std::copy(std::begin(body), std::end(body),
             std::back_inserter(errors));

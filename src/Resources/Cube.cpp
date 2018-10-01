@@ -26,7 +26,7 @@
 Cube::Cube(const std::string& name, const std::string& base_address):
     ParentResource(name, name, base_address + name + "/:" + name + '/', nullptr,
                    std::vector<PathParamField>{PathParamField{
-                       name, InSetValidator::CreateWithInSetValidator()}}),
+                       name, InSetValidator::Create()}}),
     body_rest_endpoint_(base_address + name + '/'), mutex_{} {
   using Pistache::Rest::Routes::bind;
   auto router = RestServer::Router();

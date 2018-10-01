@@ -34,7 +34,7 @@ void InSetValidator::RemoveValue(const std::string& value) {
 invalid_values_.erase(value);
 }
 
-std::vector<std::shared_ptr<Validator>> InSetValidator::CreateWithInSetValidator() {
+std::vector<std::shared_ptr<Validator>> InSetValidator::Create() {
   return std::vector<std::shared_ptr<Validator>>{
     std::static_pointer_cast<Validator>(
       std::make_shared<InSetValidator>()

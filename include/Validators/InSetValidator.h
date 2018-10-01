@@ -26,7 +26,7 @@
 
 class InSetValidator: public Validator {
 public:
-  static std::vector<std::shared_ptr<Validator>> CreateWithInSetValidator();
+  static std::vector<std::shared_ptr<Validator>> Create();
   InSetValidator();
   bool Validate(const std::string& value) const final;
   void AddValue(const std::string& value);

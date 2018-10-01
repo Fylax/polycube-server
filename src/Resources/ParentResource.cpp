@@ -20,6 +20,8 @@
 #include <memory>
 #include <vector>
 #include <utility>
+#include <ParentResource.h>
+
 #include "../../include/Server/Error.h"
 #include "../../include/Server/ResponseGenerator.h"
 #include "../../include/Server/RestServer.h"
@@ -95,6 +97,12 @@ bool ParentResource::IsMandatory() const {
   return false;
 }
 
+void ParentResource::SetDefaultIfMissing(nlohmann::json& body) const {
+  for(const auto& child : children_) {
+    child->SetDefaultIfMissing(body[child->Name()]);
+  }
+}
+
 bool ParentResource::ValidateXPath(const std::string& xpath) const {
   auto del_pos = xpath.find('/');  // current delimiter
   auto ns_pos = xpath.find(':');  // current namespace delimiter
@@ -149,12 +157,17 @@ void ParentResource::get(const Request& request, ResponseWriter response) {
 void ParentResource::post(const Request& request, ResponseWriter response) {
   std::vector<Response> errors;
   if (parent_ != nullptr) errors = parent_->Validate(request);
-  std::vector<Response> body;
+
+  nlohmann::json jbody;
   if (request.body().empty()) {
-    body = Validate(nlohmann::json::parse("{}"));
+    jbody = nlohmann::json::parse("{}");
   } else {
-    body = Validate(nlohmann::json::parse(request.body()));
+    jbody = nlohmann::json::parse(request.body());
   }
+
+  SetDefaultIfMissing(jbody);
+
+  auto body = Validate(jbody);
   errors.reserve(errors.size() + body.size());
   std::copy(std::begin(body), std::end(body),
             std::back_inserter(errors));

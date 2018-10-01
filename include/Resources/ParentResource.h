@@ -49,6 +49,8 @@ public:
 
   bool IsMandatory() const final;
 
+  void SetDefaultIfMissing(nlohmann::json& body) const final;
+
   bool ValidateXPath(const std::string& xpath) const override;
 
 protected:

@@ -45,7 +45,7 @@ public:
 
   bool IsMandatory() const final;
 
-  bool HasDefault() const;
+  void SetDefaultIfMissing(nlohmann::json& body) const final;
 
   bool ValidateXPath(const std::string& xpath) const final;
 

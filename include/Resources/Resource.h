@@ -56,6 +56,8 @@ public:
   virtual std::vector<Response>
   Validate(const Pistache::Rest::Request& request) const = 0;
 
+  virtual void SetDefaultIfMissing(nlohmann::json& body) const = 0;
+
 protected:
   const std::string name_;
   const std::string rest_endpoint_;
