@@ -54,17 +54,12 @@ public:
 
   virtual bool ValidateXPath(const std::string& xpath) const = 0;
 
-  virtual std::vector<Response> Validate(const std::string& cube_name,
-                                         const nlohmann::json& body,
-                                         bool is_overwritable) const = 0;
+  virtual std::vector<Response> Validate(const nlohmann::json& body) const = 0;
 
   virtual std::vector<Response>
   Validate(const Pistache::Rest::Request& request) const = 0;
 
   virtual void SetDefaultIfMissing(nlohmann::json& body) const = 0;
-
-  virtual void
-  SetValue(const std::string& cube_name, const nlohmann::json& body) = 0;
 
 protected:
   const std::string name_;
@@ -73,8 +68,7 @@ protected:
   const std::string module_;
 
   virtual void CreateOrReplace(const Pistache::Rest::Request& request,
-                               Pistache::Http::ResponseWriter response,
-                               bool replace) = 0;
+                               Pistache::Http::ResponseWriter response) = 0;
 };
 
 #endif  // PARSER_RESOURCE_H

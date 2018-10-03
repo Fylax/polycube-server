@@ -42,8 +42,7 @@ public:
   ~ParentResource();
 
   std::vector<Response>
-  Validate(const std::string& cube_name, const nlohmann::json& body,
-           bool is_overwritable) const final;
+  Validate(const nlohmann::json& body) const final;
 
   std::vector<Response> Validate(const Request& value) const final;
 
@@ -52,8 +51,6 @@ public:
   bool IsMandatory() const final;
 
   void SetDefaultIfMissing(nlohmann::json& body) const final;
-
-  void SetValue(const std::string& cube_name, const nlohmann::json& body) final;
 
   bool ValidateXPath(const std::string& xpath) const override;
 
@@ -66,15 +63,14 @@ protected:
 
 private:
   /**
-   * MUST be set to false only if the parent is a container
+   * MUST be set to true only if the parent is a container
    * and it has no presence flag (or explicitly set to false).
    */
   const bool container_presence_;
 
   void get(const Request& request, ResponseWriter response);
 
-  void CreateOrReplace(const Request& request, ResponseWriter response,
-                       bool replace) final;
+  void CreateOrReplace(const Request& request, ResponseWriter response) final;
 
   virtual void post(const Request& request, ResponseWriter response);
 

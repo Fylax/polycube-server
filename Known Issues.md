@@ -1,2 +1,3 @@
 - Since Cube instance data is stored inside the cube itself, the validator cannot check `leafref` with `require-instance` set to `true`
 - Since Cube instance data is stored inside the cube itself, the validator cannot check `instance-identifier` with `require-instance` set to `true`
+- Same applies for `when` and `must`.

@@ -40,9 +40,7 @@ public:
 
   ~LeafResource();
 
-  std::vector<Response> Validate(const std::string& cube_name,
-                                 const nlohmann::json& body,
-                                 bool is_overwritable) const final;
+  std::vector<Response> Validate(const nlohmann::json& body) const final;
 
   std::vector<Response>
   Validate(const Pistache::Rest::Request& value) const final;
@@ -51,8 +49,6 @@ public:
 
   void SetDefaultIfMissing(nlohmann::json& body) const final;
 
-  void SetValue(const std::string& cube_name, const nlohmann::json& body) final;
-
   bool ValidateXPath(const std::string& xpath) const final;
 
 private:
@@ -60,12 +56,10 @@ private:
   const bool configurable_;
   const bool mandatory_;
   const std::unique_ptr<const std::string> default_;
-  std::unordered_map<std::string, InSetValidator> created_per_cube_;
 
   void get(const Request& request, ResponseWriter response);
 
-  void CreateOrReplace(const Request& request, ResponseWriter response,
-                       bool replace) final;
+  void CreateOrReplace(const Request& request, ResponseWriter response) final;
 
   void post(const Request& request, ResponseWriter response);
 
