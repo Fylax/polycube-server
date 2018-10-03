@@ -38,16 +38,16 @@ public:
                bool configurable, bool mandatory,
                std::unique_ptr<const std::string>&& default_value);
 
-  ~LeafResource();
+  ~LeafResource() override;
 
-  std::vector<Response> Validate(const nlohmann::json& body) const final;
+  std::vector<Response> Validate(const nlohmann::json& body) const override;
 
   std::vector<Response>
   Validate(const Pistache::Rest::Request& value) const final;
 
   bool IsMandatory() const final;
 
-  void SetDefaultIfMissing(nlohmann::json& body) const final;
+  void SetDefaultIfMissing(nlohmann::json& body) const override;
 
   bool ValidateXPath(const std::string& xpath) const final;
 

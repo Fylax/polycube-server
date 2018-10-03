@@ -48,6 +48,7 @@
 #include "../../include/Types/Decimal64.h"
 #include "../../include/Types/Dummies.h"
 #include "../../include/Resources/ListResource.h"
+#include "../../include/Resources/LeafListResource.h"
 
 using Pistache::Rest::Router;
 namespace Parser {
@@ -72,6 +73,9 @@ void ParseList(const lys_node_list* list,
 
 void ParseLeaf(const lys_node_leaf* leaf,
                std::shared_ptr<ParentResource> parent);
+
+void ParseLeafList(const lys_node_leaflist* leaflist,
+                   std::shared_ptr<ParentResource> parent);
 // END DECLARATIONS
 
 // BEGIN TYPE VALIDATORS
@@ -321,6 +325,7 @@ ParseNode(const lys_node* data, const std::shared_ptr<ParentResource>& parent) {
       ParseLeaf(reinterpret_cast<const lys_node_leaf*>(data), parent);
       break;
     case LYS_LEAFLIST:
+      ParseLeafList(reinterpret_cast<const lys_node_leaflist*>(data), parent);
       break;
     case LYS_LIST:
       ParseList(reinterpret_cast<const lys_node_list*>(data), parent);
@@ -428,6 +433,28 @@ ParseLeaf(const lys_node_leaf* leaf, std::shared_ptr<ParentResource> parent) {
   auto leaf_res = std::make_unique<LeafResource>(
       leaf->name, leaf->module->name, parent->Endpoint() + leaf->name, parent,
       std::move(field), configurable, mandatory, std::move(default_value));
+  parent->AddChild(std::move(leaf_res));
+}
+
+void ParseLeafList(const lys_node_leaflist* leaflist,
+                   std::shared_ptr<ParentResource> parent) {
+  bool configurable = ((leaflist->flags & LYS_CONFIG_MASK) ^ 2) != 0;
+  bool mandatory = (leaflist->flags & LYS_MAND_MASK) != 0;
+  auto validators = GetValidators(leaflist->type);
+  auto field = std::make_unique<JsonBodyField>(leaflist->type.base,
+                                               std::move(validators));
+  std::vector<std::string> default_value;
+  if (leaflist->dflt != nullptr) {
+    const auto defaults = leaflist->dflt;
+    for (std::uint8_t i = 0; i < leaflist->dflt_size; ++i) {
+      default_value.emplace_back(defaults[i]);
+    }
+  }
+  auto leaf_res = std::make_unique<LeafListResource>(
+      leaflist->name, leaflist->module->name, parent->Endpoint() +
+                                              leaflist->name, parent,
+      std::move(field), configurable, mandatory,
+      std::move(default_value));
   parent->AddChild(std::move(leaf_res));
 }
 // END YANG NODES PARSING

@@ -6,7 +6,8 @@ set(resources_sources
         ${CMAKE_CURRENT_LIST_DIR}/ListResource.cpp
         ${CMAKE_CURRENT_LIST_DIR}/LeafResource.cpp
         ${CMAKE_CURRENT_LIST_DIR}/PathParamField.cpp
-        ${CMAKE_CURRENT_LIST_DIR}/JsonBodyField.cpp)
+        ${CMAKE_CURRENT_LIST_DIR}/JsonBodyField.cpp
+        ${CMAKE_CURRENT_LIST_DIR}/LeafListResource.cpp)
 
 add_library(resources OBJECT ${resources_sources})
 

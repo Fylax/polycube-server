@@ -39,7 +39,7 @@ public:
                  std::vector<PathParamField>&& fields,
                  bool container_presence = false);
 
-  ~ParentResource();
+  ~ParentResource() override;
 
   std::vector<Response>
   Validate(const nlohmann::json& body) const final;

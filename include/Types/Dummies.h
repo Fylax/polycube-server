@@ -38,5 +38,8 @@ class Enum {
 class XPath {
 };
 
+class List {
+};
+
 
 #endif //PARSER_DUMMIES_H

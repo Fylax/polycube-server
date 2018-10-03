@@ -27,7 +27,7 @@
 JsonBodyField::JsonBodyField(
     LY_DATA_TYPE type, std::vector<std::shared_ptr<Validator>>&& validators):
     Field<nlohmann::json>(std::move(validators)),
-        allowed_types_(JsonBodyField::FromYangType(type)) {}
+    allowed_types_(JsonBodyField::FromYangType(type)) {}
 
 ErrorTag JsonBodyField::Validate(const nlohmann::json& value) const {
   if (allowed_types_.count(value.type()) == 0) return ErrorTag::kBadAttribute;
@@ -50,8 +50,7 @@ JsonBodyField::AcceptableTypes(nlohmann::detail::value_t type) {
     case nlohmann::detail::value_t::array:
       types.reserve(2);
       types.insert(std::type_index(typeid(Empty)));
-      // TODO not managed (yet)
-      // TODO ListType
+      types.insert(std::type_index(typeid(List)));
       break;
     case nlohmann::detail::value_t::string:
       types.reserve(7);

@@ -62,7 +62,6 @@ LeafResource::~LeafResource() {
 
 std::vector<Response>
 LeafResource::Validate(const nlohmann::json& body) const {
-  using nlohmann::detail::value_t;
   std::vector<Response> errors;
   if (body.empty()) {
     errors.push_back({ErrorTag::kMissingAttribute, name_.data()});

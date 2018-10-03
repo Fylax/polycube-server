@@ -34,7 +34,7 @@ class Cube: public ParentResource {
 public:
   Cube(const std::string& name, const std::string& base_address);
 
-  ~Cube();
+  ~Cube() final;
 
   bool ValidateXPath(const std::string& xpath) const final;
 
