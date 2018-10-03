@@ -61,6 +61,9 @@ void ParseModule(const lys_module* module, const std::shared_ptr<Cube>& cube);
 void ParseNode(const lys_node* data,
                const std::shared_ptr<ParentResource>& parent);
 
+void ParseContainer(const lys_node_container* data,
+                    const std::shared_ptr<ParentResource>& parent);
+
 void ParseGrouping(const lys_node_grp* group,
                    const std::shared_ptr<ParentResource>& parent);
 
@@ -288,6 +291,7 @@ const ValidatorList GetValidators(const lys_type type) {
 }
 // END TYPE VALIDATORS
 
+// START YANG NODES PARSING
 void ParseModule(const lys_module* module, const std::shared_ptr<Cube>& cube) {
   auto typedefs = module->tpdf;
   for (auto i = 0; i < module->tpdf_size; ++i) {
@@ -309,6 +313,7 @@ ParseNode(const lys_node* data, const std::shared_ptr<ParentResource>& parent) {
     case LYS_UNKNOWN:
       break;
     case LYS_CONTAINER:
+      ParseContainer(reinterpret_cast<const lys_node_container*>(data), parent);
       break;
     case LYS_CHOICE:
       break;
@@ -346,6 +351,20 @@ ParseNode(const lys_node* data, const std::shared_ptr<ParentResource>& parent) {
     case LYS_EXT:
       break;
   }
+}
+
+void ParseContainer(const lys_node_container* data,
+                    const std::shared_ptr<ParentResource>& parent) {
+  const auto rest_endpoint = parent->Endpoint() + data->name + '/';
+  const auto& resource = std::make_shared<ParentResource>(
+      data->name, data->module->name, rest_endpoint, parent,
+      std::vector<PathParamField>(), data->presence != nullptr);
+  auto child = data->child;
+  while (child != nullptr) {
+    ParseNode(child, resource);
+    child = child->next;
+  }
+  parent->AddChild(resource);
 }
 
 void ParseGrouping(const lys_node_grp* group,
@@ -411,7 +430,7 @@ ParseLeaf(const lys_node_leaf* leaf, std::shared_ptr<ParentResource> parent) {
       std::move(field), configurable, mandatory, std::move(default_value));
   parent->AddChild(std::move(leaf_res));
 }
-
+// END YANG NODES PARSING
 }  // namespace
 
 std::string GetName(const std::string& yang) {
