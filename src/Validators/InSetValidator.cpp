@@ -17,6 +17,8 @@
 #include <memory>
 #include <string>
 #include <vector>
+#include <InSetValidator.h>
+
 
 InSetValidator::InSetValidator(): invalid_values_() { }
 
@@ -37,4 +39,8 @@ std::vector<std::shared_ptr<Validator>> InSetValidator::Create() {
     std::static_pointer_cast<Validator>(
       std::make_shared<InSetValidator>()
   )};
+}
+
+const std::unordered_set<std::string>& InSetValidator::Values() {
+  return invalid_values_;
 }

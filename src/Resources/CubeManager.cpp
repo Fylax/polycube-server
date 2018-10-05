@@ -46,6 +46,12 @@ CubeManager::CubeManager(): mutex_{}, existing_cubes_{},
   RestServer::Router()->post("/", bind(&CubeManager::post, this));
 }
 
+
+bool CubeManager::ExistsCube(const std::string& name) {
+  std::unique_lock<std::shared_mutex> lock(mutex_);
+  return CubeManager::existing_cubes_impl_.count(name) != 0;
+}
+
 bool CubeManager::CreateCube(const std::string& name) {
   std::unique_lock<std::shared_mutex> lock(mutex_);
   return CubeManager::existing_cubes_impl_.insert(name).second;

@@ -31,6 +31,7 @@ public:
   bool Validate(const std::string& value) const final;
   void AddValue(const std::string& value);
   void RemoveValue(const std::string& value);
+  const std::unordered_set<std::string>& Values();
 private:
   std::unordered_set<std::string> invalid_values_;
 };

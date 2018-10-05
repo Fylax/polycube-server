@@ -37,6 +37,8 @@ public:
 
   void operator=(CubeManager const&) = delete;
 
+  bool ExistsCube(const std::string& name);
+
   bool CreateCube(const std::string& name);
 
   void RemoveCube(const std::string& name);

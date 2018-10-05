@@ -42,12 +42,16 @@ private:
   const std::string body_rest_endpoint_;
   std::unordered_map<std::string, std::shared_mutex> mutex_;
 
+  void CreateOrReplace(const std::string& name, const nlohmann::json& body,
+                       ResponseWriter response, bool replace);
+
   void post(const Request& request, ResponseWriter response) final;
+
+  void get_body(const Request& request, ResponseWriter response);
 
   void post_body(const Request& request, ResponseWriter response);
 
-  void CreateOrReplace(const std::string& name, const nlohmann::json& body,
-                       ResponseWriter response);
+  void patch_body(const Request& request, ResponseWriter response);
 };
 
 
