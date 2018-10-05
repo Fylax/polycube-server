@@ -46,7 +46,8 @@ private:
 
   void post_body(const Request& request, ResponseWriter response);
 
-  void create(const std::string& name, ResponseWriter&& response);
+  void CreateOrReplace(const std::string& name, const nlohmann::json& body,
+                       ResponseWriter response);
 };
 
 

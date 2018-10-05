@@ -21,6 +21,8 @@
 #include <memory>
 #include <vector>
 #include <utility>
+#include <Cube.h>
+
 #include "../../include/Resources/CubeManager.h"
 #include "../../include/Validators/InSetValidator.h"
 #include "../../include/Server/ResponseGenerator.h"
@@ -59,6 +61,24 @@ bool Cube::ValidateXPath(const std::string& xpath) const {
   return false;
 }
 
+void Cube::CreateOrReplace(const std::string& name, const nlohmann::json& body,
+                           ResponseWriter response) {
+  if (CubeManager::GetInstance().CreateCube(name)) {
+    auto errors = Validate(body);
+    if (errors.empty()) {
+      auto val = std::static_pointer_cast<InSetValidator>(
+          fields_[0].Validators()[0]);
+      val->AddValue(name);
+      errors.push_back({ErrorTag::kCreated, ""});
+    }
+    ResponseGenerator::Generate(std::move(errors), std::move(response));
+  } else {
+    ResponseGenerator::Generate(
+        std::vector<Response>{{ErrorTag::kDataExists, ""}},
+        std::move(response));
+  }
+}
+
 void Cube::post_body(const Request& request, ResponseWriter response) {
   using nlohmann::detail::value_t;
   nlohmann::json body = nlohmann::json::parse(request.body());
@@ -69,24 +89,11 @@ void Cube::post_body(const Request& request, ResponseWriter response) {
         std::move(response));
     return;
   }
-  create(body["name"], std::move(response));
+  CreateOrReplace(body["name"].get<std::string>(), body, std::move(response));
 }
 
 void Cube::post(const Request& request, ResponseWriter response) {
   auto name = request.param(":cube_name").as<std::string>();
-  create(name, std::move(response));
-}
-
-void Cube::create(const std::string& name, ResponseWriter&& response) {
-  if (CubeManager::GetInstance().CreateCube(name)) {
-    auto val = std::static_pointer_cast<InSetValidator>(
-        fields_[0].Validators()[0]);
-    val->AddValue(name);
-    ResponseGenerator::Generate(std::vector<Response>{{kCreated, ""}},
-                                std::move(response));
-  } else {
-    ResponseGenerator::Generate(
-        std::vector<Response>{{ErrorTag::kDataExists, ""}},
-        std::move(response));
-  }
+  CreateOrReplace(name, nlohmann::json::parse(request.body()),
+                  std::move(response));
 }

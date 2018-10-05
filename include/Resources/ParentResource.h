@@ -63,6 +63,9 @@ protected:
   bool ValidateXPathChildren(const std::string& xpath,
                              std::size_t delimiter) const;
 
+  void
+  CreateOrReplace(const Request& request, ResponseWriter response) override;
+
 private:
   /**
    * MUST be set to true only if the parent is a container
@@ -71,9 +74,6 @@ private:
   const bool container_presence_;
 
   void get(const Request& request, ResponseWriter response);
-
-  void
-  CreateOrReplace(const Request& request, ResponseWriter response) override;
 
   virtual void post(const Request& request, ResponseWriter response);
 
