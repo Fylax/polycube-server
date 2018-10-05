@@ -28,15 +28,15 @@
 #include "../../include/Server/ResponseGenerator.h"
 #include "../../include/Server/RestServer.h"
 
-LeafListResource::LeafListResource(
-    const std::string& name, const std::string& module,
-    const std::string& rest_endpoint,
-    const std::shared_ptr<ParentResource>& parent,
-    std::unique_ptr<JsonBodyField>&& field, bool configurable, bool mandatory,
-    std::vector<std::string>&& default_value):
-    LeafResource(name, module, rest_endpoint, parent, std::move(field),
-                 configurable, mandatory, nullptr),
-    default_(std::move(default_value)) {
+LeafListResource::LeafListResource(std::string name, std::string module,
+                                   std::string rest_endpoint,
+                                   std::shared_ptr<ParentResource> parent,
+                                   std::unique_ptr<JsonBodyField>&& field,
+                                   bool configurable, bool mandatory,
+                                   std::vector<std::string>&& default_value):
+    LeafResource(std::move(name), std::move(module), std::move(rest_endpoint),
+                 std::move(parent), std::move(field), configurable, mandatory,
+                 nullptr), default_(std::move(default_value)) {
   using Pistache::Rest::Routes::bind;
   auto router = RestServer::Router();
   router->get(rest_endpoint_ + "/:entry",
@@ -76,7 +76,7 @@ void LeafListResource::SetDefaultIfMissing(nlohmann::json& body) const {
 
 void
 LeafListResource::get_entry(const Request& request, ResponseWriter response) {
-  auto errors = parent_->Validate(request);
+  auto errors = parent_->Validate(request, name_);
   auto value = nlohmann::json::parse(request.param(":entry").as<std::string>());
   auto body = LeafResource::Validate(value);
   errors.reserve(errors.size() + body.size());

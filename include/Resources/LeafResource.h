@@ -31,9 +31,9 @@ using Pistache::Http::ResponseWriter;
 
 class LeafResource: public Resource {
 public:
-  LeafResource(const std::string& name, const std::string& module,
-               const std::string& rest_endpoint,
-               const std::shared_ptr<ParentResource>& parent,
+  LeafResource(std::string name, std::string module,
+               std::string rest_endpoint,
+               std::shared_ptr<ParentResource> parent,
                std::unique_ptr<JsonBodyField>&& field,
                bool configurable, bool mandatory,
                std::unique_ptr<const std::string>&& default_value);
@@ -43,7 +43,8 @@ public:
   std::vector<Response> Validate(const nlohmann::json& body) const override;
 
   std::vector<Response>
-  Validate(const Pistache::Rest::Request& value) const final;
+  Validate(const Pistache::Rest::Request& value,
+           const std::string& caller_name) const final;
 
   bool IsMandatory() const final;
 

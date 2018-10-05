@@ -2,3 +2,4 @@
 - Since Cube instance data is stored inside the cube itself, the validator cannot check `instance-identifier` with `require-instance` set to `true`
 - Same applies for `when` and `must`.
 - Same applies for `min-elements` and `max-elements`.
+- `choice` `mandatory` constraint not enforced (unclear how does it work)

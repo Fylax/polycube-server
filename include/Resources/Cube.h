@@ -32,7 +32,7 @@ using Pistache::Http::ResponseWriter;
 
 class Cube: public ParentResource {
 public:
-  Cube(const std::string& name, const std::string& base_address);
+  Cube(const std::string& name, std::string base_address);
 
   ~Cube() final;
 

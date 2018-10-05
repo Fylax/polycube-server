@@ -26,9 +26,8 @@
 
 class ListResource: public ParentResource {
 public:
-  ListResource(const std::string& name, const std::string& module,
-               const std::string& rest_endpoint,
-               const std::shared_ptr<ParentResource>& parent,
+  ListResource(std::string name, std::string module, std::string rest_endpoint,
+               std::shared_ptr<ParentResource> parent,
                std::vector<PathParamField>&& fields);
 
   bool ValidateXPath(const std::string& xpath) const final;

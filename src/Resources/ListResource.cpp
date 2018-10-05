@@ -21,14 +21,12 @@
 #include <vector>
 #include <utility>
 
-ListResource::ListResource(const std::string& name, const std::string& module,
-                           const std::string& rest_endpoint,
-                           const std::shared_ptr<ParentResource>& parent,
+ListResource::ListResource(std::string name, std::string module,
+                           std::string rest_endpoint,
+                           std::shared_ptr<ParentResource> parent,
                            std::vector<PathParamField>&& fields):
-    ParentResource(name, module, rest_endpoint, parent,
-                   std::move(fields), false) {
-
-}
+    ParentResource(std::move(name), std::move(module), std::move(rest_endpoint),
+                   std::move(parent), std::move(fields), false) {}
 
 bool ListResource::ValidateXPath(const std::string& xpath) const {
   auto del_pos = xpath.find('/');  // current delimiter

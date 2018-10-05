@@ -38,9 +38,9 @@ class ParentResource;
 
 class Resource {
 public:
-  Resource(const std::string& name, const std::string& module,
-           const std::string& rest_endpoint,
-           const std::shared_ptr<ParentResource>& parent);
+  Resource(std::string&& name, std::string&& module,
+           std::string&& rest_endpoint,
+           std::shared_ptr<ParentResource>&& parent);
 
   virtual ~Resource() = default;
 
@@ -57,7 +57,8 @@ public:
   virtual std::vector<Response> Validate(const nlohmann::json& body) const = 0;
 
   virtual std::vector<Response>
-  Validate(const Pistache::Rest::Request& request) const = 0;
+  Validate(const Pistache::Rest::Request& request,
+           const std::string& caller_name) const = 0;
 
   virtual void SetDefaultIfMissing(nlohmann::json& body) const = 0;
 

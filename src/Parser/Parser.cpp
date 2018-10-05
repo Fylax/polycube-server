@@ -43,12 +43,13 @@
 
 #include "../../include/Resources/Cube.h"
 #include "../../include/Resources/LeafResource.h"
+#include "../../include/Resources/LeafListResource.h"
 #include "../../include/Resources/ParentResource.h"
+#include "../../include/Resources/ListResource.h"
+#include "../../include/Resources/ChoiceResource.h"
 
 #include "../../include/Types/Decimal64.h"
 #include "../../include/Types/Dummies.h"
-#include "../../include/Resources/ListResource.h"
-#include "../../include/Resources/LeafListResource.h"
 
 using Pistache::Rest::Router;
 namespace Parser {
@@ -69,13 +70,19 @@ void ParseGrouping(const lys_node_grp* group,
                    const std::shared_ptr<ParentResource>& parent);
 
 void ParseList(const lys_node_list* list,
-               std::shared_ptr<ParentResource> parent);
+               const std::shared_ptr<ParentResource>& parent);
 
 void ParseLeaf(const lys_node_leaf* leaf,
-               std::shared_ptr<ParentResource> parent);
+               const std::shared_ptr<ParentResource>& parent);
 
 void ParseLeafList(const lys_node_leaflist* leaflist,
-                   std::shared_ptr<ParentResource> parent);
+                   const std::shared_ptr<ParentResource>& parent);
+
+void ParseChoice(const lys_node_choice* choice,
+                 const std::shared_ptr<ParentResource>& parent);
+
+void ParseCase(const lys_node_case* choice_case,
+               const std::shared_ptr<ParentResource>& choice);
 // END DECLARATIONS
 
 // BEGIN TYPE VALIDATORS
@@ -381,8 +388,8 @@ void ParseGrouping(const lys_node_grp* group,
   }
 }
 
-void
-ParseList(const lys_node_list* list, std::shared_ptr<ParentResource> parent) {
+void ParseList(const lys_node_list* list,
+               const std::shared_ptr<ParentResource>& parent) {
   auto keys = std::vector<PathParamField>();
   auto key_names = std::set<std::string>();
   auto rest_endpoint = parent->Endpoint() + list->name + '/';
@@ -419,8 +426,8 @@ ParseList(const lys_node_list* list, std::shared_ptr<ParentResource> parent) {
   parent->AddChild(resource);
 }
 
-void
-ParseLeaf(const lys_node_leaf* leaf, std::shared_ptr<ParentResource> parent) {
+void ParseLeaf(const lys_node_leaf* leaf,
+               const std::shared_ptr<ParentResource>& parent) {
   bool configurable = ((leaf->flags & LYS_CONFIG_MASK) ^ 2) != 0;
   bool mandatory = (leaf->flags & LYS_MAND_MASK) != 0;
   auto validators = GetValidators(leaf->type);
@@ -437,7 +444,7 @@ ParseLeaf(const lys_node_leaf* leaf, std::shared_ptr<ParentResource> parent) {
 }
 
 void ParseLeafList(const lys_node_leaflist* leaflist,
-                   std::shared_ptr<ParentResource> parent) {
+                   const std::shared_ptr<ParentResource>& parent) {
   bool configurable = ((leaflist->flags & LYS_CONFIG_MASK) ^ 2) != 0;
   bool mandatory = (leaflist->flags & LYS_MAND_MASK) != 0;
   auto validators = GetValidators(leaflist->type);
@@ -456,6 +463,31 @@ void ParseLeafList(const lys_node_leaflist* leaflist,
       std::move(field), configurable, mandatory,
       std::move(default_value));
   parent->AddChild(std::move(leaf_res));
+}
+
+void ParseChoice(const lys_node_choice* choice,
+                 const std::shared_ptr<ParentResource>& parent) {
+  bool mandatory = (choice->flags & LYS_MAND_MASK) != 0;
+  std::unique_ptr<const std::string> default_case = nullptr;
+  if (choice->dflt != nullptr) {
+    // if the descendant is a case node, descend again to the actual
+    // default node
+    if (choice->dflt->nodetype == LYS_CASE) {
+      default_case = std::make_unique<const std::string>(choice->dflt->child->name);
+    } else {
+      default_case = std::make_unique<const std::string>(choice->dflt->name);
+    }
+  }
+  auto resource = std::make_unique<ChoiceResource>(
+      choice->name, choice->module->name,
+      parent->Endpoint() + choice->name + "/:case/", parent, mandatory,
+      std::move(default_case));
+
+  auto child = choice->child;
+  while (child != nullptr) {
+
+    child = child->next;
+  }
 }
 // END YANG NODES PARSING
 }  // namespace

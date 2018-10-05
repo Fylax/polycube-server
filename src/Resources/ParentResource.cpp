@@ -26,13 +26,13 @@
 #include "../../include/Server/ResponseGenerator.h"
 #include "../../include/Server/RestServer.h"
 
-ParentResource::ParentResource(const std::string& name,
-                               const std::string& module,
-                               const std::string& rest_endpoint,
-                               const std::shared_ptr<ParentResource>& parent,
+ParentResource::ParentResource(std::string name, std::string module,
+                               std::string rest_endpoint,
+                               std::shared_ptr<ParentResource> parent,
                                std::vector<PathParamField>&& fields,
                                bool container_presence):
-    Resource(name, module, rest_endpoint, parent), fields_(std::move(fields)),
+    Resource(std::move(name), std::move(module), std::move(rest_endpoint),
+        std::move(parent)), fields_(std::move(fields)),
     children_(), container_presence_(container_presence) {
   using Pistache::Rest::Routes::bind;
   auto router = RestServer::Router();
@@ -52,10 +52,11 @@ ParentResource::~ParentResource() {
 }
 
 std::vector<Response>
-ParentResource::Validate(const Pistache::Rest::Request& request) const {
+ParentResource::Validate(const Pistache::Rest::Request& request,
+                         const std::string& caller_name) const {
   std::vector<Response> errors;
   if (parent_ != nullptr) {
-    errors = parent_->Validate(request);
+    errors = parent_->Validate(request, name_);
   }
 
   for (const auto& field : fields_) {
@@ -146,7 +147,7 @@ bool ParentResource::ValidateXPathChildren(const std::string& xpath,
 
 void ParentResource::get(const Request& request, ResponseWriter response) {
   std::vector<Response> errors;
-  if (parent_ != nullptr) errors = parent_->Validate(request);
+  if (parent_ != nullptr) errors = parent_->Validate(request, name_);
   // TODO: call user code and merge responses
   if (errors.empty()) {
     errors.push_back({ErrorTag::kOk, ""});
@@ -157,7 +158,7 @@ void ParentResource::get(const Request& request, ResponseWriter response) {
 void ParentResource::CreateOrReplace(const Request& request,
                                      ResponseWriter response) {
   std::vector<Response> errors;
-  if (parent_ != nullptr) errors = parent_->Validate(request);
+  if (parent_ != nullptr) errors = parent_->Validate(request, name_);
 
   nlohmann::json jbody;
   if (request.body().empty()) {
@@ -189,7 +190,7 @@ void ParentResource::put(const Request& request, ResponseWriter response) {
 
 void ParentResource::patch(const Request& request, ResponseWriter response) {
   std::vector<Response> errors;
-  if (parent_ != nullptr) errors = parent_->Validate(request);
+  if (parent_ != nullptr) errors = parent_->Validate(request, name_);
   auto body = nlohmann::json::parse(request.body());
 
   for (const auto& child : children_) {

@@ -33,9 +33,9 @@ using Pistache::Http::ResponseWriter;
 
 class ParentResource: public Resource {
 public:
-  ParentResource(const std::string& name, const std::string& module,
-                 const std::string& rest_endpoint,
-                 const std::shared_ptr<ParentResource>& parent,
+  ParentResource(std::string name, std::string module,
+                 std::string rest_endpoint,
+                 std::shared_ptr<ParentResource> parent,
                  std::vector<PathParamField>&& fields,
                  bool container_presence = false);
 
@@ -44,13 +44,15 @@ public:
   std::vector<Response>
   Validate(const nlohmann::json& body) const final;
 
-  std::vector<Response> Validate(const Request& value) const final;
+  std::vector<Response>
+  Validate(const Request& value,
+           const std::string& caller_name) const override;
 
-  void AddChild(std::shared_ptr<Resource> child);
+  virtual void AddChild(std::shared_ptr<Resource> child);
 
   bool IsMandatory() const final;
 
-  void SetDefaultIfMissing(nlohmann::json& body) const final;
+  void SetDefaultIfMissing(nlohmann::json& body) const override;
 
   bool ValidateXPath(const std::string& xpath) const override;
 
@@ -70,7 +72,8 @@ private:
 
   void get(const Request& request, ResponseWriter response);
 
-  void CreateOrReplace(const Request& request, ResponseWriter response) final;
+  void
+  CreateOrReplace(const Request& request, ResponseWriter response) override;
 
   virtual void post(const Request& request, ResponseWriter response);
 

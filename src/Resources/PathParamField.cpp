@@ -41,8 +41,9 @@ const std::string& PathParamField::Name() const {
 
 ErrorTag PathParamField::Validate(const Pistache::Rest::Request& value) const {
   if (!value.hasParam(name_)) return kMissingElement;
-  if (Validate(value.param(name_).as<std::string>())) return ErrorTag::kOk;
-  return ErrorTag::kBadElement;
+  if (!Validate(value.param(name_).as<std::string>()))
+    return ErrorTag::kBadElement;
+  return ErrorTag::kOk;
 }
 
 bool PathParamField::Validate(const std::string& value) const {

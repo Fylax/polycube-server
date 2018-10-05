@@ -32,13 +32,14 @@
 using Pistache::Rest::Request;
 using Pistache::Http::ResponseWriter;
 
-LeafResource::LeafResource(const std::string& name, const std::string& module,
-                           const std::string& rest_endpoint,
-                           const std::shared_ptr<ParentResource>& parent,
+LeafResource::LeafResource(std::string name, std::string module,
+                           std::string rest_endpoint,
+                           std::shared_ptr<ParentResource> parent,
                            std::unique_ptr<JsonBodyField>&& field,
                            bool configurable, bool mandatory,
                            std::unique_ptr<const std::string>&& default_value):
-    Resource(name, module, rest_endpoint, parent), field_(std::move(field)),
+    Resource(std::move(name), std::move(module), std::move(rest_endpoint),
+             std::move(parent)), field_(std::move(field)),
     configurable_(configurable), mandatory_(mandatory),
     default_(std::move(default_value)) {
   using Pistache::Rest::Routes::bind;
@@ -76,8 +77,9 @@ LeafResource::Validate(const nlohmann::json& body) const {
 }
 
 std::vector<Response>
-LeafResource::Validate(const Pistache::Rest::Request& value) const {
-  return parent_->Validate(value);
+LeafResource::Validate(const Pistache::Rest::Request& value,
+                       const std::string& caller_name) const {
+  return parent_->Validate(value, name_);
 }
 
 bool LeafResource::IsMandatory() const {
@@ -100,7 +102,7 @@ bool LeafResource::ValidateXPath(const std::string& xpath) const {
 }
 
 void LeafResource::get(const Request& request, ResponseWriter response) {
-  auto errors = parent_->Validate(request);
+  auto errors = parent_->Validate(request, name_);
   // TODO: call user code and merge responses
   if (errors.empty()) {
     errors.push_back({kOk, ""});
@@ -110,7 +112,7 @@ void LeafResource::get(const Request& request, ResponseWriter response) {
 
 void
 LeafResource::CreateOrReplace(const Request& request, ResponseWriter response) {
-  auto errors = Validate(request);
+  auto errors = Validate(request, name_);
   nlohmann::json jbody;
   if (request.body().empty()) {
     jbody = nlohmann::json::parse("{}");

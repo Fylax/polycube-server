@@ -1,6 +1,7 @@
 set(resources_sources
         ${CMAKE_CURRENT_LIST_DIR}/CubeManager.cpp
         ${CMAKE_CURRENT_LIST_DIR}/Cube.cpp
+        ${CMAKE_CURRENT_LIST_DIR}/ChoiceResource.cpp
         ${CMAKE_CURRENT_LIST_DIR}/Resource.cpp
         ${CMAKE_CURRENT_LIST_DIR}/ParentResource.cpp
         ${CMAKE_CURRENT_LIST_DIR}/ListResource.cpp

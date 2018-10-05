@@ -14,6 +14,9 @@
  * limitations under the License.
  */
 #include "../../include/Resources/Cube.h"
+
+#include <pistache/router.h>
+
 #include <string>
 #include <memory>
 #include <vector>
@@ -23,7 +26,7 @@
 #include "../../include/Server/ResponseGenerator.h"
 #include "../../include/Server/RestServer.h"
 
-Cube::Cube(const std::string& name, const std::string& base_address):
+Cube::Cube(const std::string& name, std::string base_address):
     ParentResource(name, name, base_address + name + "/:cube_name/", nullptr,
                    std::vector<PathParamField>{PathParamField{
                        "cube_name", InSetValidator::Create()}}),

@@ -20,14 +20,15 @@
 #include <memory>
 #include <string>
 #include <vector>
+#include <utility>
 
 #include "../../include/Server/Error.h"
 
-Resource::Resource(const std::string& name, const std::string& module,
-                   const std::string& rest_endpoint,
-                   const std::shared_ptr<ParentResource>& parent):
-    name_(name), rest_endpoint_(rest_endpoint), parent_(parent),
-    module_(module) {}
+Resource::Resource(std::string&& name, std::string&& module,
+                   std::string&& rest_endpoint,
+                   std::shared_ptr<ParentResource>&& parent):
+    name_(std::move(name)), rest_endpoint_(std::move(rest_endpoint)),
+    parent_(std::move(parent)), module_(std::move(module)) {}
 
 const std::string& Resource::Name() const {
   return name_;
