@@ -340,7 +340,7 @@ ParseNode(const lys_node* data, const std::shared_ptr<ParentResource>& parent) {
     case LYS_ANYXML:
       break;
     case LYS_CASE:
-      break;
+      return ParseNode(data->child, parent);
     case LYS_NOTIF:
       break;
     case LYS_RPC:
@@ -478,14 +478,14 @@ void ParseChoice(const lys_node_choice* choice,
       default_case = std::make_unique<const std::string>(choice->dflt->name);
     }
   }
-  auto resource = std::make_unique<ChoiceResource>(
+  auto resource = std::make_shared<ChoiceResource>(
       choice->name, choice->module->name,
       parent->Endpoint() + choice->name + "/:case/", parent, mandatory,
       std::move(default_case));
 
   auto child = choice->child;
   while (child != nullptr) {
-
+    ParseNode(child, resource);
     child = child->next;
   }
 }
