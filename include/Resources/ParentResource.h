@@ -77,9 +77,9 @@ private:
 
   virtual void post(const Request& request, ResponseWriter response);
 
-  void put(const Request& request, ResponseWriter response);
+  virtual void put(const Request& request, ResponseWriter response);
 
-  void patch(const Request& request, ResponseWriter response);
+  virtual void patch(const Request& request, ResponseWriter response);
 };
 
 

@@ -37,6 +37,7 @@ Cube::Cube(const std::string& name, std::string base_address):
   auto router = RestServer::Router();
   router->get(body_rest_endpoint_, bind(&Cube::get_body, this));
   router->post(body_rest_endpoint_, bind(&Cube::post_body, this));
+  router->patch(body_rest_endpoint_, bind(&Cube::patch_body, this));
 }
 
 Cube::~Cube() {
@@ -84,8 +85,8 @@ void Cube::CreateOrReplace(const std::string& name, const nlohmann::json& body,
 void Cube::get_body(const Request& request, ResponseWriter response) {
   if (!request.body().empty()) {
     ResponseGenerator::Generate(
-        std::vector<Response>{{ErrorTag::kOperationNotSupported, ""}}
-    std::move(response));
+        std::vector<Response>{{ErrorTag::kOperationNotSupported, ""}},
+        std::move(response));
     return;
   }
   auto val = std::static_pointer_cast<InSetValidator>(
@@ -95,8 +96,8 @@ void Cube::get_body(const Request& request, ResponseWriter response) {
   }
   // TODO data is fetched from lib
   ResponseGenerator::Generate(
-      std::vector<Response>{{ErrorTag::kOk, ""}}
-  std::move(response));
+      std::vector<Response>{{ErrorTag::kOk, ""}},
+      std::move(response));
 }
 
 void Cube::post_body(const Request& request, ResponseWriter response) {
@@ -108,13 +109,40 @@ void Cube::post_body(const Request& request, ResponseWriter response) {
         std::move(response));
     return;
   }
-  CreateOrReplace(body["name"].get<std::string>(), body, std::move(response));
+  CreateOrReplace(body["name"].get<std::string>(), body, std::move(response),
+                  false);
 }
 
 void Cube::post(const Request& request, ResponseWriter response) {
   auto name = request.param(":cube_name").as<std::string>();
   CreateOrReplace(name, nlohmann::json::parse(request.body()),
-                  std::move(response));
+                  std::move(response), false);
+}
+
+void Cube::put(const Request& request, ResponseWriter response) {
+  auto name = request.param(":cube_name").as<std::string>();
+  CreateOrReplace(name, nlohmann::json::parse(request.body()),
+                  std::move(response), true);
+}
+
+void Cube::patch(const Request& request, ResponseWriter response) {
+  auto name = request.param(":cube_name").as<std::string>();
+  if (CubeManager::GetInstance().ExistsCube(name)) {
+    nlohmann::json body = nlohmann::json::parse(request.body());
+    auto errors = Validate(body);
+    if (errors.empty()) {
+      // TODO call user code
+      auto val = std::static_pointer_cast<InSetValidator>(
+          fields_[0].Validators()[0]);
+      val->AddValue(name);
+      errors.push_back({ErrorTag::kCreated, ""});
+    }
+    ResponseGenerator::Generate(std::move(errors), std::move(response));
+  } else {
+    ResponseGenerator::Generate(
+        std::vector<Response>{{ErrorTag::kDataMissing, ""}},
+        std::move(response));
+  }
 }
 
 void Cube::patch_body(const Request& request, ResponseWriter response) {

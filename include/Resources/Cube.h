@@ -47,6 +47,10 @@ private:
 
   void post(const Request& request, ResponseWriter response) final;
 
+  void put(const Request& request, ResponseWriter response) final;
+
+  void patch(const Request& request, ResponseWriter response) final;
+
   void get_body(const Request& request, ResponseWriter response);
 
   void post_body(const Request& request, ResponseWriter response);
