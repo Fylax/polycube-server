@@ -33,6 +33,8 @@
 
 class JsonBodyField: public Field<nlohmann::json> {
 public:
+  JsonBodyField();
+
   JsonBodyField(LY_DATA_TYPE type,
                 std::vector<std::shared_ptr<Validator>>&& validators);
 

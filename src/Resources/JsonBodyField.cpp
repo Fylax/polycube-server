@@ -21,8 +21,13 @@
 #include <vector>
 #include <unordered_set>
 #include <utility>
+#include <JsonBodyField.h>
+
 #include "../../include/Types/Decimal64.h"
 #include "../../include/Types/Dummies.h"
+
+JsonBodyField::JsonBodyField():
+    JsonBodyField(LY_TYPE_STRING, std::vector<std::shared_ptr<Validator>>()) {}
 
 JsonBodyField::JsonBodyField(
     LY_DATA_TYPE type, std::vector<std::shared_ptr<Validator>>&& validators):

@@ -81,8 +81,8 @@ void ParseLeafList(const lys_node_leaflist* leaflist,
 void ParseChoice(const lys_node_choice* choice,
                  const std::shared_ptr<ParentResource>& parent);
 
-void ParseCase(const lys_node_case* choice_case,
-               const std::shared_ptr<ParentResource>& choice);
+void ParseAny(const lys_node* data,
+              const std::shared_ptr<ParentResource>& parent);
 // END DECLARATIONS
 
 // BEGIN TYPE VALIDATORS
@@ -327,6 +327,7 @@ ParseNode(const lys_node* data, const std::shared_ptr<ParentResource>& parent) {
       ParseContainer(reinterpret_cast<const lys_node_container*>(data), parent);
       break;
     case LYS_CHOICE:
+      ParseChoice(reinterpret_cast<const lys_node_choice*>(data), parent);
       break;
     case LYS_LEAF:
       ParseLeaf(reinterpret_cast<const lys_node_leaf*>(data), parent);
@@ -338,9 +339,11 @@ ParseNode(const lys_node* data, const std::shared_ptr<ParentResource>& parent) {
       ParseList(reinterpret_cast<const lys_node_list*>(data), parent);
       break;
     case LYS_ANYXML:
+      ParseAny(data, parent);
       break;
     case LYS_CASE:
-      return ParseNode(data->child, parent);
+      ParseNode(data->child, parent);
+      break;
     case LYS_NOTIF:
       break;
     case LYS_RPC:
@@ -359,6 +362,7 @@ ParseNode(const lys_node* data, const std::shared_ptr<ParentResource>& parent) {
     case LYS_ACTION:
       break;
     case LYS_ANYDATA:
+      ParseAny(data, parent);
       break;
     case LYS_EXT:
       break;
@@ -473,7 +477,8 @@ void ParseChoice(const lys_node_choice* choice,
     // if the descendant is a case node, descend again to the actual
     // default node
     if (choice->dflt->nodetype == LYS_CASE) {
-      default_case = std::make_unique<const std::string>(choice->dflt->child->name);
+      default_case = std::make_unique<const std::string>(
+          choice->dflt->child->name);
     } else {
       default_case = std::make_unique<const std::string>(choice->dflt->name);
     }
@@ -488,6 +493,17 @@ void ParseChoice(const lys_node_choice* choice,
     ParseNode(child, resource);
     child = child->next;
   }
+}
+
+void ParseAny(const lys_node* data,
+              const std::shared_ptr<ParentResource>& parent) {
+  bool configurable = ((data->flags & LYS_CONFIG_MASK) ^ 2) != 0;
+  bool mandatory = (data->flags & LYS_MAND_MASK) != 0;
+
+  auto any_res = std::make_unique<LeafResource>(
+      data->name, data->module->name, parent->Endpoint() + data->name, parent,
+      std::make_unique<JsonBodyField>(), configurable, mandatory, nullptr);
+  parent->AddChild(std::move(any_res));
 }
 // END YANG NODES PARSING
 }  // namespace
