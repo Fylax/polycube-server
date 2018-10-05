@@ -347,6 +347,7 @@ ParseNode(const lys_node* data, const std::shared_ptr<ParentResource>& parent) {
     case LYS_NOTIF:
       break;
     case LYS_RPC:
+      throw std::invalid_argument("RPC not supported");
       break;
     case LYS_INPUT:
       break;

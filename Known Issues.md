@@ -3,3 +3,4 @@
 - Same applies for `when` and `must`.
 - Same applies for `min-elements` and `max-elements`.
 - `choice` `mandatory` constraint not enforced (unclear how does it work)
+- `rpc` not supported (not sure how it applies to polycube)

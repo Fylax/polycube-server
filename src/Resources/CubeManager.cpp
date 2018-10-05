@@ -66,19 +66,24 @@ bool CubeManager::ValidateXpath(const std::string& xpath,
 void CubeManager::post(const Pistache::Rest::Request& request,
                        Pistache::Http::ResponseWriter response) {
   std::unique_lock<std::shared_mutex> lock(mutex_);
+  try {
+    nlohmann::json body = nlohmann::json::parse(request.body());
+    auto yang = Base64::decode(body["model"].get<std::string>());
 
-  nlohmann::json body = nlohmann::json::parse(request.body());
-  auto yang = Base64::decode(body["model"].get<std::string>());
-
-  if (existing_cubes_.count(Parser::GetName(yang)) != 0) {
-    ResponseGenerator::Generate(std::vector<Response>{
-        {ErrorTag::kDataExists, ""}
-    }, std::move(response));
-    return;
-  }
-  auto cube = Parser::Parse(std::move(yang));
-  existing_cubes_[cube->Name()] = cube;
-  ResponseGenerator::Generate(std::vector<Response>{{ErrorTag::kCreated, ""}},
-                              std::move(response));
+    if (existing_cubes_.count(Parser::GetName(yang)) != 0) {
+      ResponseGenerator::Generate(std::vector<Response>{
+          {ErrorTag::kDataExists, ""}
+      }, std::move(response));
+      return;
+    }
+    auto cube = Parser::Parse(std::move(yang));
+    existing_cubes_[cube->Name()] = cube;
+    ResponseGenerator::Generate(std::vector<Response>{{ErrorTag::kCreated, ""}},
+                                std::move(response));
+  } catch (const std::invalid_argument& e) {
+    response.send(Pistache::Http::Code::Bad_Request, e.what());
+  } catch (...) {
+    response.send(Pistache::Http::Code::Internal_Server_Error);
+}
 }
 
