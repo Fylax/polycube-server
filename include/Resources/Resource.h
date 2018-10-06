@@ -27,48 +27,48 @@
 #pragma GCC diagnostic pop
 
 #include <memory>
-#include <string>
-#include <vector>
-#include <utility>
 #include <shared_mutex>
+#include <string>
+#include <utility>
+#include <vector>
 
 #include "../Server/Error.h"
 
 class ParentResource;
 
 class Resource {
-public:
-  Resource(std::string&& name, std::string&& module,
-           std::string&& rest_endpoint,
-           std::shared_ptr<ParentResource>&& parent);
+ public:
+  Resource(std::string &&name, std::string &&module,
+           std::string &&rest_endpoint,
+           std::shared_ptr<ParentResource> &&parent);
 
   virtual ~Resource() = default;
 
   virtual bool IsMandatory() const = 0;
 
-  const std::string& Name() const;
+  const std::string &Name() const;
 
-  const std::string& ModuleName() const;
+  const std::string &ModuleName() const;
 
-  const std::string& Endpoint() const;
+  const std::string &Endpoint() const;
 
-  virtual bool ValidateXPath(const std::string& xpath) const = 0;
+  virtual bool ValidateXPath(const std::string &xpath) const = 0;
 
-  virtual std::vector<Response> Validate(const nlohmann::json& body) const = 0;
+  virtual std::vector<Response> Validate(const nlohmann::json &body) const = 0;
 
-  virtual std::vector<Response>
-  Validate(const Pistache::Rest::Request& request,
-           const std::string& caller_name) const = 0;
+  virtual std::vector<Response> Validate(
+      const Pistache::Rest::Request &request,
+      const std::string &caller_name) const = 0;
 
-  virtual void SetDefaultIfMissing(nlohmann::json& body) const = 0;
+  virtual void SetDefaultIfMissing(nlohmann::json &body) const = 0;
 
-protected:
+ protected:
   const std::string name_;
   const std::string rest_endpoint_;
   std::shared_ptr<ParentResource> parent_;
   const std::string module_;
 
-  virtual void CreateOrReplace(const Pistache::Rest::Request& request,
+  virtual void CreateOrReplace(const Pistache::Rest::Request &request,
                                Pistache::Http::ResponseWriter response) = 0;
 };
 

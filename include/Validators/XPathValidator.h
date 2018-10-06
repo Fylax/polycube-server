@@ -20,20 +20,19 @@
 #include <string>
 #include "Validator.h"
 
-class XPathValidator: public Validator {
-public:
+class XPathValidator : public Validator {
+ public:
   /**
    * Creates a XPathValidator.
    * @param context The namespace (module name) where the element
    * to validate (i.e. an ~instance-identified~) resides.
    */
-  explicit XPathValidator(const std::string& context);
+  explicit XPathValidator(const std::string &context);
 
-  bool Validate(const std::string& value) const final;
+  bool Validate(const std::string &value) const final;
 
-private:
+ private:
   const std::string context_;
 };
 
-
-#endif //PARSER_XPATHVALIDATOR_H
+#endif  // PARSER_XPATHVALIDATOR_H

@@ -23,22 +23,22 @@
 #include <vector>
 #include "../../include/Resources/JsonBodyField.h"
 
-UnionValidator::UnionValidator(): map_{} {}
+UnionValidator::UnionValidator() : map_{} {}
 
-void UnionValidator::AddType(std::type_index type,
-                             const std::vector<
-                                 std::shared_ptr<Validator>
-                             >& validators) {
+void UnionValidator::AddType(
+    std::type_index type,
+    const std::vector<std::shared_ptr<Validator> > &validators) {
   map_.emplace(type, validators);
 }
 
-bool UnionValidator::Validate(const std::string& value) const {
+bool UnionValidator::Validate(const std::string &value) const {
   auto data = nlohmann::json::parse(value);
-  const auto& allowed = JsonBodyField::AcceptableTypes(data.type());
-  for (const auto& union_type : map_) {
+  const auto &allowed = JsonBodyField::AcceptableTypes(data.type());
+  for (const auto &union_type : map_) {
     if (allowed.count(union_type.first) != 0) {
-      for (const auto& validator : union_type.second) {
-        if (validator->Validate(value)) return true;
+      for (const auto &validator : union_type.second) {
+        if (validator->Validate(value))
+          return true;
       }
     }
   }

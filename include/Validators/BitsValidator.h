@@ -17,19 +17,19 @@
 #ifndef PARSER_BITSVALIDATOR_H
 #define PARSER_BITSVALIDATOR_H
 
-#include "Validator.h"
-#include <string>
 #include <map>
+#include <string>
+#include "Validator.h"
 
-class BitsValidator: public Validator {
-public:
+class BitsValidator : public Validator {
+ public:
   BitsValidator();
-  void AddBit(std::uint32_t position, const std::string& name);
-  bool Validate(const std::string& value) const final;
-private:
+  void AddBit(std::uint32_t position, const std::string &name);
+  bool Validate(const std::string &value) const final;
+
+ private:
   /** Position, name */
   std::map<std::uint32_t, std::string> bits_;
 };
 
-
-#endif //PARSER_BITSVALIDATOR_H
+#endif  // PARSER_BITSVALIDATOR_H

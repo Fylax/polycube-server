@@ -17,33 +17,30 @@
 #ifndef SERVICE_CONTROLLER_LEAFLISTRESOURCE_H
 #define SERVICE_CONTROLLER_LEAFLISTRESOURCE_H
 
-
-#include "LeafResource.h"
 #include <memory>
 #include <string>
 #include <typeindex>
 #include <vector>
+#include "LeafResource.h"
 
-class LeafListResource: public LeafResource {
-public:
+class LeafListResource : public LeafResource {
+ public:
   LeafListResource(std::string name, std::string module,
                    std::string rest_endpoint,
                    std::shared_ptr<ParentResource> parent,
-                   std::unique_ptr<JsonBodyField>&& field,
-                   bool configurable, bool mandatory,
-                   std::vector<std::string>&& default_value);
+                   std::unique_ptr<JsonBodyField> &&field, bool configurable,
+                   bool mandatory, std::vector<std::string> &&default_value);
 
   ~LeafListResource() override;
 
-  std::vector<Response> Validate(const nlohmann::json& body) const final;
+  std::vector<Response> Validate(const nlohmann::json &body) const final;
 
-  void SetDefaultIfMissing(nlohmann::json& body) const final;
+  void SetDefaultIfMissing(nlohmann::json &body) const final;
 
-private:
+ private:
   const std::vector<std::string> default_;
 
-  void get_entry(const Request& request, ResponseWriter response);
+  void get_entry(const Request &request, ResponseWriter response);
 };
 
-
-#endif //SERVICE_CONTROLLER_LEAFLISTRESOURCE_H
+#endif  // SERVICE_CONTROLLER_LEAFLISTRESOURCE_H

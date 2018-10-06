@@ -19,44 +19,43 @@
 
 #include <pistache/router.h>
 
-#include <string>
-#include <unordered_set>
-#include <unordered_map>
 #include <memory>
 #include <shared_mutex>
+#include <string>
+#include <unordered_map>
+#include <unordered_set>
 
 #include "ParentResource.h"
 
-using Pistache::Rest::Request;
 using Pistache::Http::ResponseWriter;
+using Pistache::Rest::Request;
 
-class Cube: public ParentResource {
-public:
-  Cube(const std::string& name, std::string base_address);
+class Cube : public ParentResource {
+ public:
+  Cube(const std::string &name, std::string base_address);
 
   ~Cube() final;
 
-  bool ValidateXPath(const std::string& xpath) const final;
+  bool ValidateXPath(const std::string &xpath) const final;
 
-private:
+ private:
   const std::string body_rest_endpoint_;
   std::unordered_map<std::string, std::shared_mutex> mutex_;
 
-  void CreateOrReplace(const std::string& name, const nlohmann::json& body,
+  void CreateOrReplace(const std::string &name, const nlohmann::json &body,
                        ResponseWriter response, bool replace);
 
-  void post(const Request& request, ResponseWriter response) final;
+  void post(const Request &request, ResponseWriter response) final;
 
-  void put(const Request& request, ResponseWriter response) final;
+  void put(const Request &request, ResponseWriter response) final;
 
-  void patch(const Request& request, ResponseWriter response) final;
+  void patch(const Request &request, ResponseWriter response) final;
 
-  void get_body(const Request& request, ResponseWriter response);
+  void get_body(const Request &request, ResponseWriter response);
 
-  void post_body(const Request& request, ResponseWriter response);
+  void post_body(const Request &request, ResponseWriter response);
 
-  void patch_body(const Request& request, ResponseWriter response);
+  void patch_body(const Request &request, ResponseWriter response);
 };
 
-
-#endif //PARSER_CUBE_H
+#endif  // PARSER_CUBE_H

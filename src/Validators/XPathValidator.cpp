@@ -18,8 +18,9 @@
 
 #include "../../include/Resources/CubeManager.h"
 
-XPathValidator::XPathValidator(const std::string& context): context_(context) {}
+XPathValidator::XPathValidator(const std::string &context)
+    : context_(context) {}
 
-bool XPathValidator::Validate(const std::string& value) const {
+bool XPathValidator::Validate(const std::string &value) const {
   return CubeManager::GetInstance().ValidateXpath(value, context_);
 }

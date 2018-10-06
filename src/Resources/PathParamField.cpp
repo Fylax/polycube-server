@@ -13,42 +13,43 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
-#include <string>
 #include <memory>
-#include <vector>
+#include <string>
 #include <utility>
+#include <vector>
 
 #include "../../include/Resources/Field.h"
 #include "../../include/Resources/PathParamField.h"
 #include "../../include/Validators/EmptyValidator.h"
 
-PathParamField::PathParamField(const std::string& name,
-                               std::vector<
-                                   std::shared_ptr<Validator>
-                               >&& validators)
+PathParamField::PathParamField(
+    const std::string &name,
+    std::vector<std::shared_ptr<Validator> > &&validators)
     : Field<Pistache::Rest::Request>(std::move(validators)),
       name_(std::string{':'} + name) {
-  for (const auto& validator : validators_) {
+  for (const auto &validator : validators_) {
     if (auto test = std::dynamic_pointer_cast<EmptyValidator>(validator)) {
       test->IsPath(true);
     }
   }
 }
 
-const std::string& PathParamField::Name() const {
+const std::string &PathParamField::Name() const {
   return name_;
 }
 
-ErrorTag PathParamField::Validate(const Pistache::Rest::Request& value) const {
-  if (!value.hasParam(name_)) return kMissingElement;
+ErrorTag PathParamField::Validate(const Pistache::Rest::Request &value) const {
+  if (!value.hasParam(name_))
+    return kMissingElement;
   if (!Validate(value.param(name_).as<std::string>()))
     return ErrorTag::kBadElement;
   return ErrorTag::kOk;
 }
 
-bool PathParamField::Validate(const std::string& value) const {
-  for (const auto& validator : validators_) {
-    if (!validator->Validate(value)) return false;
+bool PathParamField::Validate(const std::string &value) const {
+  for (const auto &validator : validators_) {
+    if (!validator->Validate(value))
+      return false;
   }
   return true;
 }

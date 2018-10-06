@@ -22,17 +22,17 @@
 #include <string>
 #include <unordered_map>
 
-class LengthValidator: public Validator {
-public:
+class LengthValidator : public Validator {
+ public:
   LengthValidator(bool binary);
   void AddRange(std::uint64_t min, std::uint64_t max);
   void AddExact(std::uint64_t exact);
   void AddRanges(std::unordered_map<std::uint64_t, std::uint64_t> ranges);
-  bool Validate(const std::string& value) const final;
-private:
+  bool Validate(const std::string &value) const final;
+
+ private:
   const bool binary_;
   std::unordered_map<std::uint64_t, std::uint64_t> ranges_;
 };
 
-
-#endif //PARSER_LENGTHVALIDATOR_H
+#endif  // PARSER_LENGTHVALIDATOR_H

@@ -20,67 +20,64 @@
 #include <pistache/router.h>
 
 #include <list>
-#include <string>
 #include <memory>
+#include <string>
 #include <vector>
 
 #include "../Server/Error.h"
-#include "Resource.h"
 #include "PathParamField.h"
+#include "Resource.h"
 
-using Pistache::Rest::Request;
 using Pistache::Http::ResponseWriter;
+using Pistache::Rest::Request;
 
-class ParentResource: public Resource {
-public:
+class ParentResource : public Resource {
+ public:
   ParentResource(std::string name, std::string module,
                  std::string rest_endpoint,
                  std::shared_ptr<ParentResource> parent,
-                 std::vector<PathParamField>&& fields,
+                 std::vector<PathParamField> &&fields,
                  bool container_presence = false);
 
   ~ParentResource() override;
 
-  std::vector<Response>
-  Validate(const nlohmann::json& body) const final;
+  std::vector<Response> Validate(const nlohmann::json &body) const final;
 
-  std::vector<Response>
-  Validate(const Request& value,
-           const std::string& caller_name) const override;
+  std::vector<Response> Validate(const Request &value,
+                                 const std::string &caller_name) const override;
 
   virtual void AddChild(std::shared_ptr<Resource> child);
 
   bool IsMandatory() const final;
 
-  void SetDefaultIfMissing(nlohmann::json& body) const override;
+  void SetDefaultIfMissing(nlohmann::json &body) const override;
 
-  bool ValidateXPath(const std::string& xpath) const override;
+  bool ValidateXPath(const std::string &xpath) const override;
 
-protected:
+ protected:
   std::vector<PathParamField> fields_;
   std::vector<std::shared_ptr<Resource>> children_;
 
-  bool ValidateXPathChildren(const std::string& xpath,
+  bool ValidateXPathChildren(const std::string &xpath,
                              std::size_t delimiter) const;
 
-  void
-  CreateOrReplace(const Request& request, ResponseWriter response) override;
+  void CreateOrReplace(const Request &request,
+                       ResponseWriter response) override;
 
-private:
+ private:
   /**
    * MUST be set to true only if the parent is a container
    * and it has no presence flag (or explicitly set to false).
    */
   const bool container_presence_;
 
-  void get(const Request& request, ResponseWriter response);
+  void get(const Request &request, ResponseWriter response);
 
-  virtual void post(const Request& request, ResponseWriter response);
+  virtual void post(const Request &request, ResponseWriter response);
 
-  virtual void put(const Request& request, ResponseWriter response);
+  virtual void put(const Request &request, ResponseWriter response);
 
-  virtual void patch(const Request& request, ResponseWriter response);
+  virtual void patch(const Request &request, ResponseWriter response);
 };
 
-
-#endif  //PARSER_PARENTRESOURCE_H
+#endif  // PARSER_PARENTRESOURCE_H

@@ -23,34 +23,32 @@
 #include "../../externals/include/nlohmann/json.hpp"
 #pragma GCC diagnostic pop
 
-#include <string>
 #include <memory>
-#include <vector>
+#include <string>
 #include <utility>
-#include "../Validators/Validator.h"
+#include <vector>
 #include "../Server/Error.h"
+#include "../Validators/Validator.h"
 
-template<typename T>
+template <typename T>
 class Field {
-public:
+ public:
   virtual ~Field() = default;
-  virtual ErrorTag Validate(const T& value) const = 0;
+  virtual ErrorTag Validate(const T &value) const = 0;
 
-  const std::vector<std::shared_ptr<Validator>>& Validators() const {
+  const std::vector<std::shared_ptr<Validator>> &Validators() const {
     return validators_;
   }
 
-protected:
-  explicit Field(std::vector<std::shared_ptr<Validator>>&& validators):
-      validators_(std::move(validators)) {}
+ protected:
+  explicit Field(std::vector<std::shared_ptr<Validator>> &&validators)
+      : validators_(std::move(validators)) {}
 
   const std::vector<std::shared_ptr<Validator>> validators_;
 };
 
-template
-class Field<Pistache::Rest::Request>;
+template class Field<Pistache::Rest::Request>;
 
-template
-class Field<nlohmann::json>;
+template class Field<nlohmann::json>;
 
 #endif  // PARSER_FIELD_H

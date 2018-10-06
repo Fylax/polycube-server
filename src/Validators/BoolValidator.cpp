@@ -15,6 +15,6 @@
  */
 #include "../../include/Validators/BoolValidator.h"
 
-bool BoolValidator::Validate(const std::string& value) const {
+bool BoolValidator::Validate(const std::string &value) const {
   return value == "true" || value == "false";
 }

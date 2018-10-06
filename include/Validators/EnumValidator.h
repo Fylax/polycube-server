@@ -17,21 +17,19 @@
 #ifndef PARSER_ENUMVALIDATOR_H
 #define PARSER_ENUMVALIDATOR_H
 
-
 #include "Validator.h"
 
-#include <unordered_set>
 #include <string>
+#include <unordered_set>
 
-class EnumValidator: public Validator {
+class EnumValidator : public Validator {
  public:
   EnumValidator();
-  void AddEnum(const std::string& value);
-  bool Validate(const std::string& value) const final;
+  void AddEnum(const std::string &value);
+  bool Validate(const std::string &value) const final;
 
  private:
   std::unordered_set<std::string> values_;
 };
 
-
-#endif //PARSER_ENUMVALIDATOR_H
+#endif  // PARSER_ENUMVALIDATOR_H

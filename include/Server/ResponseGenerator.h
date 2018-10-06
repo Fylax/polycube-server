@@ -22,13 +22,13 @@
 #pragma GCC diagnostic ignored "-Weffc++"
 #include "../../externals/include/nlohmann/json.hpp"
 #pragma GCC diagnostic pop
-#include "Error.h"
 #include <vector>
+#include "Error.h"
 
 namespace ResponseGenerator {
 
-void Generate(std::vector<Response>&& response,
-              Pistache::Http::ResponseWriter&& writer);
+void Generate(std::vector<Response> &&response,
+              Pistache::Http::ResponseWriter &&writer);
 }  // namespace ResponseGenerator
 
-#endif //PARSER_RESPONSEGENERATOR_H
+#endif  // PARSER_RESPONSEGENERATOR_H

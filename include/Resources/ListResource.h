@@ -24,14 +24,13 @@
 #include <string>
 #include <vector>
 
-class ListResource: public ParentResource {
-public:
+class ListResource : public ParentResource {
+ public:
   ListResource(std::string name, std::string module, std::string rest_endpoint,
                std::shared_ptr<ParentResource> parent,
-               std::vector<PathParamField>&& fields);
+               std::vector<PathParamField> &&fields);
 
-  bool ValidateXPath(const std::string& xpath) const final;
+  bool ValidateXPath(const std::string &xpath) const final;
 };
 
-
-#endif //PARSER_LISTRESOURCE_H
+#endif  // PARSER_LISTRESOURCE_H

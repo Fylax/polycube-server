@@ -15,33 +15,35 @@
  */
 
 #include "../../include/Resources/LeafResource.h"
+#include <LeafResource.h>
 #include <pistache/router.h>
 #include <algorithm>
-#include <string>
 #include <memory>
-#include <vector>
+#include <string>
 #include <utility>
-#include <LeafResource.h>
+#include <vector>
 
-#include "../../include/Server/Error.h"
-#include "../../include/Resources/ParentResource.h"
-#include "../../include/Server/ResponseGenerator.h"
 #include "../../externals/include/nlohmann/json.hpp"
+#include "../../include/Resources/ParentResource.h"
+#include "../../include/Server/Error.h"
+#include "../../include/Server/ResponseGenerator.h"
 #include "../../include/Server/RestServer.h"
 
-using Pistache::Rest::Request;
 using Pistache::Http::ResponseWriter;
+using Pistache::Rest::Request;
 
 LeafResource::LeafResource(std::string name, std::string module,
                            std::string rest_endpoint,
                            std::shared_ptr<ParentResource> parent,
-                           std::unique_ptr<JsonBodyField>&& field,
+                           std::unique_ptr<JsonBodyField> &&field,
                            bool configurable, bool mandatory,
-                           std::unique_ptr<const std::string>&& default_value):
-    Resource(std::move(name), std::move(module), std::move(rest_endpoint),
-             std::move(parent)), field_(std::move(field)),
-    configurable_(configurable), mandatory_(mandatory),
-    default_(std::move(default_value)) {
+                           std::unique_ptr<const std::string> &&default_value)
+    : Resource(std::move(name), std::move(module), std::move(rest_endpoint),
+               std::move(parent)),
+      field_(std::move(field)),
+      configurable_(configurable),
+      mandatory_(mandatory),
+      default_(std::move(default_value)) {
   using Pistache::Rest::Routes::bind;
   auto router = RestServer::Router();
   router->get(rest_endpoint_, bind(&LeafResource::get, this));
@@ -61,8 +63,7 @@ LeafResource::~LeafResource() {
   }
 }
 
-std::vector<Response>
-LeafResource::Validate(const nlohmann::json& body) const {
+std::vector<Response> LeafResource::Validate(const nlohmann::json &body) const {
   std::vector<Response> errors;
   if (body.empty()) {
     errors.push_back({ErrorTag::kMissingAttribute, name_.data()});
@@ -76,9 +77,9 @@ LeafResource::Validate(const nlohmann::json& body) const {
   return errors;
 }
 
-std::vector<Response>
-LeafResource::Validate(const Pistache::Rest::Request& value,
-                       const std::string& caller_name) const {
+std::vector<Response> LeafResource::Validate(
+    const Pistache::Rest::Request &value,
+    const std::string &caller_name) const {
   return parent_->Validate(value, name_);
 }
 
@@ -86,11 +87,12 @@ bool LeafResource::IsMandatory() const {
   return mandatory_;
 }
 
-void LeafResource::SetDefaultIfMissing(nlohmann::json& body) const {
-  if (body.empty() && default_ != nullptr) body = *default_;
+void LeafResource::SetDefaultIfMissing(nlohmann::json &body) const {
+  if (body.empty() && default_ != nullptr)
+    body = *default_;
 }
 
-bool LeafResource::ValidateXPath(const std::string& xpath) const {
+bool LeafResource::ValidateXPath(const std::string &xpath) const {
   auto ns_pos = xpath.find(':');  // current namespace delimiter
   std::string name;
   if (ns_pos != std::string::npos) {  // fully-qualified name
@@ -101,7 +103,7 @@ bool LeafResource::ValidateXPath(const std::string& xpath) const {
   return name == name_;
 }
 
-void LeafResource::get(const Request& request, ResponseWriter response) {
+void LeafResource::get(const Request &request, ResponseWriter response) {
   auto errors = parent_->Validate(request, name_);
   // TODO: call user code and merge responses
   if (errors.empty()) {
@@ -110,8 +112,8 @@ void LeafResource::get(const Request& request, ResponseWriter response) {
   ResponseGenerator::Generate(std::move(errors), std::move(response));
 }
 
-void
-LeafResource::CreateOrReplace(const Request& request, ResponseWriter response) {
+void LeafResource::CreateOrReplace(const Request &request,
+                                   ResponseWriter response) {
   auto errors = Validate(request, name_);
   nlohmann::json jbody;
   if (request.body().empty()) {
@@ -124,8 +126,7 @@ LeafResource::CreateOrReplace(const Request& request, ResponseWriter response) {
 
   auto body = Validate(jbody);
   errors.reserve(errors.size() + body.size());
-  std::copy(std::begin(body), std::end(body),
-            std::back_inserter(errors));
+  std::copy(std::begin(body), std::end(body), std::back_inserter(errors));
 
   // TODO: call user code and merge responses
   if (errors.empty()) {
@@ -134,10 +135,10 @@ LeafResource::CreateOrReplace(const Request& request, ResponseWriter response) {
   ResponseGenerator::Generate(std::move(errors), std::move(response));
 }
 
-void LeafResource::post(const Request& request, ResponseWriter response) {
+void LeafResource::post(const Request &request, ResponseWriter response) {
   CreateOrReplace(request, std::move(response));
 }
 
-void LeafResource::put(const Request& request, ResponseWriter response) {
+void LeafResource::put(const Request &request, ResponseWriter response) {
   CreateOrReplace(request, std::move(response));
 }

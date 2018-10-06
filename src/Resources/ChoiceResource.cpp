@@ -15,29 +15,29 @@
  */
 #include <ChoiceResource.h>
 
-#include "../../include/Resources/ChoiceResource.h"
 #include <algorithm>
 #include <memory>
 #include <string>
-#include <vector>
 #include <utility>
-#include "../../include/Validators/InSetValidator.h"
+#include <vector>
+#include "../../include/Resources/ChoiceResource.h"
 #include "../../include/Server/ResponseGenerator.h"
+#include "../../include/Validators/InSetValidator.h"
 
 ChoiceResource::ChoiceResource(
     std::string name, std::string module, std::string rest_endpoint,
     std::shared_ptr<ParentResource> parent, bool mandatory,
-    std::unique_ptr<const std::string>&& default_case):
-    ParentResource(std::move(name), std::move(module), std::move(rest_endpoint),
-                   std::move(parent),
-                   std::vector<PathParamField>{PathParamField{
-                       "case", InSetValidator::Create()}}),
-    mandatory_(mandatory), children_{},
-    default_case_(std::move(default_case)) {}
+    std::unique_ptr<const std::string> &&default_case)
+    : ParentResource(std::move(name), std::move(module),
+                     std::move(rest_endpoint), std::move(parent),
+                     std::vector<PathParamField>{
+                         PathParamField{"case", InSetValidator::Create()}}),
+      mandatory_(mandatory),
+      children_{},
+      default_case_(std::move(default_case)) {}
 
-std::vector<Response>
-ChoiceResource::Validate(const Request& request,
-                         const std::string& caller_name) const {
+std::vector<Response> ChoiceResource::Validate(
+    const Request &request, const std::string &caller_name) const {
   auto errors = ParentResource::Validate(request, caller_name);
   // if caller name is not empty, it means that the validation
   // request comes from a children resource. it is thus
@@ -52,19 +52,19 @@ ChoiceResource::Validate(const Request& request,
 }
 
 void ChoiceResource::AddChild(std::shared_ptr<Resource> child) {
-  auto val = std::static_pointer_cast<InSetValidator>(
-      fields_[0].Validators()[0]);
+  auto val =
+      std::static_pointer_cast<InSetValidator>(fields_[0].Validators()[0]);
   val->AddValue(child->Name());
   children_.emplace(child->Name(), std::move(child));
 }
 
-void ChoiceResource::SetDefaultIfMissing(nlohmann::json& body) const {
+void ChoiceResource::SetDefaultIfMissing(nlohmann::json &body) const {
   if (default_case_ != nullptr) {
     children_.at(*default_case_)->SetDefaultIfMissing(body);
   }
 }
 
-void ChoiceResource::CreateOrReplace(const Request& request,
+void ChoiceResource::CreateOrReplace(const Request &request,
                                      ResponseWriter response) {
   std::vector<Response> errors;
   if (parent_ != nullptr)
@@ -81,8 +81,7 @@ void ChoiceResource::CreateOrReplace(const Request& request,
 
   auto body = ParentResource::Validate(jbody);
   errors.reserve(errors.size() + body.size());
-  std::copy(std::begin(body), std::end(body),
-            std::back_inserter(errors));
+  std::copy(std::begin(body), std::end(body), std::back_inserter(errors));
   // TODO: call user code and merge responses
   if (errors.empty()) {
     errors.push_back({ErrorTag::kCreated, ""});

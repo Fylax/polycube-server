@@ -16,10 +16,11 @@
 #include "../../include/Validators/PatternValidator.h"
 #include <string>
 
-PatternValidator::PatternValidator(const char* pattern, bool inverse):
-    pattern_(pattern, std::regex_constants::optimize |
-                      std::regex_constants::ECMAScript), inverse_(inverse) {}
+PatternValidator::PatternValidator(const char *pattern, bool inverse)
+    : pattern_(pattern, std::regex_constants::optimize |
+                            std::regex_constants::ECMAScript),
+      inverse_(inverse) {}
 
-bool PatternValidator::Validate(const std::string& value) const {
+bool PatternValidator::Validate(const std::string &value) const {
   return !inverse_ == std::regex_match(value, pattern_);
 }

@@ -20,14 +20,14 @@
 #include <string>
 #include "Validator.h"
 
-class EmptyValidator: public Validator {
-public:
+class EmptyValidator : public Validator {
+ public:
   EmptyValidator();
-  bool Validate(const std::string& value) const final;
+  bool Validate(const std::string &value) const final;
   void IsPath(bool is_path);
-private:
+
+ private:
   bool is_path_;
 };
 
-
-#endif //PARSER_EMPTYVALIDATOR_H
+#endif  // PARSER_EMPTYVALIDATOR_H

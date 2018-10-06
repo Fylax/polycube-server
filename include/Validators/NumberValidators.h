@@ -17,67 +17,58 @@
 #ifndef PARSER_NUMBERVALIDATOR_H
 #define PARSER_NUMBERVALIDATOR_H
 
-#include "Validator.h"
 #include <string>
 #include <unordered_map>
 #include "../Types/Decimal64.h"
+#include "Validator.h"
 
-template<typename T>
-class NumberValidator: public Validator {
-public:
+template <typename T>
+class NumberValidator : public Validator {
+ public:
   void AddRange(T lower_bound, T upper_bound);
 
   void AddExact(T exact);
 
   void AddRanges(std::unordered_map<T, T> ranges);
 
-  bool Validate(const std::string& value) const override;
+  bool Validate(const std::string &value) const override;
 
   NumberValidator(T lower_bound, T upper_bound);
 
-protected:
+ protected:
   bool Validate(T parsed) const;
 
   std::unordered_map<T, T> ranges_;
 };
 
-class DecimalValidator: public NumberValidator<Decimal64> {
-public:
+class DecimalValidator : public NumberValidator<Decimal64> {
+ public:
   explicit DecimalValidator(std::uint8_t fraction_digits);
 
-  DecimalValidator(std::uint8_t fraction_digits, const Decimal64& lower_bound,
-                   const Decimal64& upper_bound);
+  DecimalValidator(std::uint8_t fraction_digits, const Decimal64 &lower_bound,
+                   const Decimal64 &upper_bound);
 
-  bool Validate(const std::string& value) const final;
+  bool Validate(const std::string &value) const final;
 
-private:
+ private:
   std::uint8_t fraction_digits_;
 };
 
-template
-class NumberValidator<std::int8_t>;
+template class NumberValidator<std::int8_t>;
 
-template
-class NumberValidator<std::uint8_t>;
+template class NumberValidator<std::uint8_t>;
 
-template
-class NumberValidator<std::int16_t>;
+template class NumberValidator<std::int16_t>;
 
-template
-class NumberValidator<std::uint16_t>;
+template class NumberValidator<std::uint16_t>;
 
-template
-class NumberValidator<std::int32_t>;
+template class NumberValidator<std::int32_t>;
 
-template
-class NumberValidator<std::uint32_t>;
+template class NumberValidator<std::uint32_t>;
 
-template
-class NumberValidator<std::int64_t>;
+template class NumberValidator<std::int64_t>;
 
-template
-class NumberValidator<std::uint64_t>;
-template
-class NumberValidator<Decimal64>;
+template class NumberValidator<std::uint64_t>;
+template class NumberValidator<Decimal64>;
 
-#endif //PARSER_NUMBERVALIDATOR_H
+#endif  // PARSER_NUMBERVALIDATOR_H

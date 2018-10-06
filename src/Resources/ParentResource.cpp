@@ -14,13 +14,13 @@
  * limitations under the License.
  */
 #include "../../include/Resources/ParentResource.h"
+#include <ParentResource.h>
 #include <pistache/router.h>
 #include <algorithm>
-#include <string>
 #include <memory>
-#include <vector>
+#include <string>
 #include <utility>
-#include <ParentResource.h>
+#include <vector>
 
 #include "../../include/Server/Error.h"
 #include "../../include/Server/ResponseGenerator.h"
@@ -29,11 +29,13 @@
 ParentResource::ParentResource(std::string name, std::string module,
                                std::string rest_endpoint,
                                std::shared_ptr<ParentResource> parent,
-                               std::vector<PathParamField>&& fields,
-                               bool container_presence):
-    Resource(std::move(name), std::move(module), std::move(rest_endpoint),
-        std::move(parent)), fields_(std::move(fields)),
-    children_(), container_presence_(container_presence) {
+                               std::vector<PathParamField> &&fields,
+                               bool container_presence)
+    : Resource(std::move(name), std::move(module), std::move(rest_endpoint),
+               std::move(parent)),
+      fields_(std::move(fields)),
+      children_(),
+      container_presence_(container_presence) {
   using Pistache::Rest::Routes::bind;
   auto router = RestServer::Router();
   router->get(rest_endpoint_, bind(&ParentResource::get, this));
@@ -51,15 +53,15 @@ ParentResource::~ParentResource() {
   router->removeRoute(Method::Patch, rest_endpoint_);
 }
 
-std::vector<Response>
-ParentResource::Validate(const Pistache::Rest::Request& request,
-                         const std::string& caller_name) const {
+std::vector<Response> ParentResource::Validate(
+    const Pistache::Rest::Request &request,
+    const std::string &caller_name) const {
   std::vector<Response> errors;
   if (parent_ != nullptr) {
     errors = parent_->Validate(request, name_);
   }
 
-  for (const auto& field : fields_) {
+  for (const auto &field : fields_) {
     auto error = field.Validate(request);
     if (error != ErrorTag::kOk) {
       errors.push_back({error, field.Name().data()});
@@ -68,10 +70,10 @@ ParentResource::Validate(const Pistache::Rest::Request& request,
   return errors;
 }
 
-std::vector<Response>
-ParentResource::Validate(const nlohmann::json& body) const {
+std::vector<Response> ParentResource::Validate(
+    const nlohmann::json &body) const {
   std::vector<Response> errors;
-  for (const auto& child : children_) {
+  for (const auto &child : children_) {
     if (body.count(child->Name()) == 0) {
       if (child->IsMandatory()) {
         errors.push_back({ErrorTag::kMissingAttribute, child->Name().data()});
@@ -91,43 +93,47 @@ void ParentResource::AddChild(std::shared_ptr<Resource> child) {
 }
 
 bool ParentResource::IsMandatory() const {
-  if (container_presence_) return true;
-  for (const auto& child : children_) {
-    if (child->IsMandatory()) return true;
+  if (container_presence_)
+    return true;
+  for (const auto &child : children_) {
+    if (child->IsMandatory())
+      return true;
   }
   return false;
 }
 
-void ParentResource::SetDefaultIfMissing(nlohmann::json& body) const {
-  for (const auto& child : children_) {
+void ParentResource::SetDefaultIfMissing(nlohmann::json &body) const {
+  for (const auto &child : children_) {
     child->SetDefaultIfMissing(body[child->Name()]);
   }
 }
 
-bool ParentResource::ValidateXPath(const std::string& xpath) const {
+bool ParentResource::ValidateXPath(const std::string &xpath) const {
   auto del_pos = xpath.find('/');  // current delimiter
-  auto ns_pos = xpath.find(':');  // current namespace delimiter
+  auto ns_pos = xpath.find(':');   // current namespace delimiter
   std::string name;
   if (ns_pos < del_pos) {  // fully-qualified name
     name = xpath.substr(ns_pos + 1, del_pos);
   } else {
     name = xpath.substr(0, del_pos);
   }
-  if (name != name_) return false;
+  if (name != name_)
+    return false;
 
   return ValidateXPathChildren(xpath, del_pos);
 }
 
-bool ParentResource::ValidateXPathChildren(const std::string& xpath,
+bool ParentResource::ValidateXPathChildren(const std::string &xpath,
                                            std::size_t delimiter) const {
   auto del_pos = xpath.find('/', delimiter + 1);  // next token delimiter
-  auto ns_pos = xpath.find(':', delimiter + 1);  // next namespace delimiter
+  auto ns_pos = xpath.find(':', delimiter + 1);   // next namespace delimiter
   std::string ns;
   if (ns_pos < del_pos) {  // fully-qualified name
     ns = xpath.substr(del_pos + 1, ns_pos);
     // RFC 7951#6.11 states that fully-qualified names are mandatory
     // if the node is in a different module, forbidden otherwise.
-    if (ns == module_) return false;
+    if (ns == module_)
+      return false;
   } else {
     // sets namespace to current one to validate XPath only
     // among the children into the same namespace.
@@ -137,17 +143,19 @@ bool ParentResource::ValidateXPathChildren(const std::string& xpath,
   // child resources expect XPath without leading '/' character
   // and that namespace is already validated
   auto child_xpath = xpath.substr(del_pos + 1);
-  for (const auto& child : children_) {
+  for (const auto &child : children_) {
     if (child->ModuleName() == ns) {
-      if (child->ValidateXPath(child_xpath)) return true;
+      if (child->ValidateXPath(child_xpath))
+        return true;
     }
   }
   return false;
 }
 
-void ParentResource::get(const Request& request, ResponseWriter response) {
+void ParentResource::get(const Request &request, ResponseWriter response) {
   std::vector<Response> errors;
-  if (parent_ != nullptr) errors = parent_->Validate(request, name_);
+  if (parent_ != nullptr)
+    errors = parent_->Validate(request, name_);
   // TODO: call user code and merge responses
   if (errors.empty()) {
     errors.push_back({ErrorTag::kOk, ""});
@@ -155,10 +163,11 @@ void ParentResource::get(const Request& request, ResponseWriter response) {
   ResponseGenerator::Generate(std::move(errors), std::move(response));
 }
 
-void ParentResource::CreateOrReplace(const Request& request,
+void ParentResource::CreateOrReplace(const Request &request,
                                      ResponseWriter response) {
   std::vector<Response> errors;
-  if (parent_ != nullptr) errors = parent_->Validate(request, name_);
+  if (parent_ != nullptr)
+    errors = parent_->Validate(request, name_);
 
   nlohmann::json jbody;
   if (request.body().empty()) {
@@ -171,8 +180,7 @@ void ParentResource::CreateOrReplace(const Request& request,
 
   auto body = Validate(jbody);
   errors.reserve(errors.size() + body.size());
-  std::copy(std::begin(body), std::end(body),
-            std::back_inserter(errors));
+  std::copy(std::begin(body), std::end(body), std::back_inserter(errors));
   // TODO: call user code and merge responses
   if (errors.empty()) {
     errors.push_back({ErrorTag::kCreated, ""});
@@ -180,20 +188,21 @@ void ParentResource::CreateOrReplace(const Request& request,
   ResponseGenerator::Generate(std::move(errors), std::move(response));
 }
 
-void ParentResource::post(const Request& request, ResponseWriter response) {
+void ParentResource::post(const Request &request, ResponseWriter response) {
   CreateOrReplace(request, std::move(response));
 }
 
-void ParentResource::put(const Request& request, ResponseWriter response) {
+void ParentResource::put(const Request &request, ResponseWriter response) {
   CreateOrReplace(request, std::move(response));
 }
 
-void ParentResource::patch(const Request& request, ResponseWriter response) {
+void ParentResource::patch(const Request &request, ResponseWriter response) {
   std::vector<Response> errors;
-  if (parent_ != nullptr) errors = parent_->Validate(request, name_);
+  if (parent_ != nullptr)
+    errors = parent_->Validate(request, name_);
   auto body = nlohmann::json::parse(request.body());
 
-  for (const auto& child : children_) {
+  for (const auto &child : children_) {
     if (body.count(child->Name()) != 0) {
       auto child_errors = child->Validate(body.at(child->Name()));
       errors.reserve(errors.size() + child_errors.size());
@@ -207,4 +216,3 @@ void ParentResource::patch(const Request& request, ResponseWriter response) {
   }
   ResponseGenerator::Generate(std::move(errors), std::move(response));
 }
-

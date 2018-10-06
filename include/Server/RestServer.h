@@ -17,24 +17,24 @@
 #ifndef PARSER_ENDPOINT_H
 #define PARSER_ENDPOINT_H
 
+#include <pistache/endpoint.h>
 #include <pistache/http.h>
 #include <pistache/router.h>
-#include <pistache/endpoint.h>
 
 #include <memory>
 #include "../Resources/CubeManager.h"
 
 class RestServer {
-public:
-  explicit RestServer(Pistache::Address&& address, std::size_t thr);
-  static const std::shared_ptr<Pistache::Rest::Router>& Router();
+ public:
+  explicit RestServer(Pistache::Address &&address, std::size_t thr);
+  static const std::shared_ptr<Pistache::Rest::Router> &Router();
   void shutdown();
-private:
+
+ private:
   static std::shared_ptr<Pistache::Rest::Router> router_;
   void start();
   void init(std::size_t thr);
   std::unique_ptr<Pistache::Http::Endpoint> httpEndpoint_;
 };
 
-
-#endif //PARSER_ENDPOINT_H
+#endif  // PARSER_ENDPOINT_H

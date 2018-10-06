@@ -24,52 +24,51 @@
 
 #include <pistache/router.h>
 
-#include <string>
 #include <memory>
-#include <unordered_set>
+#include <string>
 #include <unordered_map>
+#include <unordered_set>
 #include <utility>
 #include <vector>
 
 #include <mutex>
 #include <shared_mutex>
 
-#include "../../include/Server/Base64.h"
 #include "../../include/Parser/Parser.h"
+#include "../../include/Server/Base64.h"
 #include "../../include/Server/ResponseGenerator.h"
 #include "../../include/Server/RestServer.h"
 
-
-CubeManager::CubeManager(): mutex_{}, existing_cubes_{},
-                            existing_cubes_impl_{} {
+CubeManager::CubeManager()
+    : mutex_{}, existing_cubes_{}, existing_cubes_impl_{} {
   using Pistache::Rest::Routes::bind;
   RestServer::Router()->post("/", bind(&CubeManager::post, this));
 }
 
-
-bool CubeManager::ExistsCube(const std::string& name) {
+bool CubeManager::ExistsCube(const std::string &name) {
   std::unique_lock<std::shared_mutex> lock(mutex_);
   return CubeManager::existing_cubes_impl_.count(name) != 0;
 }
 
-bool CubeManager::CreateCube(const std::string& name) {
+bool CubeManager::CreateCube(const std::string &name) {
   std::unique_lock<std::shared_mutex> lock(mutex_);
   return CubeManager::existing_cubes_impl_.insert(name).second;
 }
 
-void CubeManager::RemoveCube(const std::string& name) {
+void CubeManager::RemoveCube(const std::string &name) {
   std::unique_lock<std::shared_mutex> lock(mutex_);
   existing_cubes_impl_.erase(name);
 }
 
-bool CubeManager::ValidateXpath(const std::string& xpath,
-                                const std::string& context) const {
+bool CubeManager::ValidateXpath(const std::string &xpath,
+                                const std::string &context) const {
   std::shared_lock<std::shared_mutex> lock(mutex_);
-  if (existing_cubes_.count(context) == 0) return false;
+  if (existing_cubes_.count(context) == 0)
+    return false;
   return existing_cubes_.at(context)->ValidateXPath(xpath);
 }
 
-void CubeManager::post(const Pistache::Rest::Request& request,
+void CubeManager::post(const Pistache::Rest::Request &request,
                        Pistache::Http::ResponseWriter response) {
   std::unique_lock<std::shared_mutex> lock(mutex_);
   try {
@@ -77,19 +76,18 @@ void CubeManager::post(const Pistache::Rest::Request& request,
     auto yang = Base64::decode(body["model"].get<std::string>());
 
     if (existing_cubes_.count(Parser::GetName(yang)) != 0) {
-      ResponseGenerator::Generate(std::vector<Response>{
-          {ErrorTag::kDataExists, ""}
-      }, std::move(response));
+      ResponseGenerator::Generate(
+          std::vector<Response>{{ErrorTag::kDataExists, ""}},
+          std::move(response));
       return;
     }
     auto cube = Parser::Parse(std::move(yang));
     existing_cubes_[cube->Name()] = cube;
     ResponseGenerator::Generate(std::vector<Response>{{ErrorTag::kCreated, ""}},
                                 std::move(response));
-  } catch (const std::invalid_argument& e) {
+  } catch (const std::invalid_argument &e) {
     response.send(Pistache::Http::Code::Bad_Request, e.what());
   } catch (...) {
     response.send(Pistache::Http::Code::Internal_Server_Error);
+  }
 }
-}
-

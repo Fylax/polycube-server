@@ -4,12 +4,12 @@
  */
 #include "../../include/Server/Base64.h"
 
-std::string Base64::decode(const std::string& str64) {
+std::string Base64::decode(const std::string &str64) {
   return decode(str64.c_str(), str64.size());
 }
 
-std::string Base64::decode(const void* data, const size_t len) {
-  auto p = (unsigned char*) data;
+std::string Base64::decode(const void *data, const size_t len) {
+  auto p = (unsigned char *)data;
   int pad = len > 0 && (len % 4 || p[len - 1] == '=');
   const size_t L = ((len + 3) / 4 - pad) * 4;
   std::string str(L / 4 * 3 + pad, '\0');

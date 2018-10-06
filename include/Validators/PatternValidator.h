@@ -21,21 +21,19 @@
 #include <string>
 #include "Validator.h"
 
-
-class PatternValidator: public Validator {
+class PatternValidator : public Validator {
  public:
   /**
    *
    * @param pattern
    * @throws std::regex_error
    */
-  explicit PatternValidator(const char* pattern, bool inverse);
-  bool Validate(const std::string& value) const final;
+  explicit PatternValidator(const char *pattern, bool inverse);
+  bool Validate(const std::string &value) const final;
 
  private:
   const std::regex pattern_;
   const bool inverse_;
 };
 
-
-#endif //PARSER_PATTERNVALIDATOR_H
+#endif  // PARSER_PATTERNVALIDATOR_H

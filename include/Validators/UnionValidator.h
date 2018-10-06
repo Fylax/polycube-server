@@ -26,15 +26,15 @@
 #include <memory>
 #include <string>
 #include <typeindex>
-#include <vector>
 #include <unordered_set>
+#include <vector>
 #include "Validator.h"
 
-class UnionValidator: public Validator {
-public:
+class UnionValidator : public Validator {
+ public:
   UnionValidator();
   void AddType(std::type_index type,
-      const std::vector<std::shared_ptr<Validator>>& validators);
+               const std::vector<std::shared_ptr<Validator>> &validators);
   /**
    * Validates a union with respect to RFC 7950 and 7951.
    * In particular it firstly JSON type, then it validates in union provided
@@ -42,10 +42,10 @@ public:
    * @param value
    * @return
    */
-  bool Validate(const std::string& value) const;
-private:
+  bool Validate(const std::string &value) const;
+
+ private:
   std::map<std::type_index, std::vector<std::shared_ptr<Validator>>> map_;
 };
 
-
-#endif //PARSER_UNIONVALIDATOR_H
+#endif  // PARSER_UNIONVALIDATOR_H

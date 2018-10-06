@@ -19,25 +19,27 @@
 #include <pistache/router.h>
 #include <memory>
 #include <string>
-#include <vector>
 #include <utility>
+#include <vector>
 
 #include "../../include/Server/Error.h"
 
-Resource::Resource(std::string&& name, std::string&& module,
-                   std::string&& rest_endpoint,
-                   std::shared_ptr<ParentResource>&& parent):
-    name_(std::move(name)), rest_endpoint_(std::move(rest_endpoint)),
-    parent_(std::move(parent)), module_(std::move(module)) {}
+Resource::Resource(std::string &&name, std::string &&module,
+                   std::string &&rest_endpoint,
+                   std::shared_ptr<ParentResource> &&parent)
+    : name_(std::move(name)),
+      rest_endpoint_(std::move(rest_endpoint)),
+      parent_(std::move(parent)),
+      module_(std::move(module)) {}
 
-const std::string& Resource::Name() const {
+const std::string &Resource::Name() const {
   return name_;
 }
 
-const std::string& Resource::ModuleName() const {
+const std::string &Resource::ModuleName() const {
   return module_;
 }
 
-const std::string& Resource::Endpoint() const {
+const std::string &Resource::Endpoint() const {
   return rest_endpoint_;
 }

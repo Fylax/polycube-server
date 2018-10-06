@@ -14,21 +14,21 @@
  * limitations under the License.
  */
 #include "../../include/Server/RestServer.h"
+#include <pistache/endpoint.h>
 #include <pistache/http.h>
 #include <pistache/router.h>
-#include <pistache/endpoint.h>
 #include <memory>
 
 std::shared_ptr<Pistache::Rest::Router> RestServer::router_ = nullptr;
 
-RestServer::RestServer(Pistache::Address&& address, std::size_t thr):
-    httpEndpoint_(std::make_unique<Pistache::Http::Endpoint>(address)) {
+RestServer::RestServer(Pistache::Address &&address, std::size_t thr)
+    : httpEndpoint_(std::make_unique<Pistache::Http::Endpoint>(address)) {
   RestServer::router_ = std::make_shared<Pistache::Rest::Router>();
   init(thr);
   start();
 }
 
-const std::shared_ptr<Pistache::Rest::Router>& RestServer::Router() {
+const std::shared_ptr<Pistache::Rest::Router> &RestServer::Router() {
   return router_;
 }
 
@@ -37,9 +37,8 @@ void RestServer::shutdown() {
 }
 
 void RestServer::init(std::size_t thr) {
-  auto opts = Pistache::Http::Endpoint::options()
-      .threads(thr)
-      .flags(Pistache::Tcp::Options::InstallSignalHandler);
+  auto opts = Pistache::Http::Endpoint::options().threads(thr).flags(
+      Pistache::Tcp::Options::InstallSignalHandler);
   httpEndpoint_->init(opts);
   CubeManager::GetInstance();
 }

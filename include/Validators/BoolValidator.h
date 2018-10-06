@@ -19,9 +19,8 @@
 
 #include "Validator.h"
 
-class BoolValidator: public Validator {
-  bool Validate(const std::string& value) const final;
+class BoolValidator : public Validator {
+  bool Validate(const std::string &value) const final;
 };
 
-
-#endif //PARSER_BOOLVALIDATOR_H
+#endif  // PARSER_BOOLVALIDATOR_H

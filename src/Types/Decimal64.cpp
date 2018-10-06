@@ -17,27 +17,27 @@
 #include <istream>
 #include <string>
 
-bool Decimal64::operator==(const Decimal64& other) const {
+bool Decimal64::operator==(const Decimal64 &other) const {
   return value_ == other.value_ && fraction_digits_ == other.fraction_digits_;
 }
 
-bool Decimal64::operator<(const Decimal64& other) const {
+bool Decimal64::operator<(const Decimal64 &other) const {
   return value_ < other.value_;
 }
 
-bool Decimal64::operator>(const Decimal64& other) const {
+bool Decimal64::operator>(const Decimal64 &other) const {
   return other < *this;
 }
 
-bool Decimal64::operator<=(const Decimal64& other) const {
+bool Decimal64::operator<=(const Decimal64 &other) const {
   return !(*this > other);
 }
 
-bool Decimal64::operator>=(const Decimal64& other) const {
+bool Decimal64::operator>=(const Decimal64 &other) const {
   return !(*this < other);
 }
 
-std::istream& operator>>(std::istream& is, Decimal64& v) {
+std::istream &operator>>(std::istream &is, Decimal64 &v) {
   std::string value;
   is >> value;
   try {
@@ -56,7 +56,8 @@ std::istream& operator>>(std::istream& is, Decimal64& v) {
     }
 
     idx += 1;
-    if (idx == value.length()) return is;
+    if (idx == value.length())
+      return is;
 
     auto denominator_str = value.substr(idx);
     std::uint8_t fraction_digits = denominator_str.length();
@@ -80,14 +81,14 @@ std::istream& operator>>(std::istream& is, Decimal64& v) {
     v.value_ = parsed;
     v.fraction_digits_ = fraction_digits;
     return is;
-  } catch (std::invalid_argument&) {
+  } catch (std::invalid_argument &) {
     is.unget();
     is.setstate(std::ios_base::failbit);
     return is;
   }
 }
 
-Decimal64::Decimal64():value_(0), fraction_digits_(1) {}
+Decimal64::Decimal64() : value_(0), fraction_digits_(1) {}
 
 std::int64_t Decimal64::Value() const {
   return value_;
@@ -96,4 +97,3 @@ std::int64_t Decimal64::Value() const {
 std::uint8_t Decimal64::FractionDigits() const {
   return static_cast<std::uint8_t>(-fraction_digits_);
 }
-

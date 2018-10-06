@@ -26,28 +26,28 @@
 #include <memory>
 #include <string>
 #include <typeindex>
-#include <vector>
 #include <unordered_set>
-#include "Field.h"
+#include <vector>
 #include "../Validators/Validator.h"
+#include "Field.h"
 
-class JsonBodyField: public Field<nlohmann::json> {
-public:
+class JsonBodyField : public Field<nlohmann::json> {
+ public:
   JsonBodyField();
 
   JsonBodyField(LY_DATA_TYPE type,
-                std::vector<std::shared_ptr<Validator>>&& validators);
+                std::vector<std::shared_ptr<Validator>> &&validators);
 
-  ErrorTag Validate(const nlohmann::json& value) const final;
+  ErrorTag Validate(const nlohmann::json &value) const final;
 
-  static const std::unordered_set<std::type_index>
-  AcceptableTypes(nlohmann::detail::value_t type);
+  static const std::unordered_set<std::type_index> AcceptableTypes(
+      nlohmann::detail::value_t type);
 
-private:
+ private:
   const std::unordered_set<nlohmann::detail::value_t> allowed_types_;
 
-  static const std::unordered_set<nlohmann::detail::value_t>
-  FromYangType(LY_DATA_TYPE type);
+  static const std::unordered_set<nlohmann::detail::value_t> FromYangType(
+      LY_DATA_TYPE type);
 };
 
 #endif  // PARSER_JSONBODYFIELD_H

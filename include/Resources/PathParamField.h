@@ -19,23 +19,23 @@
 
 #include <pistache/router.h>
 
-#include <string>
 #include <memory>
+#include <string>
 #include <vector>
 
-#include "Field.h"
 #include "../Validators/Validator.h"
+#include "Field.h"
 
-class PathParamField: public Field<Pistache::Rest::Request> {
-private:
+class PathParamField : public Field<Pistache::Rest::Request> {
+ private:
   const std::string name_;
-public:
-  PathParamField(const std::string& name,
-                 std::vector<std::shared_ptr<Validator>>&& validators);
-  const std::string& Name() const;
-  ErrorTag Validate(const Pistache::Rest::Request& value) const final;
-  bool Validate(const std::string& value) const;
-};
 
+ public:
+  PathParamField(const std::string &name,
+                 std::vector<std::shared_ptr<Validator>> &&validators);
+  const std::string &Name() const;
+  ErrorTag Validate(const Pistache::Rest::Request &value) const final;
+  bool Validate(const std::string &value) const;
+};
 
 #endif  // PARSER_PATHPARAMFIELD_H

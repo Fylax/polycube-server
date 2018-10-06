@@ -17,8 +17,7 @@
 #include <string>
 #include "../../include/Server/Base64.h"
 
-LengthValidator::LengthValidator(bool binary):
-    binary_(binary), ranges_{} {}
+LengthValidator::LengthValidator(bool binary) : binary_(binary), ranges_{} {}
 
 void LengthValidator::AddRange(std::uint64_t min, std::uint64_t max) {
   ranges_.emplace(min, max);
@@ -33,7 +32,7 @@ void LengthValidator::AddRanges(
   ranges_.merge(ranges);
 }
 
-bool LengthValidator::Validate(const std::string& value) const {
+bool LengthValidator::Validate(const std::string &value) const {
   std::size_t data_length;
   if (binary_) {
     data_length = Base64::decode(value).length();
@@ -41,8 +40,9 @@ bool LengthValidator::Validate(const std::string& value) const {
     data_length = value.length();
   }
   unsigned falses = 0;
-  for (const auto& range : ranges_) {
-    if (data_length >= range.first && data_length <= range.second) falses += 1;
+  for (const auto &range : ranges_) {
+    if (data_length >= range.first && data_length <= range.second)
+      falses += 1;
   }
   return falses != ranges_.size();
 }

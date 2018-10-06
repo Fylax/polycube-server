@@ -23,23 +23,16 @@
  * check can be correct.
  */
 
-class Binary {
-};
+class Binary {};
 
-class Bits {
-};
+class Bits {};
 
-class Empty {
-};
+class Empty {};
 
-class Enum {
-};
+class Enum {};
 
-class XPath {
-};
+class XPath {};
 
-class List {
-};
+class List {};
 
-
-#endif //PARSER_DUMMIES_H
+#endif  // PARSER_DUMMIES_H

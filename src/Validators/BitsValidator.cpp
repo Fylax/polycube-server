@@ -16,18 +16,17 @@
 #include "../../include/Validators/BitsValidator.h"
 #include <string>
 
-BitsValidator::BitsValidator(): bits_{} {
-}
+BitsValidator::BitsValidator() : bits_{} {}
 
-void BitsValidator::AddBit(std::uint32_t position, const std::string& name) {
+void BitsValidator::AddBit(std::uint32_t position, const std::string &name) {
   bits_.emplace(position, name);
 }
 
-bool BitsValidator::Validate(const std::string& value) const {
+bool BitsValidator::Validate(const std::string &value) const {
   auto lpos = 0ul;
   auto rpos = value.find(' ');
   std::string current = value.substr(0, rpos);
-  for (const auto& bit : bits_) {
+  for (const auto &bit : bits_) {
     if (bit.second == current) {
       lpos = rpos + 1;
       rpos = value.find(' ', lpos);

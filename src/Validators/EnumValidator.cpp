@@ -15,16 +15,16 @@
  */
 #include "../../include/Validators/EnumValidator.h"
 
-#include <unordered_set>
 #include <string>
+#include <unordered_set>
 #include <utility>
 
-EnumValidator::EnumValidator(): values_{} {}
+EnumValidator::EnumValidator() : values_{} {}
 
-void EnumValidator::AddEnum(const std::string& value) {
+void EnumValidator::AddEnum(const std::string &value) {
   values_.emplace(value);
 }
 
-bool EnumValidator::Validate(const std::string& value) const {
+bool EnumValidator::Validate(const std::string &value) const {
   return values_.count(value) == 1;
 }

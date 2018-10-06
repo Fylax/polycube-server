@@ -24,17 +24,17 @@
 #include <unordered_set>
 #include <vector>
 
-class InSetValidator: public Validator {
-public:
+class InSetValidator : public Validator {
+ public:
   static std::vector<std::shared_ptr<Validator>> Create();
   InSetValidator();
-  bool Validate(const std::string& value) const final;
-  void AddValue(const std::string& value);
-  void RemoveValue(const std::string& value);
-  const std::unordered_set<std::string>& Values();
-private:
+  bool Validate(const std::string &value) const final;
+  void AddValue(const std::string &value);
+  void RemoveValue(const std::string &value);
+  const std::unordered_set<std::string> &Values();
+
+ private:
   std::unordered_set<std::string> invalid_values_;
 };
 
-
-#endif //PARSER_INSETVALIDATOR_H
+#endif  // PARSER_INSETVALIDATOR_H

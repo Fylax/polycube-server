@@ -24,8 +24,7 @@
 class Validator {
  public:
   virtual ~Validator() = default;
-  virtual bool Validate(const std::string& value) const = 0;
+  virtual bool Validate(const std::string &value) const = 0;
 };
 
-
-#endif //PARSER_VALIDATOR_H
+#endif  // PARSER_VALIDATOR_H
