@@ -14,20 +14,20 @@
  * limitations under the License.
  */
 #pragma once
-#ifndef PARSER_EMPTYVALIDATOR_H
-#define PARSER_EMPTYVALIDATOR_H
 
 #include <string>
 #include "Validator.h"
 
+namespace polycube::polycubed::Rest::Validators {
 class EmptyValidator : public Validator {
  public:
   EmptyValidator();
+
   bool Validate(const std::string &value) const final;
+
   void IsPath(bool is_path);
 
  private:
   bool is_path_;
 };
-
-#endif  // PARSER_EMPTYVALIDATOR_H
+}  // namespace polycube::polycubed::Rest::Validators

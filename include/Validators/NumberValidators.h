@@ -14,14 +14,13 @@
  * limitations under the License.
  */
 #pragma once
-#ifndef PARSER_NUMBERVALIDATOR_H
-#define PARSER_NUMBERVALIDATOR_H
 
 #include <string>
 #include <unordered_map>
 #include "../Types/Decimal64.h"
 #include "Validator.h"
 
+namespace polycube::polycubed::Rest::Validators {
 template <typename T>
 class NumberValidator : public Validator {
  public:
@@ -41,6 +40,7 @@ class NumberValidator : public Validator {
   std::unordered_map<T, T> ranges_;
 };
 
+using Types::Decimal64;
 class DecimalValidator : public NumberValidator<Decimal64> {
  public:
   explicit DecimalValidator(std::uint8_t fraction_digits);
@@ -69,6 +69,6 @@ template class NumberValidator<std::uint32_t>;
 template class NumberValidator<std::int64_t>;
 
 template class NumberValidator<std::uint64_t>;
-template class NumberValidator<Decimal64>;
 
-#endif  // PARSER_NUMBERVALIDATOR_H
+template class NumberValidator<Decimal64>;
+}  // namespace polycube::polycubed::Rest::Validators

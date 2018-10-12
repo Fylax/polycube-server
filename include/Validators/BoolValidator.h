@@ -14,13 +14,12 @@
  * limitations under the License.
  */
 #pragma once
-#ifndef PARSER_BOOLVALIDATOR_H
-#define PARSER_BOOLVALIDATOR_H
 
+#include <string>
 #include "Validator.h"
 
+namespace polycube::polycubed::Rest::Validators {
 class BoolValidator : public Validator {
   bool Validate(const std::string &value) const final;
 };
-
-#endif  // PARSER_BOOLVALIDATOR_H
+}  // namespace polycube::polycubed::Rest::Validators

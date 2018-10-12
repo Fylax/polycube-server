@@ -14,11 +14,10 @@
  * limitations under the License.
  */
 #pragma once
-#ifndef PARSER_DECIMAL64_H
-#define PARSER_DECIMAL64_H
 
 #include <istream>
 
+namespace polycube::polycubed::Rest::Types {
 class Decimal64 {
  public:
   Decimal64();
@@ -61,13 +60,14 @@ class Decimal64 {
   std::int64_t value_;
   std::int8_t fraction_digits_;
 };
+}  // namespace polycube::polycubed::Rest::Types
 
 namespace std {
+using polycube::polycubed::Rest::Types::Decimal64;
+
 template <>
 struct hash<Decimal64> {
-  /**
-   * Cantor Pairing Function
-   */
+  /** Cantor Pairing Function */
   std::size_t operator()(const Decimal64 &k) const {
     return (std::size_t)((((k.Value() + k.FractionDigits()) *
                            (k.Value() + k.FractionDigits() + 1)) >>
@@ -76,4 +76,3 @@ struct hash<Decimal64> {
   }
 };
 }  // namespace std
-#endif  // PARSER_DECIMAL64_H

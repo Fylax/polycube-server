@@ -14,7 +14,9 @@
  * limitations under the License.
  */
 #include "../../include/Validators/BoolValidator.h"
-
+#include <string>
+namespace polycube::polycubed::Rest::Validators {
 bool BoolValidator::Validate(const std::string &value) const {
   return value == "true" || value == "false";
 }
+}  // namespace polycube::polycubed::Rest::Validators

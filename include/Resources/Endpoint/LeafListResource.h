@@ -14,33 +14,31 @@
  * limitations under the License.
  */
 #pragma once
-#ifndef SERVICE_CONTROLLER_LEAFLISTRESOURCE_H
-#define SERVICE_CONTROLLER_LEAFLISTRESOURCE_H
 
 #include <memory>
 #include <string>
-#include <typeindex>
 #include <vector>
+
+#include "../Body/JsonBodyField.h"
+#include "../Body/LeafListResource.h"
 #include "LeafResource.h"
 
-class LeafListResource : public LeafResource {
+namespace polycube::polycubed::Rest::Resources::Endpoint {
+using Pistache::Http::ResponseWriter;
+using Pistache::Rest::Request;
+
+class LeafListResource : public LeafResource, public Body::LeafListResource {
  public:
   LeafListResource(std::string name, std::string module,
                    std::string rest_endpoint,
                    std::shared_ptr<ParentResource> parent,
-                   std::unique_ptr<JsonBodyField> &&field, bool configurable,
-                   bool mandatory, std::vector<std::string> &&default_value);
+                   std::unique_ptr<Body::JsonBodyField> &&field,
+                   bool configurable, bool mandatory,
+                   std::vector<std::string> &&default_value);
 
   ~LeafListResource() override;
 
-  std::vector<Response> Validate(const nlohmann::json &body) const final;
-
-  void SetDefaultIfMissing(nlohmann::json &body) const final;
-
  private:
-  const std::vector<std::string> default_;
-
   void get_entry(const Request &request, ResponseWriter response);
 };
-
-#endif  // SERVICE_CONTROLLER_LEAFLISTRESOURCE_H
+}  // namespace polycube::polycubed::Rest::Resources::Endpoint

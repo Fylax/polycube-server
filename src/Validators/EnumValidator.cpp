@@ -14,11 +14,9 @@
  * limitations under the License.
  */
 #include "../../include/Validators/EnumValidator.h"
-
 #include <string>
-#include <unordered_set>
-#include <utility>
 
+namespace polycube::polycubed::Rest::Validators {
 EnumValidator::EnumValidator() : values_{} {}
 
 void EnumValidator::AddEnum(const std::string &value) {
@@ -28,3 +26,4 @@ void EnumValidator::AddEnum(const std::string &value) {
 bool EnumValidator::Validate(const std::string &value) const {
   return values_.count(value) == 1;
 }
+}  // namespace polycube::polycubed::Rest::Validators

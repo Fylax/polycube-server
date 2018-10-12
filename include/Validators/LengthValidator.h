@@ -14,25 +14,27 @@
  * limitations under the License.
  */
 #pragma once
-#ifndef PARSER_LENGTHVALIDATOR_H
-#define PARSER_LENGTHVALIDATOR_H
 
 #include "Validator.h"
 
 #include <string>
 #include <unordered_map>
 
+namespace polycube::polycubed::Rest::Validators {
 class LengthValidator : public Validator {
  public:
-  LengthValidator(bool binary);
+  explicit LengthValidator(bool binary);
+
   void AddRange(std::uint64_t min, std::uint64_t max);
+
   void AddExact(std::uint64_t exact);
+
   void AddRanges(std::unordered_map<std::uint64_t, std::uint64_t> ranges);
+
   bool Validate(const std::string &value) const final;
 
  private:
   const bool binary_;
   std::unordered_map<std::uint64_t, std::uint64_t> ranges_;
 };
-
-#endif  // PARSER_LENGTHVALIDATOR_H
+}  // namespace polycube::polycubed::Rest::Validators

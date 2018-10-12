@@ -14,17 +14,8 @@
  * limitations under the License.
  */
 #pragma once
-#ifndef PARSER_RESOURCE_H
-#define PARSER_RESOURCE_H
 
 #include <pistache/router.h>
-
-#pragma GCC diagnostic push
-#pragma GCC diagnostic ignored "-Weffc++"
-
-#include "../../externals/include/nlohmann/json.hpp"
-
-#pragma GCC diagnostic pop
 
 #include <memory>
 #include <shared_mutex>
@@ -32,14 +23,19 @@
 #include <utility>
 #include <vector>
 
-#include "../Server/Error.h"
+#pragma GCC diagnostic push
+#pragma GCC diagnostic ignored "-Weffc++"
+#include "../../../externals/include/nlohmann/json.hpp"
+#pragma GCC diagnostic pop
 
+#include "../../Server/Error.h"
+
+namespace polycube::polycubed::Rest::Resources::Body {
 class ParentResource;
 
 class Resource {
  public:
   Resource(std::string &&name, std::string &&module,
-           std::string &&rest_endpoint,
            std::shared_ptr<ParentResource> &&parent);
 
   virtual ~Resource() = default;
@@ -50,26 +46,16 @@ class Resource {
 
   const std::string &ModuleName() const;
 
-  const std::string &Endpoint() const;
-
   virtual bool ValidateXPath(const std::string &xpath) const = 0;
 
-  virtual std::vector<Response> Validate(const nlohmann::json &body) const = 0;
-
-  virtual std::vector<Response> Validate(
-      const Pistache::Rest::Request &request,
-      const std::string &caller_name) const = 0;
+  virtual std::vector<Response> BodyValidate(nlohmann::json &body,
+                                             bool check_mandatory) const = 0;
 
   virtual void SetDefaultIfMissing(nlohmann::json &body) const = 0;
 
  protected:
   const std::string name_;
-  const std::string rest_endpoint_;
   std::shared_ptr<ParentResource> parent_;
   const std::string module_;
-
-  virtual void CreateOrReplace(const Pistache::Rest::Request &request,
-                               Pistache::Http::ResponseWriter response) = 0;
 };
-
-#endif  // PARSER_RESOURCE_H
+}  // namespace polycube::polycubed::Rest::Resources::Body

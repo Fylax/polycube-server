@@ -16,6 +16,7 @@
 #include "../../include/Validators/EmptyValidator.h"
 #include <string>
 
+namespace polycube::polycubed::Rest::Validators {
 EmptyValidator::EmptyValidator() : is_path_(false) {}
 
 bool EmptyValidator::Validate(const std::string &value) const {
@@ -25,3 +26,4 @@ bool EmptyValidator::Validate(const std::string &value) const {
 void EmptyValidator::IsPath(const bool is_path) {
   is_path_ = is_path;
 }
+}  // namespace polycube::polycubed::Rest::Validators

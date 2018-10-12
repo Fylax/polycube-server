@@ -18,6 +18,7 @@
 #include <boost/lexical_cast.hpp>
 #include <string>
 
+namespace polycube::polycubed::Rest::Validators {
 template <typename T>
 NumberValidator<T>::NumberValidator(T lower_bound, T upper_bound)
     : ranges_{{lower_bound, upper_bound}} {}
@@ -77,3 +78,4 @@ bool DecimalValidator::Validate(const std::string &value) const {
     return false;
   }
 }
+}  // namespace polycube::polycubed::Rest::Validators

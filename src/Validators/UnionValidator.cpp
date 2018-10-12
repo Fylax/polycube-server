@@ -14,15 +14,15 @@
  * limitations under the License.
  */
 #include "../../include/Validators/UnionValidator.h"
-#include <cstdint>
+
 #include <memory>
 #include <string>
 #include <typeindex>
-#include <unordered_set>
-#include <utility>
 #include <vector>
-#include "../../include/Resources/JsonBodyField.h"
 
+#include "../../include/Resources/Body/JsonBodyField.h"
+
+namespace polycube::polycubed::Rest::Validators {
 UnionValidator::UnionValidator() : map_{} {}
 
 void UnionValidator::AddType(
@@ -33,7 +33,8 @@ void UnionValidator::AddType(
 
 bool UnionValidator::Validate(const std::string &value) const {
   auto data = nlohmann::json::parse(value);
-  const auto &allowed = JsonBodyField::AcceptableTypes(data.type());
+  const auto &allowed =
+      Resources::Body::JsonBodyField::AcceptableTypes(data.type());
   for (const auto &union_type : map_) {
     if (allowed.count(union_type.first) != 0) {
       for (const auto &validator : union_type.second) {
@@ -44,3 +45,4 @@ bool UnionValidator::Validate(const std::string &value) const {
   }
   return false;
 }
+}  // namespace polycube::polycubed::Rest::Validators

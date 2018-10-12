@@ -3,6 +3,9 @@
  *  https://raw.githubusercontent.com/gaspardpetit/base64/master/src/polfosol/polfosol.h
  */
 #include "../../include/Server/Base64.h"
+#include <string>
+
+namespace polycube::polycubed::Rest::Server {
 
 std::string Base64::decode(const std::string &str64) {
   return decode(str64.c_str(), str64.size());
@@ -32,3 +35,4 @@ std::string Base64::decode(const void *data, const size_t len) {
   }
   return str;
 }
+}  // namespace namespacepolycube::polycubed::Rest::Server

@@ -14,22 +14,21 @@
  * limitations under the License.
  */
 #pragma once
-#ifndef PARSER_BITSVALIDATOR_H
-#define PARSER_BITSVALIDATOR_H
 
 #include <map>
 #include <string>
 #include "Validator.h"
-
+namespace polycube::polycubed::Rest::Validators {
 class BitsValidator : public Validator {
  public:
   BitsValidator();
+
   void AddBit(std::uint32_t position, const std::string &name);
+
   bool Validate(const std::string &value) const final;
 
  private:
   /** Position, name */
   std::map<std::uint32_t, std::string> bits_;
 };
-
-#endif  // PARSER_BITSVALIDATOR_H
+}  // namespace polycube::polycubed::Rest::Validators

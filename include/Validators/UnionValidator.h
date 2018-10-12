@@ -14,13 +14,6 @@
  * limitations under the License.
  */
 #pragma once
-#ifndef PARSER_UNIONVALIDATOR_H
-#define PARSER_UNIONVALIDATOR_H
-
-#pragma GCC diagnostic push
-#pragma GCC diagnostic ignored "-Weffc++"
-#include "../../externals/include/nlohmann/json.hpp"
-#pragma GCC diagnostic pop
 
 #include <map>
 #include <memory>
@@ -30,11 +23,19 @@
 #include <vector>
 #include "Validator.h"
 
+#pragma GCC diagnostic push
+#pragma GCC diagnostic ignored "-Weffc++"
+#include "../../externals/include/nlohmann/json.hpp"
+#pragma GCC diagnostic pop
+
+namespace polycube::polycubed::Rest::Validators {
 class UnionValidator : public Validator {
  public:
   UnionValidator();
+
   void AddType(std::type_index type,
                const std::vector<std::shared_ptr<Validator>> &validators);
+
   /**
    * Validates a union with respect to RFC 7950 and 7951.
    * In particular it firstly JSON type, then it validates in union provided
@@ -42,10 +43,9 @@ class UnionValidator : public Validator {
    * @param value
    * @return
    */
-  bool Validate(const std::string &value) const;
+  bool Validate(const std::string &value) const final;
 
  private:
   std::map<std::type_index, std::vector<std::shared_ptr<Validator>>> map_;
 };
-
-#endif  // PARSER_UNIONVALIDATOR_H
+}  // namespace polycube::polycubed::Rest::Validators

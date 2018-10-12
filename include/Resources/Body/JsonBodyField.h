@@ -14,13 +14,11 @@
  * limitations under the License.
  */
 #pragma once
-#ifndef PARSER_JSONBODYFIELD_H
-#define PARSER_JSONBODYFIELD_H
 
 #include <libyang/libyang.h>
 #pragma GCC diagnostic push
 #pragma GCC diagnostic ignored "-Weffc++"
-#include "../../externals/include/nlohmann/json.hpp"
+#include "../../../externals/include/nlohmann/json.hpp"
 #pragma GCC diagnostic pop
 
 #include <memory>
@@ -28,15 +26,18 @@
 #include <typeindex>
 #include <unordered_set>
 #include <vector>
-#include "../Validators/Validator.h"
-#include "Field.h"
+#include "../../Validators/Validator.h"
+#include "../Field.h"
+
+namespace polycube::polycubed::Rest::Resources::Body {
 
 class JsonBodyField : public Field<nlohmann::json> {
  public:
   JsonBodyField();
 
-  JsonBodyField(LY_DATA_TYPE type,
-                std::vector<std::shared_ptr<Validator>> &&validators);
+  JsonBodyField(
+      LY_DATA_TYPE type,
+      std::vector<std::shared_ptr<Validators::Validator>> &&validators);
 
   ErrorTag Validate(const nlohmann::json &value) const final;
 
@@ -49,5 +50,4 @@ class JsonBodyField : public Field<nlohmann::json> {
   static const std::unordered_set<nlohmann::detail::value_t> FromYangType(
       LY_DATA_TYPE type);
 };
-
-#endif  // PARSER_JSONBODYFIELD_H
+}  // namespace polycube::polycubed::Rest::Resources::Body

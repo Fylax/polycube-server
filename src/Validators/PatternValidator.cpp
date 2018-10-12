@@ -14,8 +14,11 @@
  * limitations under the License.
  */
 #include "../../include/Validators/PatternValidator.h"
+
+#include <regex>
 #include <string>
 
+namespace polycube::polycubed::Rest::Validators {
 PatternValidator::PatternValidator(const char *pattern, bool inverse)
     : pattern_(pattern, std::regex_constants::optimize |
                             std::regex_constants::ECMAScript),
@@ -24,3 +27,4 @@ PatternValidator::PatternValidator(const char *pattern, bool inverse)
 bool PatternValidator::Validate(const std::string &value) const {
   return !inverse_ == std::regex_match(value, pattern_);
 }
+}  // namespace polycube::polycubed::Rest::Validators

@@ -14,21 +14,20 @@
  * limitations under the License.
  */
 #include <memory>
-#include <string>
-#include <utility>
 #include <vector>
 
-#include "../../include/Resources/Field.h"
-#include "../../include/Resources/PathParamField.h"
-#include "../../include/Validators/EmptyValidator.h"
+#include "../../../include/Validators/EmptyValidator.h"
+#include "Endpoint/PathParamField.h"
 
+namespace polycube::polycubed::Rest::Resources::Endpoint {
 PathParamField::PathParamField(
     const std::string &name,
-    std::vector<std::shared_ptr<Validator> > &&validators)
+    std::vector<std::shared_ptr<Validators::Validator>> validators)
     : Field<Pistache::Rest::Request>(std::move(validators)),
       name_(std::string{':'} + name) {
   for (const auto &validator : validators_) {
-    if (auto test = std::dynamic_pointer_cast<EmptyValidator>(validator)) {
+    if (auto test =
+            std::dynamic_pointer_cast<Validators::EmptyValidator>(validator)) {
       test->IsPath(true);
     }
   }
@@ -53,3 +52,4 @@ bool PathParamField::Validate(const std::string &value) const {
   }
   return true;
 }
+}  // namespace polycube::polycubed::Rest::Resources::Endpoint

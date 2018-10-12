@@ -14,11 +14,14 @@
  * limitations under the License.
  */
 #include "../../include/Server/RestServer.h"
+#include "../../include/Resources/CubeManager.h"
+
 #include <pistache/endpoint.h>
 #include <pistache/http.h>
 #include <pistache/router.h>
 #include <memory>
 
+namespace polycube::polycubed::Rest::Server {
 std::shared_ptr<Pistache::Rest::Router> RestServer::router_ = nullptr;
 
 RestServer::RestServer(Pistache::Address &&address, std::size_t thr)
@@ -40,10 +43,11 @@ void RestServer::init(std::size_t thr) {
   auto opts = Pistache::Http::Endpoint::options().threads(thr).flags(
       Pistache::Tcp::Options::InstallSignalHandler);
   httpEndpoint_->init(opts);
-  CubeManager::GetInstance();
+  Resources::CubeManager::GetInstance();
 }
 
 void RestServer::start() {
   httpEndpoint_->setHandler(Pistache::Rest::Router::handler(router_));
   httpEndpoint_->serve();
 }
+}  // namespace polycube::polycubed::Rest::Server

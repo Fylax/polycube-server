@@ -14,8 +14,6 @@
  * limitations under the License.
  */
 #pragma once
-#ifndef PARSER_INSETVALIDATOR_H
-#define PARSER_INSETVALIDATOR_H
 
 #include "Validator.h"
 
@@ -24,17 +22,20 @@
 #include <unordered_set>
 #include <vector>
 
+namespace polycube::polycubed::Rest::Validators {
 class InSetValidator : public Validator {
  public:
-  static std::vector<std::shared_ptr<Validator>> Create();
   InSetValidator();
+
   bool Validate(const std::string &value) const final;
+
   void AddValue(const std::string &value);
+
   void RemoveValue(const std::string &value);
+
   const std::unordered_set<std::string> &Values();
 
  private:
   std::unordered_set<std::string> invalid_values_;
 };
-
-#endif  // PARSER_INSETVALIDATOR_H
+}  // namespace polycube::polycubed::Rest::Validators

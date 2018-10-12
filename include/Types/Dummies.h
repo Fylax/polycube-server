@@ -14,8 +14,8 @@
  * limitations under the License.
  */
 #pragma once
-#ifndef PARSER_DUMMIES_H
-#define PARSER_DUMMIES_H
+
+namespace polycube::polycubed::Rest::Types {
 
 /**
  * These types are dummy, meaning that they are useful only
@@ -34,5 +34,4 @@ class Enum {};
 class XPath {};
 
 class List {};
-
-#endif  // PARSER_DUMMIES_H
+}  // namespace polycube::polycubed::Rest::Types

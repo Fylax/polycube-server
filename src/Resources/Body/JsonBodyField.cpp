@@ -13,25 +13,25 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
-#include "../../include/Resources/JsonBodyField.h"
+#include "../../../include/Resources/Body/JsonBodyField.h"
 
-#include <JsonBodyField.h>
 #include <memory>
 #include <string>
 #include <typeindex>
 #include <unordered_set>
-#include <utility>
 #include <vector>
 
-#include "../../include/Types/Decimal64.h"
-#include "../../include/Types/Dummies.h"
+#include "../../../include/Types/Decimal64.h"
+#include "../../../include/Types/Dummies.h"
 
+namespace polycube::polycubed::Rest::Resources::Body {
 JsonBodyField::JsonBodyField()
-    : JsonBodyField(LY_TYPE_STRING, std::vector<std::shared_ptr<Validator>>()) {
-}
+    : JsonBodyField(LY_TYPE_STRING,
+                    std::vector<std::shared_ptr<Validators::Validator>>()) {}
 
 JsonBodyField::JsonBodyField(
-    LY_DATA_TYPE type, std::vector<std::shared_ptr<Validator>> &&validators)
+    LY_DATA_TYPE type,
+    std::vector<std::shared_ptr<Validators::Validator>> &&validators)
     : Field<nlohmann::json>(std::move(validators)),
       allowed_types_(JsonBodyField::FromYangType(type)) {}
 
@@ -57,18 +57,18 @@ const std::unordered_set<std::type_index> JsonBodyField::AcceptableTypes(
     break;
   case nlohmann::detail::value_t::array:
     types.reserve(2);
-    types.insert(std::type_index(typeid(Empty)));
-    types.insert(std::type_index(typeid(List)));
+    types.insert(std::type_index(typeid(Types::Empty)));
+    types.insert(std::type_index(typeid(Types::List)));
     break;
   case nlohmann::detail::value_t::string:
     types.reserve(7);
     types.insert(std::type_index(typeid(std::string)));
     types.insert(std::type_index(typeid(std::int64_t)));
     types.insert(std::type_index(typeid(std::uint64_t)));
-    types.insert(std::type_index(typeid(Bits)));
-    types.insert(std::type_index(typeid(Enum)));
-    types.insert(std::type_index(typeid(Decimal64)));
-    types.insert(std::type_index(typeid(XPath)));
+    types.insert(std::type_index(typeid(Types::Bits)));
+    types.insert(std::type_index(typeid(Types::Enum)));
+    types.insert(std::type_index(typeid(Types::Decimal64)));
+    types.insert(std::type_index(typeid(Types::XPath)));
     break;
   case nlohmann::detail::value_t::boolean:
     types.reserve(1);
@@ -90,7 +90,7 @@ const std::unordered_set<std::type_index> JsonBodyField::AcceptableTypes(
     break;
   case nlohmann::detail::value_t::number_float:
     types.reserve(1);
-    types.insert(std::type_index(typeid(Decimal64)));
+    types.insert(std::type_index(typeid(Types::Decimal64)));
     break;
   case nlohmann::detail::value_t::discarded:
     break;
@@ -152,3 +152,4 @@ const std::unordered_set<nlohmann::detail::value_t> JsonBodyField::FromYangType(
     throw std::runtime_error("Unsupported type");
   }
 }
+}  // namespace polycube::polycubed::Rest::Resources::Body

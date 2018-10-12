@@ -14,17 +14,15 @@
  * limitations under the License.
  */
 #pragma once
-#ifndef PARSER_VALIDATOR_H
-#define PARSER_VALIDATOR_H
 
 #include <memory>
 #include <string>
 #include <vector>
-
+namespace polycube::polycubed::Rest::Validators {
 class Validator {
  public:
   virtual ~Validator() = default;
+
   virtual bool Validate(const std::string &value) const = 0;
 };
-
-#endif  // PARSER_VALIDATOR_H
+}  // namespace polycube::polycubed::Rest::Validators

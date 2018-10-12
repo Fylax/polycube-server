@@ -14,8 +14,6 @@
  * limitations under the License.
  */
 #pragma once
-#ifndef PARSER_CUBE_H
-#define PARSER_CUBE_H
 
 #include <pistache/router.h>
 
@@ -25,25 +23,32 @@
 #include <unordered_map>
 #include <unordered_set>
 
+#include "../../Validators/InSetValidator.h"
+#include "../Body/Service.h"
 #include "ParentResource.h"
 
+namespace polycube::polycubed::Rest::Resources::Endpoint {
 using Pistache::Http::ResponseWriter;
 using Pistache::Rest::Request;
 
-class Cube : public ParentResource {
+class Service : public ParentResource, public Body::Service {
  public:
-  Cube(const std::string &name, std::string base_address);
+  Service(const std::string &name, std::string base_address);
 
-  ~Cube() final;
+  ~Service() final;
 
-  bool ValidateXPath(const std::string &xpath) const final;
+  using Body::Service::ValidateXPath;
 
  private:
   const std::string body_rest_endpoint_;
-  std::unordered_map<std::string, std::shared_mutex> mutex_;
+  Validators::InSetValidator path_param_;
 
-  void CreateOrReplace(const std::string &name, const nlohmann::json &body,
-                       ResponseWriter response, bool replace);
+  void CreateReplaceUpdate(const std::string &name, nlohmann::json body,
+                           ResponseWriter response, bool replace, bool check_mandatory);
+
+  std::vector<Response> RequestValidate(
+      const Pistache::Rest::Request &request,
+      const std::string &caller_name) const final;
 
   void post(const Request &request, ResponseWriter response) final;
 
@@ -57,5 +62,4 @@ class Cube : public ParentResource {
 
   void patch_body(const Request &request, ResponseWriter response);
 };
-
-#endif  // PARSER_CUBE_H
+}  // namespace polycube::polycubed::Rest::Resources::Endpoint

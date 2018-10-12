@@ -14,38 +14,31 @@
  * limitations under the License.
  */
 #pragma once
-#ifndef SERVICE_CONTROLLER_CHOICERESOURCE_H
-#define SERVICE_CONTROLLER_CHOICERESOURCE_H
 
 #include <memory>
 #include <string>
-#include <unordered_map>
 #include <vector>
 
-#include "LeafResource.h"
+#include "../../Validators/InSetValidator.h"
+#include "../Body/ChoiceResource.h"
 #include "ParentResource.h"
-#include "PathParamField.h"
 
-class ChoiceResource : public ParentResource {
+namespace polycube::polycubed::Rest::Resources::Endpoint {
+using Pistache::Http::ResponseWriter;
+using Pistache::Rest::Request;
+
+class ChoiceResource : public ParentResource, public Body::ChoiceResource {
  public:
   ChoiceResource(std::string name, std::string module,
-                 std::string rest_endpoint,
                  std::shared_ptr<ParentResource> parent, bool mandatory,
                  std::unique_ptr<const std::string> &&default_case);
 
-  std::vector<Response> Validate(const Request &request,
-                                 const std::string &caller_name) const final;
+  void AddChild(std::shared_ptr<Body::Resource> child) final;
 
-  void AddChild(std::shared_ptr<Resource> child) final;
-
-  void SetDefaultIfMissing(nlohmann::json &body) const final;
+  using Body::ChoiceResource::IsMandatory;
+  using Body::ChoiceResource::SetDefaultIfMissing;
 
  private:
-  const bool mandatory_;
-  std::unordered_map<std::string, std::shared_ptr<Resource>> children_;
-  const std::unique_ptr<const std::string> default_case_;
-
-  void CreateOrReplace(const Request &request, ResponseWriter response) final;
+  Validators::InSetValidator choice_;
 };
-
-#endif  // SERVICE_CONTROLLER_CHOICERESOURCE_H
+}  // namespace polycube::polycubed::Rest::Resources::Endpoint

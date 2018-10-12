@@ -13,29 +13,18 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
-#pragma once
-#ifndef PARSER_PATHPARAMFIELD_H
-#define PARSER_PATHPARAMFIELD_H
-
-#include <pistache/router.h>
+#include "../../../include/Resources/Endpoint/CaseResource.h"
 
 #include <memory>
 #include <string>
-#include <vector>
+#include <utility>
 
-#include "../Validators/Validator.h"
-#include "Field.h"
+#include "../../../include/Resources/Body/CaseResource.h"
+namespace polycube::polycubed::Rest::Resources::Body {
+CaseResource::CaseResource() : ParentResource("", "", nullptr, false) {}
 
-class PathParamField : public Field<Pistache::Rest::Request> {
- private:
-  const std::string name_;
-
- public:
-  PathParamField(const std::string &name,
-                 std::vector<std::shared_ptr<Validator>> &&validators);
-  const std::string &Name() const;
-  ErrorTag Validate(const Pistache::Rest::Request &value) const final;
-  bool Validate(const std::string &value) const;
-};
-
-#endif  // PARSER_PATHPARAMFIELD_H
+CaseResource::CaseResource(std::string name, std::string module,
+                           std::shared_ptr<ParentResource> parent)
+    : ParentResource(std::move(name), std::move(module), std::move(parent),
+                     false) {}
+}  // namespace polycube::polycubed::Rest::Resources::Body

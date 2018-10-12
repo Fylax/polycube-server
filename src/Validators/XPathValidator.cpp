@@ -14,13 +14,16 @@
  * limitations under the License.
  */
 #include "../../include/Validators/XPathValidator.h"
+
 #include <string>
 
 #include "../../include/Resources/CubeManager.h"
 
+namespace polycube::polycubed::Rest::Validators {
 XPathValidator::XPathValidator(const std::string &context)
     : context_(context) {}
 
 bool XPathValidator::Validate(const std::string &value) const {
-  return CubeManager::GetInstance().ValidateXpath(value, context_);
+  return Resources::CubeManager::GetInstance().ValidateXpath(value, context_);
 }
+}  // namespace polycube::polycubed::Rest::Validators

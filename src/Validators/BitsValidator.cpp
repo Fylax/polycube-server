@@ -14,8 +14,10 @@
  * limitations under the License.
  */
 #include "../../include/Validators/BitsValidator.h"
+
 #include <string>
 
+namespace polycube::polycubed::Rest::Validators {
 BitsValidator::BitsValidator() : bits_{} {}
 
 void BitsValidator::AddBit(std::uint32_t position, const std::string &name) {
@@ -35,3 +37,4 @@ bool BitsValidator::Validate(const std::string &value) const {
   }
   return current.find(' ', lpos) != std::string::npos;
 }
+}  // namespace polycube::polycubed::Rest::Validators

@@ -14,9 +14,13 @@
  * limitations under the License.
  */
 #include "../../include/Validators/LengthValidator.h"
+
 #include <string>
+#include <unordered_map>
+
 #include "../../include/Server/Base64.h"
 
+namespace polycube::polycubed::Rest::Validators {
 LengthValidator::LengthValidator(bool binary) : binary_(binary), ranges_{} {}
 
 void LengthValidator::AddRange(std::uint64_t min, std::uint64_t max) {
@@ -35,7 +39,7 @@ void LengthValidator::AddRanges(
 bool LengthValidator::Validate(const std::string &value) const {
   std::size_t data_length;
   if (binary_) {
-    data_length = Base64::decode(value).length();
+    data_length = Server::Base64::decode(value).length();
   } else {
     data_length = value.length();
   }
@@ -46,3 +50,4 @@ bool LengthValidator::Validate(const std::string &value) const {
   }
   return falses != ranges_.size();
 }
+}  // namespace polycube::polycubed::Rest::Validators

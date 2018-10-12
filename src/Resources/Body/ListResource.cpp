@@ -13,21 +13,24 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
-#include "../../include/Resources/ListResource.h"
+#include "../../../include/Resources/Body/ListResource.h"
 
-#include <memory>
-#include <set>
-#include <string>
-#include <utility>
-#include <vector>
+namespace polycube::polycubed::Rest::Resources::Body {
+ListResource::ListResource(
+    std::vector<std::pair<std::string,
+                          std::vector<std::shared_ptr<Validators::Validator>>>>
+        &&keys)
+    : ParentResource("", "", nullptr, false), keys_{std::move(keys)} {}
 
-ListResource::ListResource(std::string name, std::string module,
-                           std::string rest_endpoint,
-                           std::shared_ptr<ParentResource> parent,
-                           std::vector<PathParamField> &&fields)
-    : ParentResource(std::move(name), std::move(module),
-                     std::move(rest_endpoint), std::move(parent),
-                     std::move(fields), false) {}
+ListResource::ListResource(
+    std::string name, std::string module,
+    std::shared_ptr<ParentResource> parent,
+    std::vector<std::pair<std::string,
+                          std::vector<std::shared_ptr<Validators::Validator>>>>
+        &&keys)
+    : ParentResource(std::move(name), std::move(module), std::move(parent),
+                     false),
+      keys_{std::move(keys)} {}
 
 bool ListResource::ValidateXPath(const std::string &xpath) const {
   auto del_pos = xpath.find('/');  // current delimiter
@@ -47,42 +50,45 @@ bool ListResource::ValidateXPath(const std::string &xpath) const {
   auto key_pos = xpath.find('[');  // first key position
   auto end_key_pos = xpath.find(']', key_pos);
 
-  // In list it is guaranteed that PathParamFields are keys.
   // Validation changes depending on whether keys were defined.
-  if (!fields_.empty()) {
-    for (const auto &field : fields_) {
+  if (!keys_.empty()) {
+    for (const auto &key : keys_) {
       // key is mandatory (and well-formed)
       if (key_pos > del_pos || end_key_pos > del_pos)
         return false;
 
-      // A key is made of two blocks:
-      // name='content'
+      // A key has two possible formats:
+      // [name='content'] or [name]
       auto eq_pos = xpath.find('=', key_pos + 1);
-      if (eq_pos > end_key_pos)
+      auto end_key_name = std::min(eq_pos, end_key_pos);
+      // valid for both first and second case
+      auto key_name = xpath.substr(key_pos + 1, end_key_name);
+      if (key_name != key.first)
         return false;
 
-      auto key_name = xpath.substr(key_pos + 1, eq_pos);
-      if (key_name != field.Name())
-        return false;
-
-      auto start_content_pos = eq_pos + 1;
-      if (xpath[start_content_pos] != '\'')
-        return false;
-      auto end_content_pos = xpath.find('\'', start_content_pos + 1);
-      auto content = xpath.substr(start_content_pos + 1, end_content_pos);
-      if (!field.Validate(content))
-        return false;
-
+      // first case
+      if (eq_pos < end_key_pos) {
+        auto start_content_pos = eq_pos + 1;
+        if (xpath[start_content_pos] != '\'')
+          return false;
+        auto end_content_pos = xpath.find('\'', start_content_pos + 1);
+        auto content = xpath.substr(start_content_pos + 1, end_content_pos);
+        for (const auto &validator : key.second)
+          if (!validator->Validate(content))
+            return false;
+      }
+      // get next key delimiters
       key_pos =
           (xpath[end_key_pos + 1] == '[') ? end_key_pos + 1 : std::string::npos;
       end_key_pos = xpath.find(']', key_pos);
     }
   } else {
-    // key is mandatory (and well-formed)
+    // key is not mandatory
     if (key_pos > del_pos || end_key_pos > del_pos)
       return false;
-    // TODO manage list without keys
   }
 
   return ValidateXPathChildren(xpath, del_pos);
 }
+}  // namespace polycube::polycubed::Rest::Resources::Body
+// namespace polycube::polycubed::Rest::Resources::Body

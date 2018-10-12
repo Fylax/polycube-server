@@ -14,10 +14,10 @@
  * limitations under the License.
  */
 #include "../../include/Server/ResponseGenerator.h"
-#include <pistache/http.h>
-#include <pistache/mime.h>
+
 #include <vector>
 
+namespace polycube::polycubed::Rest::Server {
 namespace {
 using nlohmann::json;
 auto error = R"({
@@ -94,3 +94,4 @@ void ResponseGenerator::Generate(std::vector<Response> &&response,
   }
   writer.send(response_code, body.dump(), mime);
 }
+}  // namespace polycube::polycubed::Rest::Server

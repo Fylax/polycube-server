@@ -3,14 +3,12 @@
  *  https://raw.githubusercontent.com/gaspardpetit/base64/master/src/polfosol/polfosol.h
  */
 #pragma once
-#ifndef PARSER_BASE64_H
-#define PARSER_BASE64_H
 
 #include <cstring>
 #include <string>
 #include <utility>
 
-namespace Base64 {
+namespace polycube::polycubed::Rest::Server::Base64 {
 
 static constexpr const unsigned char B64index[256] = {
     0,  0,  0,  0,  0,  0,  0,  0,  0,  0,  0,  0,  0,  0,  0,  0,  0,  0,
@@ -24,5 +22,4 @@ static constexpr const unsigned char B64index[256] = {
 std::string decode(const std::string &str64);
 
 std::string decode(const void *data, size_t len);
-}  // namespace Base64
-#endif  // PARSER_BASE64_H
+}  // namespace polycube::polycubed::Rest::Server::Base64

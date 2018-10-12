@@ -14,8 +14,6 @@
  * limitations under the License.
  */
 #pragma once
-#ifndef PARSER_FIELD_H
-#define PARSER_FIELD_H
 
 #include <pistache/router.h>
 #pragma GCC diagnostic push
@@ -29,26 +27,28 @@
 #include <vector>
 #include "../Server/Error.h"
 #include "../Validators/Validator.h"
-
+namespace polycube::polycubed::Rest::Resources {
 template <typename T>
 class Field {
  public:
   virtual ~Field() = default;
+
   virtual ErrorTag Validate(const T &value) const = 0;
 
-  const std::vector<std::shared_ptr<Validator>> &Validators() const {
+  const std::vector<std::shared_ptr<Validators::Validator>> &Validators()
+      const {
     return validators_;
   }
 
  protected:
-  explicit Field(std::vector<std::shared_ptr<Validator>> &&validators)
+  explicit Field(
+      std::vector<std::shared_ptr<Validators::Validator>> &&validators)
       : validators_(std::move(validators)) {}
 
-  const std::vector<std::shared_ptr<Validator>> validators_;
+  const std::vector<std::shared_ptr<Validators::Validator>> validators_;
 };
 
 template class Field<Pistache::Rest::Request>;
 
 template class Field<nlohmann::json>;
-
-#endif  // PARSER_FIELD_H
+}  // namespace polycube::polycubed::Rest::Resources

@@ -15,20 +15,23 @@
  */
 #include "../../include/Parser/Parser.h"
 
-#include <libyang/libyang.h>
-
-#include <boost/lexical_cast.hpp>
-#include <cstring>
-#include <limits>
 #include <memory>
 #include <set>
 #include <string>
-#include <string_view>
-#include <typeindex>
 #include <unordered_map>
-#include <unordered_set>
 #include <utility>
-#include <vector>
+
+#include <boost/lexical_cast.hpp>
+
+#include "../../include/Resources/Endpoint/ChoiceResource.h"
+#include "../../include/Resources/Endpoint/LeafListResource.h"
+#include "../../include/Resources/Endpoint/LeafResource.h"
+#include "../../include/Resources/Endpoint/ListResource.h"
+#include "../../include/Resources/Endpoint/ParentResource.h"
+#include "../../include/Resources/Endpoint/PathParamField.h"
+
+#include "../../include/Types/Decimal64.h"
+#include "../../include/Types/Dummies.h"
 
 #include "../../include/Validators/BitsValidator.h"
 #include "../../include/Validators/BoolValidator.h"
@@ -38,56 +41,62 @@
 #include "../../include/Validators/NumberValidators.h"
 #include "../../include/Validators/PatternValidator.h"
 #include "../../include/Validators/UnionValidator.h"
-#include "../../include/Validators/Validator.h"
 #include "../../include/Validators/XPathValidator.h"
+#include "../../include/Resources/Endpoint/CaseResource.h"
 
-#include "../../include/Resources/ChoiceResource.h"
-#include "../../include/Resources/Cube.h"
-#include "../../include/Resources/LeafListResource.h"
-#include "../../include/Resources/LeafResource.h"
-#include "../../include/Resources/ListResource.h"
-#include "../../include/Resources/ParentResource.h"
-
-#include "../../include/Types/Decimal64.h"
-#include "../../include/Types/Dummies.h"
-
-using Pistache::Rest::Router;
-namespace Parser {
+namespace polycube::polycubed::Rest::Parser {
 namespace {
 /** Stores typedef name and associated list of Validators */
 std::unordered_map<std::string, ValidatorList>
     typedef_validators_[LY_DATA_TYPE_COUNT];
 
 //  BEGIN DECLARATIONS
-void ParseModule(const lys_module *module, const std::shared_ptr<Cube> &cube);
+void ParseModule(const lys_module *module,
+                 const std::shared_ptr<Resources::Endpoint::Service> &cube);
 
-void ParseNode(const lys_node *data,
-               const std::shared_ptr<ParentResource> &parent);
+void ParseNode(
+    const lys_node *data,
+    const std::shared_ptr<Resources::Endpoint::ParentResource> &parent);
 
-void ParseContainer(const lys_node_container *data,
-                    const std::shared_ptr<ParentResource> &parent);
+void ParseContainer(
+    const lys_node_container *data,
+    const std::shared_ptr<Resources::Endpoint::ParentResource> &parent);
 
-void ParseGrouping(const lys_node_grp *group,
-                   const std::shared_ptr<ParentResource> &parent);
+void ParseGrouping(
+    const lys_node_grp *group,
+    const std::shared_ptr<Resources::Endpoint::ParentResource> &parent);
 
-void ParseList(const lys_node_list *list,
-               const std::shared_ptr<ParentResource> &parent);
+void ParseList(
+    const lys_node_list *list,
+    const std::shared_ptr<Resources::Endpoint::ParentResource> &parent);
 
-void ParseLeaf(const lys_node_leaf *leaf,
-               const std::shared_ptr<ParentResource> &parent);
+void ParseLeaf(
+    const lys_node_leaf *leaf,
+    const std::shared_ptr<Resources::Endpoint::ParentResource> &parent);
 
-void ParseLeafList(const lys_node_leaflist *leaflist,
-                   const std::shared_ptr<ParentResource> &parent);
+void ParseLeafList(
+    const lys_node_leaflist *leaflist,
+    const std::shared_ptr<Resources::Endpoint::ParentResource> &parent);
 
-void ParseChoice(const lys_node_choice *choice,
-                 const std::shared_ptr<ParentResource> &parent);
+void ParseChoice(
+    const lys_node_choice *choice,
+    const std::shared_ptr<Resources::Endpoint::ParentResource> &parent);
 
-void ParseAny(const lys_node *data,
-              const std::shared_ptr<ParentResource> &parent);
+void ParseCase(
+    const lys_node_case *case_node,
+    const std::shared_ptr<Resources::Endpoint::ParentResource> &parent);
+
+void ParseAny(
+    const lys_node *data,
+    const std::shared_ptr<Resources::Endpoint::ParentResource> &parent);
+
+void ParseRpcAction(
+    const lys_node_rpc_action *data,
+    const std::shared_ptr<Resources::Endpoint::ParentResource> &parent);
 // END DECLARATIONS
 
 // BEGIN TYPE VALIDATORS
-Validators ParseType(const lys_type type);
+ValidatorsType ParseType(lys_type type);
 
 template <typename T>
 std::unordered_map<T, T> ParseRange(std::string_view &range) {
@@ -116,24 +125,25 @@ std::unordered_map<T, T> ParseRange(std::string_view &range) {
   return ranges;
 }
 
-std::shared_ptr<LengthValidator> ParseLength(const lys_restr *length,
-                                             const bool binary) {
-  auto validator = std::make_shared<LengthValidator>(binary);
+std::shared_ptr<Validators::LengthValidator> ParseLength(
+    const lys_restr *length, const bool binary) {
+  auto validator = std::make_shared<Validators::LengthValidator>(binary);
   std::string_view expression{length->expr};
   validator->AddRanges(ParseRange<std::uint64_t>(expression));
   return validator;
 }
 
-Validators ParseEnum(const lys_type_info_enums enums) {
-  auto validator = std::make_shared<EnumValidator>();
+ValidatorsType ParseEnum(const lys_type_info_enums enums) {
+  auto validator = std::make_shared<Validators::EnumValidator>();
   for (unsigned i = 0; i < enums.count; ++i) {
     validator->AddEnum(enums.enm[i].name);
   }
-  ValidatorList validators = {std::static_pointer_cast<Validator>(validator)};
-  return {std::move(validators), {std::type_index(typeid(Enum))}};
+  ValidatorList validators = {
+      std::static_pointer_cast<Validators::Validator>(validator)};
+  return {std::move(validators), {std::type_index(typeid(Types::Enum))}};
 }
 
-Validators ParseString(const lys_type_info_str str) {
+ValidatorsType ParseString(const lys_type_info_str str) {
   ValidatorList validators;
   for (unsigned i = 0; i < str.pat_count; ++i) {
     auto current_pattern = str.patterns[i].expr;
@@ -142,20 +152,21 @@ Validators ParseString(const lys_type_info_str str) {
       inverse = false;
     }
     current_pattern = current_pattern + 1;
-    validators.push_back(std::static_pointer_cast<Validator>(
-        std::make_shared<PatternValidator>(current_pattern, inverse)));
+    validators.push_back(std::static_pointer_cast<Validators::Validator>(
+        std::make_shared<Validators::PatternValidator>(current_pattern,
+                                                       inverse)));
   }
   if (str.length != nullptr) {
-    validators.push_back(
-        std::static_pointer_cast<Validator>(ParseLength(str.length, false)));
+    validators.push_back(std::static_pointer_cast<Validators::Validator>(
+        ParseLength(str.length, false)));
   }
   return {std::move(validators), {std::type_index(typeid(std::string))}};
 }
 
 template <typename T>
-Validators ParseInteger(const lys_type_info_num num) {
+ValidatorsType ParseInteger(const lys_type_info_num num) {
   ValidatorList validators;
-  auto validator = std::make_shared<NumberValidator<T>>(
+  auto validator = std::make_shared<Validators::NumberValidator<T>>(
       std::numeric_limits<T>::min(), std::numeric_limits<T>::max());
   if (num.range != nullptr) {
     std::string_view expression{num.range->expr};
@@ -164,56 +175,57 @@ Validators ParseInteger(const lys_type_info_num num) {
   return {std::move(validators), {std::type_index(typeid(T))}};
 }
 
-Validators ParseDecimal64(const lys_type_info_dec64 dec64) {
+ValidatorsType ParseDecimal64(const lys_type_info_dec64 dec64) {
   ValidatorList validators;
-  auto validator = std::make_shared<DecimalValidator>(dec64.dig);
+  auto validator = std::make_shared<Validators::DecimalValidator>(dec64.dig);
   if (dec64.range != nullptr) {
     std::string_view expression{dec64.range->expr};
-    validator->AddRanges(ParseRange<Decimal64>(expression));
+    validator->AddRanges(ParseRange<Types::Decimal64>(expression));
   }
-  return {std::move(validators), {std::type_index(typeid(Decimal64))}};
+  return {std::move(validators), {std::type_index(typeid(Types::Decimal64))}};
 }
 
-Validators ParseBits(const lys_type_info_bits bits) {
+ValidatorsType ParseBits(const lys_type_info_bits bits) {
   ValidatorList validators;
-  auto validator = std::make_shared<BitsValidator>();
+  auto validator = std::make_shared<Validators::BitsValidator>();
   for (unsigned i = 0; i < bits.count; ++i) {
     auto bit = bits.bit[i];
     validator->AddBit(bit.pos, bit.name);
   }
-  return {std::move(validators), {std::type_index(typeid(Bits))}};
+  return {std::move(validators), {std::type_index(typeid(Types::Bits))}};
 }
 
-Validators ParseBinary(const lys_type_info_binary binary) {
+ValidatorsType ParseBinary(const lys_type_info_binary binary) {
   ValidatorList validators;
   if (binary.length != nullptr) {
-    validators.push_back(
-        std::static_pointer_cast<Validator>(ParseLength(binary.length, false)));
+    validators.push_back(std::static_pointer_cast<Validators::Validator>(
+        ParseLength(binary.length, false)));
   }
-  return {std::move(validators), {std::type_index(typeid(Binary))}};
+  return {std::move(validators), {std::type_index(typeid(Types::Binary))}};
 }
 
-Validators ParseLeafRef(const lys_type_info_lref lref) {
+ValidatorsType ParseLeafRef(const lys_type_info_lref lref) {
   // TODO lref contains info about require-instance, missing ATM
   return ParseType(lref.target->type);
 }
 
-Validators ParseBoolean() {
-  auto validator = std::make_shared<BoolValidator>();
-  ValidatorList validators{std::static_pointer_cast<Validator>(validator)};
+ValidatorsType ParseBoolean() {
+  auto validator = std::make_shared<Validators::BoolValidator>();
+  ValidatorList validators{
+      std::static_pointer_cast<Validators::Validator>(validator)};
   return {std::move(validators), {std::type_index(typeid(bool))}};
 }
 
-Validators ParseEmpty() {
-  ValidatorList validators{
-      std::static_pointer_cast<Validator>(std::make_shared<EmptyValidator>())};
-  return {std::move(validators), {std::type_index(typeid(Empty))}};
+ValidatorsType ParseEmpty() {
+  ValidatorList validators{std::static_pointer_cast<Validators::Validator>(
+      std::make_shared<Validators::EmptyValidator>())};
+  return {std::move(validators), {std::type_index(typeid(Types::Empty))}};
 }
 
-Validators ParseUnion(const lys_type_info_union yunion) {
+ValidatorsType ParseUnion(const lys_type_info_union yunion) {
   ValidatorList validators;
   std::unordered_set<std::type_index> types;
-  auto validator = std::make_shared<UnionValidator>();
+  auto validator = std::make_shared<Validators::UnionValidator>();
   for (unsigned i = 0; i < yunion.count; ++i) {
     const auto &parsed = ParseType(yunion.types[i]);
     types.insert(std::begin(parsed.second), std::end(parsed.second));
@@ -224,15 +236,15 @@ Validators ParseUnion(const lys_type_info_union yunion) {
   return {std::move(validators), std::move(types)};
 }
 
-Validators ParseInstanceIdentifier(const lys_type_info_inst iid,
-                                   const char *context) {
+ValidatorsType ParseInstanceIdentifier(const lys_type_info_inst iid,
+                                       const char *context) {
   // TODO iid contains info about require-instance, missing ATM
-  ValidatorList validators{std::static_pointer_cast<Validator>(
-      std::make_shared<XPathValidator>(context))};
+  ValidatorList validators{std::static_pointer_cast<Validators::Validator>(
+      std::make_shared<Validators::XPathValidator>(context))};
   return {std::move(validators), {std::type_index(typeid(std::string))}};
 }
 
-Validators ParseType(const lys_type type) {
+ValidatorsType ParseType(const lys_type type) {
   switch (type.base) {
   case LY_TYPE_BINARY:
     return ParseBinary(type.info.binary);
@@ -294,7 +306,8 @@ const ValidatorList GetValidators(const lys_type type) {
 // END TYPE VALIDATORS
 
 // START YANG NODES PARSING
-void ParseModule(const lys_module *module, const std::shared_ptr<Cube> &cube) {
+void ParseModule(const lys_module *module,
+                 const std::shared_ptr<Resources::Endpoint::Service> &cube) {
   auto typedefs = module->tpdf;
   for (auto i = 0; i < module->tpdf_size; ++i) {
     const auto &current_typedef = typedefs[i];
@@ -304,13 +317,16 @@ void ParseModule(const lys_module *module, const std::shared_ptr<Cube> &cube) {
   }
   auto data = module->data;
   while (data) {
-    ParseNode(data, std::static_pointer_cast<ParentResource>(cube));
+    ParseNode(
+        data,
+        std::static_pointer_cast<Resources::Endpoint::ParentResource>(cube));
     data = data->next;
   }
 }
 
-void ParseNode(const lys_node *data,
-               const std::shared_ptr<ParentResource> &parent) {
+void ParseNode(
+    const lys_node *data,
+    const std::shared_ptr<Resources::Endpoint::ParentResource> &parent) {
   switch (data->nodetype) {
   case LYS_UNKNOWN:
     break;
@@ -333,7 +349,7 @@ void ParseNode(const lys_node *data,
     ParseAny(data, parent);
     break;
   case LYS_CASE:
-    ParseNode(data->child, parent);
+    ParseCase(reinterpret_cast<const lys_node_case*>(data), parent);
     break;
   case LYS_NOTIF:
     break;
@@ -352,6 +368,7 @@ void ParseNode(const lys_node *data,
   case LYS_AUGMENT:
     break;
   case LYS_ACTION:
+    ParseRpcAction(reinterpret_cast<const lys_node_rpc_action *>(data), parent);
     break;
   case LYS_ANYDATA:
     ParseAny(data, parent);
@@ -361,12 +378,13 @@ void ParseNode(const lys_node *data,
   }
 }
 
-void ParseContainer(const lys_node_container *data,
-                    const std::shared_ptr<ParentResource> &parent) {
+void ParseContainer(
+    const lys_node_container *data,
+    const std::shared_ptr<Resources::Endpoint::ParentResource> &parent) {
   const auto rest_endpoint = parent->Endpoint() + data->name + '/';
-  const auto &resource = std::make_shared<ParentResource>(
+  const auto &resource = std::make_shared<Resources::Endpoint::ParentResource>(
       data->name, data->module->name, rest_endpoint, parent,
-      std::vector<PathParamField>(), data->presence != nullptr);
+      data->presence != nullptr);
   auto child = data->child;
   while (child != nullptr) {
     ParseNode(child, resource);
@@ -375,8 +393,9 @@ void ParseContainer(const lys_node_container *data,
   parent->AddChild(resource);
 }
 
-void ParseGrouping(const lys_node_grp *group,
-                   const std::shared_ptr<ParentResource> &parent) {
+void ParseGrouping(
+    const lys_node_grp *group,
+    const std::shared_ptr<Resources::Endpoint::ParentResource> &parent) {
   auto child = group->child;
   while (child) {
     ParseNode(child, parent);
@@ -384,9 +403,12 @@ void ParseGrouping(const lys_node_grp *group,
   }
 }
 
-void ParseList(const lys_node_list *list,
-               const std::shared_ptr<ParentResource> &parent) {
-  auto keys = std::vector<PathParamField>();
+void ParseList(
+    const lys_node_list *list,
+    const std::shared_ptr<Resources::Endpoint::ParentResource> &parent) {
+  std::vector<std::pair<std::string,
+                        std::vector<std::shared_ptr<Validators::Validator>>>>
+      keys{};
   auto key_names = std::set<std::string>();
   auto rest_endpoint = parent->Endpoint() + list->name + '/';
   if (list->keys_size != 0) {
@@ -409,8 +431,8 @@ void ParseList(const lys_node_list *list,
     child = child->next;
   }
 
-  const auto &resource = std::make_shared<ListResource>(
-      list->name, list->module->name, rest_endpoint, parent, std::move(keys));
+  const auto &resource = std::make_shared<Resources::Endpoint::ListResource>(
+      list->name, list->module->name, parent, rest_endpoint, std::move(keys));
   // parse each child using the generic "node" parsing function
   child = list->child;
   while (child != nullptr) {
@@ -422,30 +444,32 @@ void ParseList(const lys_node_list *list,
   parent->AddChild(resource);
 }
 
-void ParseLeaf(const lys_node_leaf *leaf,
-               const std::shared_ptr<ParentResource> &parent) {
+void ParseLeaf(
+    const lys_node_leaf *leaf,
+    const std::shared_ptr<Resources::Endpoint::ParentResource> &parent) {
   bool configurable = ((leaf->flags & LYS_CONFIG_MASK) ^ 2) != 0;
   bool mandatory = (leaf->flags & LYS_MAND_MASK) != 0;
   auto validators = GetValidators(leaf->type);
-  auto field =
-      std::make_unique<JsonBodyField>(leaf->type.base, std::move(validators));
+  auto field = std::make_unique<Resources::Body::JsonBodyField>(
+      leaf->type.base, std::move(validators));
   std::unique_ptr<const std::string> default_value = nullptr;
   if (leaf->dflt != nullptr) {
     default_value = std::make_unique<const std::string>(leaf->dflt);
   }
-  auto leaf_res = std::make_unique<LeafResource>(
+  auto leaf_res = std::make_unique<Resources::Endpoint::LeafResource>(
       leaf->name, leaf->module->name, parent->Endpoint() + leaf->name, parent,
       std::move(field), configurable, mandatory, std::move(default_value));
   parent->AddChild(std::move(leaf_res));
 }
 
-void ParseLeafList(const lys_node_leaflist *leaflist,
-                   const std::shared_ptr<ParentResource> &parent) {
+void ParseLeafList(
+    const lys_node_leaflist *leaflist,
+    const std::shared_ptr<Resources::Endpoint::ParentResource> &parent) {
   bool configurable = ((leaflist->flags & LYS_CONFIG_MASK) ^ 2) != 0;
   bool mandatory = (leaflist->flags & LYS_MAND_MASK) != 0;
   auto validators = GetValidators(leaflist->type);
-  auto field = std::make_unique<JsonBodyField>(leaflist->type.base,
-                                               std::move(validators));
+  auto field = std::make_unique<Resources::Body::JsonBodyField>(
+      leaflist->type.base, std::move(validators));
   std::vector<std::string> default_value;
   if (leaflist->dflt != nullptr) {
     const auto defaults = leaflist->dflt;
@@ -453,15 +477,16 @@ void ParseLeafList(const lys_node_leaflist *leaflist,
       default_value.emplace_back(defaults[i]);
     }
   }
-  auto leaf_res = std::make_unique<LeafListResource>(
+  auto leaf_res = std::make_unique<Resources::Endpoint::LeafListResource>(
       leaflist->name, leaflist->module->name,
       parent->Endpoint() + leaflist->name, parent, std::move(field),
       configurable, mandatory, std::move(default_value));
   parent->AddChild(std::move(leaf_res));
 }
 
-void ParseChoice(const lys_node_choice *choice,
-                 const std::shared_ptr<ParentResource> &parent) {
+void ParseChoice(
+    const lys_node_choice *choice,
+    const std::shared_ptr<Resources::Endpoint::ParentResource> &parent) {
   bool mandatory = (choice->flags & LYS_MAND_MASK) != 0;
   std::unique_ptr<const std::string> default_case = nullptr;
   if (choice->dflt != nullptr) {
@@ -474,9 +499,8 @@ void ParseChoice(const lys_node_choice *choice,
       default_case = std::make_unique<const std::string>(choice->dflt->name);
     }
   }
-  auto resource = std::make_shared<ChoiceResource>(
-      choice->name, choice->module->name,
-      parent->Endpoint() + choice->name + "/:case/", parent, mandatory,
+  auto resource = std::make_shared<Resources::Endpoint::ChoiceResource>(
+      choice->name, choice->module->name, parent, mandatory,
       std::move(default_case));
 
   auto child = choice->child;
@@ -484,17 +508,39 @@ void ParseChoice(const lys_node_choice *choice,
     ParseNode(child, resource);
     child = child->next;
   }
+  parent->AddChild(std::move(resource));
 }
 
-void ParseAny(const lys_node *data,
-              const std::shared_ptr<ParentResource> &parent) {
+void ParseCase(
+    const lys_node_case *case_node,
+    const std::shared_ptr<Resources::Endpoint::ParentResource> &parent) {
+  auto resource = std::make_shared<Resources::Endpoint::CaseResource>(case_node->name,
+      case_node->module->name, parent);
+  auto child = case_node->child;
+  while (child != nullptr) {
+    ParseNode(child, resource);
+    child = child->next;
+  }
+  parent->AddChild(std::move(resource));
+}
+
+void ParseAny(
+    const lys_node *data,
+    const std::shared_ptr<Resources::Endpoint::ParentResource> &parent) {
   bool configurable = ((data->flags & LYS_CONFIG_MASK) ^ 2) != 0;
   bool mandatory = (data->flags & LYS_MAND_MASK) != 0;
 
-  auto any_res = std::make_unique<LeafResource>(
+  auto any_res = std::make_unique<Resources::Endpoint::LeafResource>(
       data->name, data->module->name, parent->Endpoint() + data->name, parent,
-      std::make_unique<JsonBodyField>(), configurable, mandatory, nullptr);
+      std::make_unique<Resources::Body::JsonBodyField>(), configurable,
+      mandatory, nullptr);
   parent->AddChild(std::move(any_res));
+}
+
+void ParseRpcAction(
+    const lys_node_rpc_action *data,
+    const std::shared_ptr<Resources::Endpoint::ParentResource> &parent) {
+  // data->
 }
 // END YANG NODES PARSING
 }  // namespace
@@ -513,7 +559,7 @@ std::string GetName(const std::string &yang) {
   return std::string{module->name};
 }
 
-std::shared_ptr<Cube> Parse(std::string &&yang) {
+std::shared_ptr<Resources::Endpoint::Service> Parse(std::string &&yang) {
   const auto &context =
       ly_ctx_new("/home/nico/dev/iovnet/services/resources/", 0);
   if (!context) {
@@ -526,7 +572,8 @@ std::shared_ptr<Cube> Parse(std::string &&yang) {
     throw std::invalid_argument("invalid yang data");
   }
 
-  auto cube = std::make_shared<Cube>(module->name, std::string{'/'});
+  auto cube = std::make_shared<Resources::Endpoint::Service>(module->name,
+                                                             std::string{'/'});
   for (auto i = 0; i < module->imp_size; ++i) {
     ParseModule(module->imp[i].module, cube);
   }
@@ -534,4 +581,4 @@ std::shared_ptr<Cube> Parse(std::string &&yang) {
   typedef_validators_->clear();
   return cube;
 }
-}  // namespace Parser
+}  // namespace polycube::polycubed::Rest::Parser

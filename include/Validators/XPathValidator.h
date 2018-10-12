@@ -14,12 +14,10 @@
  * limitations under the License.
  */
 #pragma once
-#ifndef PARSER_XPATHVALIDATOR_H
-#define PARSER_XPATHVALIDATOR_H
 
 #include <string>
 #include "Validator.h"
-
+namespace polycube::polycubed::Rest::Validators {
 class XPathValidator : public Validator {
  public:
   /**
@@ -34,5 +32,4 @@ class XPathValidator : public Validator {
  private:
   const std::string context_;
 };
-
-#endif  // PARSER_XPATHVALIDATOR_H
+}  // namespace polycube::polycubed::Rest::Validators

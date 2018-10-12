@@ -14,8 +14,6 @@
  * limitations under the License.
  */
 #pragma once
-#ifndef PARSER_CUBES_H
-#define PARSER_CUBES_H
 
 #include <pistache/router.h>
 
@@ -24,8 +22,9 @@
 #include <string>
 #include <unordered_map>
 #include <unordered_set>
-#include "Cube.h"
+#include "Endpoint/Service.h"
 
+namespace polycube::polycubed::Rest::Resources {
 class CubeManager {
  public:
   static CubeManager &GetInstance() {
@@ -54,7 +53,8 @@ class CubeManager {
 
  private:
   mutable std::shared_mutex mutex_;
-  std::unordered_map<std::string, std::shared_ptr<Cube>> existing_cubes_;
+  std::unordered_map<std::string, std::shared_ptr<Endpoint::Service>>
+      existing_cubes_;
   std::unordered_set<std::string> existing_cubes_impl_;
 
   CubeManager();
@@ -62,5 +62,4 @@ class CubeManager {
   void post(const Pistache::Rest::Request &request,
             Pistache::Http::ResponseWriter response);
 };
-
-#endif  // PARSER_CUBES_H
+}  // namespace polycube::polycubed::Rest::Resources

@@ -14,55 +14,43 @@
  * limitations under the License.
  */
 #pragma once
-#ifndef PARSER_LEAFRESOURCE_H
-#define PARSER_LEAFRESOURCE_H
 
-#include <pistache/router.h>
 #include <memory>
 #include <string>
-#include <unordered_map>
-#include "../Server/Error.h"
-#include "../Validators/InSetValidator.h"
-#include "JsonBodyField.h"
+#include <vector>
+
+#include "../Body/JsonBodyField.h"
+#include "../Body/LeafResource.h"
+#include "ParentResource.h"
 #include "Resource.h"
 
+namespace polycube::polycubed::Rest::Resources::Endpoint {
 using Pistache::Http::ResponseWriter;
 using Pistache::Rest::Request;
-
-class LeafResource : public Resource {
+class LeafResource : public Resource, public virtual Body::LeafResource {
  public:
   LeafResource(std::string name, std::string module, std::string rest_endpoint,
                std::shared_ptr<ParentResource> parent,
-               std::unique_ptr<JsonBodyField> &&field, bool configurable,
+               std::unique_ptr<Body::JsonBodyField> &&field, bool configurable,
                bool mandatory,
                std::unique_ptr<const std::string> &&default_value);
 
   ~LeafResource() override;
 
-  std::vector<Response> Validate(const nlohmann::json &body) const override;
+  std::vector<Response> RequestValidate(
+      const Request &request, const std::string &caller_name) const override;
 
-  std::vector<Response> Validate(const Pistache::Rest::Request &value,
-                                 const std::string &caller_name) const final;
-
-  bool IsMandatory() const final;
-
-  void SetDefaultIfMissing(nlohmann::json &body) const override;
-
-  bool ValidateXPath(const std::string &xpath) const final;
-
+protected:
+  explicit LeafResource(std::string rest_endpoint);
  private:
-  const std::unique_ptr<JsonBodyField> field_;
-  const bool configurable_;
-  const bool mandatory_;
-  const std::unique_ptr<const std::string> default_;
-
   void get(const Request &request, ResponseWriter response);
 
-  void CreateOrReplace(const Request &request, ResponseWriter response) final;
+  void CreateReplaceUpdate(const Pistache::Rest::Request &request,
+                           Pistache::Http::ResponseWriter response,
+                           bool check_mandatory) final;
 
   void post(const Request &request, ResponseWriter response);
 
   void put(const Request &request, ResponseWriter response);
 };
-
-#endif  // PARSER_LEAFRESOURCE_H
+}  // namespace polycube::polycubed::Rest::Resources::Endpoint

@@ -14,63 +14,49 @@
  * limitations under the License.
  */
 #pragma once
-#ifndef PARSER_PARENTRESOURCE_H
-#define PARSER_PARENTRESOURCE_H
 
-#include <pistache/router.h>
-
-#include <list>
 #include <memory>
 #include <string>
 #include <vector>
 
-#include "../Server/Error.h"
+#include "../Body/ParentResource.h"
 #include "PathParamField.h"
 #include "Resource.h"
 
+namespace polycube::polycubed::Rest::Resources::Endpoint {
 using Pistache::Http::ResponseWriter;
 using Pistache::Rest::Request;
 
-class ParentResource : public Resource {
+class ParentResource : public Resource, public virtual Body::ParentResource {
  public:
   ParentResource(std::string name, std::string module,
                  std::string rest_endpoint,
                  std::shared_ptr<ParentResource> parent,
-                 std::vector<PathParamField> &&fields,
                  bool container_presence = false);
 
   ~ParentResource() override;
 
-  std::vector<Response> Validate(const nlohmann::json &body) const final;
+  std::vector<Response> RequestValidate(
+      const Pistache::Rest::Request &request,
+      const std::string &caller_name) const override;
 
-  std::vector<Response> Validate(const Request &value,
-                                 const std::string &caller_name) const override;
+  void CreateReplaceUpdate(const Pistache::Rest::Request &request,
+                           Pistache::Http::ResponseWriter response,
+                           bool check_mandatory) final;
 
-  virtual void AddChild(std::shared_ptr<Resource> child);
-
-  bool IsMandatory() const final;
-
-  void SetDefaultIfMissing(nlohmann::json &body) const override;
-
-  bool ValidateXPath(const std::string &xpath) const override;
-
- protected:
-  std::vector<PathParamField> fields_;
-  std::vector<std::shared_ptr<Resource>> children_;
-
-  bool ValidateXPathChildren(const std::string &xpath,
-                             std::size_t delimiter) const;
-
-  void CreateOrReplace(const Request &request,
-                       ResponseWriter response) override;
-
- private:
+protected:
   /**
-   * MUST be set to true only if the parent is a container
-   * and it has no presence flag (or explicitly set to false).
+   * Used by ChoiceResource and CaseResource: no endpoint and no
+   * explicit virtual base construction
    */
-  const bool container_presence_;
+  ParentResource();
 
+  /**
+   * Used by derived classes: no explicit virtual base construction
+   */
+  explicit ParentResource(std::string rest_endpoint);
+ private:
+  const bool has_endpoints_;
   void get(const Request &request, ResponseWriter response);
 
   virtual void post(const Request &request, ResponseWriter response);
@@ -79,5 +65,4 @@ class ParentResource : public Resource {
 
   virtual void patch(const Request &request, ResponseWriter response);
 };
-
-#endif  // PARSER_PARENTRESOURCE_H
+}  // namespace polycube::polycubed::Rest::Resources::Endpoint

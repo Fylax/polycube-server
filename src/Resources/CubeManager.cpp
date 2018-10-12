@@ -18,31 +18,18 @@
 #pragma GCC diagnostic push
 #pragma GCC diagnostic ignored "-Weffc++"
 
-#include "../../externals/include/nlohmann/json.hpp"
-
 #pragma GCC diagnostic pop
 
-#include <pistache/router.h>
-
-#include <memory>
-#include <string>
-#include <unordered_map>
-#include <unordered_set>
-#include <utility>
-#include <vector>
-
-#include <mutex>
-#include <shared_mutex>
-
 #include "../../include/Parser/Parser.h"
-#include "../../include/Server/Base64.h"
-#include "../../include/Server/ResponseGenerator.h"
 #include "../../include/Server/RestServer.h"
+#include "../../include/Server/ResponseGenerator.h"
+#include "../../include/Server/Base64.h"
 
+namespace polycube::polycubed::Rest::Resources {
 CubeManager::CubeManager()
     : mutex_{}, existing_cubes_{}, existing_cubes_impl_{} {
   using Pistache::Rest::Routes::bind;
-  RestServer::Router()->post("/", bind(&CubeManager::post, this));
+  Server::RestServer::Router()->post("/", bind(&CubeManager::post, this));
 }
 
 bool CubeManager::ExistsCube(const std::string &name) {
@@ -73,17 +60,17 @@ void CubeManager::post(const Pistache::Rest::Request &request,
   std::unique_lock<std::shared_mutex> lock(mutex_);
   try {
     nlohmann::json body = nlohmann::json::parse(request.body());
-    auto yang = Base64::decode(body["model"].get<std::string>());
+    auto yang = Server::Base64::decode(body["model"].get<std::string>());
 
     if (existing_cubes_.count(Parser::GetName(yang)) != 0) {
-      ResponseGenerator::Generate(
+      Server::ResponseGenerator::Generate(
           std::vector<Response>{{ErrorTag::kDataExists, ""}},
           std::move(response));
       return;
     }
     auto cube = Parser::Parse(std::move(yang));
     existing_cubes_[cube->Name()] = cube;
-    ResponseGenerator::Generate(std::vector<Response>{{ErrorTag::kCreated, ""}},
+    Server::ResponseGenerator::Generate(std::vector<Response>{{ErrorTag::kCreated, ""}},
                                 std::move(response));
   } catch (const std::invalid_argument &e) {
     response.send(Pistache::Http::Code::Bad_Request, e.what());
@@ -91,3 +78,4 @@ void CubeManager::post(const Pistache::Rest::Request &request,
     response.send(Pistache::Http::Code::Internal_Server_Error);
   }
 }
+}  // namespace polycube::polycubed::Rest::Resources

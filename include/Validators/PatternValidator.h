@@ -14,13 +14,12 @@
  * limitations under the License.
  */
 #pragma once
-#ifndef PARSER_PATTERNVALIDATOR_H
-#define PARSER_PATTERNVALIDATOR_H
 
 #include <regex>
 #include <string>
 #include "Validator.h"
 
+namespace polycube::polycubed::Rest::Validators {
 class PatternValidator : public Validator {
  public:
   /**
@@ -29,11 +28,11 @@ class PatternValidator : public Validator {
    * @throws std::regex_error
    */
   explicit PatternValidator(const char *pattern, bool inverse);
+
   bool Validate(const std::string &value) const final;
 
  private:
   const std::regex pattern_;
   const bool inverse_;
 };
-
-#endif  // PARSER_PATTERNVALIDATOR_H
+}  // namespace polycube::polycubed::Rest::Validators

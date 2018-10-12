@@ -14,22 +14,22 @@
  * limitations under the License.
  */
 #pragma once
-#ifndef PARSER_ENUMVALIDATOR_H
-#define PARSER_ENUMVALIDATOR_H
 
 #include "Validator.h"
 
 #include <string>
 #include <unordered_set>
 
+namespace polycube::polycubed::Rest::Validators {
 class EnumValidator : public Validator {
  public:
   EnumValidator();
+
   void AddEnum(const std::string &value);
+
   bool Validate(const std::string &value) const final;
 
  private:
   std::unordered_set<std::string> values_;
 };
-
-#endif  // PARSER_ENUMVALIDATOR_H
+}  // namespace polycube::polycubed::Rest::Validators

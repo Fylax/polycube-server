@@ -14,9 +14,7 @@
  * limitations under the License.
  */
 #include "../../include/Types/Decimal64.h"
-#include <istream>
-#include <string>
-
+namespace polycube::polycubed::Rest::Types {
 bool Decimal64::operator==(const Decimal64 &other) const {
   return value_ == other.value_ && fraction_digits_ == other.fraction_digits_;
 }
@@ -97,3 +95,4 @@ std::int64_t Decimal64::Value() const {
 std::uint8_t Decimal64::FractionDigits() const {
   return static_cast<std::uint8_t>(-fraction_digits_);
 }
+}  // namespace polycube::polycubed::Rest::Types

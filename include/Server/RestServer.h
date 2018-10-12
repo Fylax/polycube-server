@@ -14,8 +14,6 @@
  * limitations under the License.
  */
 #pragma once
-#ifndef PARSER_ENDPOINT_H
-#define PARSER_ENDPOINT_H
 
 #include <pistache/endpoint.h>
 #include <pistache/http.h>
@@ -23,18 +21,22 @@
 
 #include <memory>
 #include "../Resources/CubeManager.h"
-
+namespace polycube::polycubed::Rest::Server {
 class RestServer {
  public:
   explicit RestServer(Pistache::Address &&address, std::size_t thr);
+
   static const std::shared_ptr<Pistache::Rest::Router> &Router();
+
   void shutdown();
 
  private:
   static std::shared_ptr<Pistache::Rest::Router> router_;
+
   void start();
+
   void init(std::size_t thr);
+
   std::unique_ptr<Pistache::Http::Endpoint> httpEndpoint_;
 };
-
-#endif  // PARSER_ENDPOINT_H
+}  // namespace polycube::polycubed::Rest::Server

@@ -14,8 +14,6 @@
  * limitations under the License.
  */
 #pragma once
-#ifndef PARSER_ERROR_H
-#define PARSER_ERROR_H
 
 #ifdef __cplusplus
 extern "C" {
@@ -52,7 +50,9 @@ enum ErrorTag {
    * that does not exist. */
   kDataMissing,
   /** Wrong HTTP method used. */
-  kOperationNotSupported
+  kOperationNotSupported,
+  /** This is for internal use only */
+  kUnparsableChoice = 100
 };
 
 typedef struct Response {
@@ -62,5 +62,3 @@ typedef struct Response {
 #ifdef __cplusplus
 }
 #endif
-
-#endif  // PARSER_ERROR_H

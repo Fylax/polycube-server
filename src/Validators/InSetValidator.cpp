@@ -14,11 +14,9 @@
  * limitations under the License.
  */
 #include "../../include/Validators/InSetValidator.h"
-#include <InSetValidator.h>
-#include <memory>
 #include <string>
-#include <vector>
 
+namespace polycube::polycubed::Rest::Validators {
 InSetValidator::InSetValidator() : invalid_values_() {}
 
 bool InSetValidator::Validate(const std::string &value) const {
@@ -33,11 +31,7 @@ void InSetValidator::RemoveValue(const std::string &value) {
   invalid_values_.erase(value);
 }
 
-std::vector<std::shared_ptr<Validator>> InSetValidator::Create() {
-  return std::vector<std::shared_ptr<Validator>>{
-      std::static_pointer_cast<Validator>(std::make_shared<InSetValidator>())};
-}
-
 const std::unordered_set<std::string> &InSetValidator::Values() {
   return invalid_values_;
 }
+}  // namespace polycube::polycubed::Rest::Validators

@@ -14,23 +14,30 @@
  * limitations under the License.
  */
 #pragma once
-#ifndef PARSER_LISTRESOURCE_H
-#define PARSER_LISTRESOURCE_H
 
-#include "ParentResource.h"
+#include <pistache/router.h>
 
 #include <memory>
-#include <set>
 #include <string>
 #include <vector>
 
-class ListResource : public ParentResource {
+#include "../../Validators/Validator.h"
+#include "../Field.h"
+
+namespace polycube::polycubed::Rest::Resources::Endpoint {
+class PathParamField : public Resources::Field<Pistache::Rest::Request> {
+ private:
+  const std::string name_;
+
  public:
-  ListResource(std::string name, std::string module, std::string rest_endpoint,
-               std::shared_ptr<ParentResource> parent,
-               std::vector<PathParamField> &&fields);
+  PathParamField(
+      const std::string &name,
+      std::vector<std::shared_ptr<Validators::Validator>> validators);
 
-  bool ValidateXPath(const std::string &xpath) const final;
+  const std::string &Name() const;
+
+  ErrorTag Validate(const Pistache::Rest::Request &value) const final;
+
+  bool Validate(const std::string &value) const;
 };
-
-#endif  // PARSER_LISTRESOURCE_H
+}  // namespace polycube::polycubed::Rest::Resources::Endpoint

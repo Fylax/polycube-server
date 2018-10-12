@@ -14,8 +14,6 @@
  * limitations under the License.
  */
 #pragma once
-#ifndef PARSER_PARSER_H
-#define PARSER_PARSER_H
 
 #include <libyang/libyang.h>
 
@@ -27,25 +25,18 @@
 #include <utility>
 #include <vector>
 
-#include "../Resources/Cube.h"
-#include "../Resources/LeafResource.h"
-#include "../Resources/ParentResource.h"
-#include "../Validators/EnumValidator.h"
-#include "../Validators/PatternValidator.h"
+#include "../Resources/Endpoint/Service.h"
 #include "../Validators/Validator.h"
 
-using Pistache::Rest::Router;
+namespace polycube::polycubed::Rest::Parser {
 
-using ValidatorList = std::vector<std::shared_ptr<Validator>>;
-using Validators =
+using ValidatorList = std::vector<std::shared_ptr<Validators::Validator>>;
+using ValidatorsType =
     std::pair<const ValidatorList, const std::unordered_set<std::type_index>>;
 
-namespace Parser {
-std::shared_ptr<Cube> Parse(std::string &&yang);
+std::shared_ptr<Resources::Endpoint::Service> Parse(std::string &&yang);
 
 std::string GetName(const std::string &yang);
 
 const ValidatorList GetValidators(lys_type type);
-}  // namespace Parser
-
-#endif  // PARSER_PARSER_H
+}  // namespace polycube::polycubed::Rest::Parser
