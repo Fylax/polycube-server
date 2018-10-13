@@ -40,8 +40,9 @@ class LeafResource : public Resource, public virtual Body::LeafResource {
   std::vector<Response> RequestValidate(
       const Request &request, const std::string &caller_name) const override;
 
-protected:
+ protected:
   explicit LeafResource(std::string rest_endpoint);
+
  private:
   void get(const Request &request, ResponseWriter response);
 

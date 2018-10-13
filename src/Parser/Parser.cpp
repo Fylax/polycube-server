@@ -33,6 +33,7 @@
 #include "../../include/Types/Decimal64.h"
 #include "../../include/Types/Dummies.h"
 
+#include "../../include/Resources/Endpoint/CaseResource.h"
 #include "../../include/Validators/BitsValidator.h"
 #include "../../include/Validators/BoolValidator.h"
 #include "../../include/Validators/EmptyValidator.h"
@@ -42,7 +43,6 @@
 #include "../../include/Validators/PatternValidator.h"
 #include "../../include/Validators/UnionValidator.h"
 #include "../../include/Validators/XPathValidator.h"
-#include "../../include/Resources/Endpoint/CaseResource.h"
 
 namespace polycube::polycubed::Rest::Parser {
 namespace {
@@ -54,45 +54,48 @@ std::unordered_map<std::string, ValidatorList>
 void ParseModule(const lys_module *module,
                  const std::shared_ptr<Resources::Endpoint::Service> &cube);
 
-void ParseNode(
-    const lys_node *data,
-    const std::shared_ptr<Resources::Endpoint::ParentResource> &parent);
+void ParseNode(const lys_node *data,
+               const std::shared_ptr<Resources::Body::ParentResource> &parent,
+               bool generate_endpoint);
 
 void ParseContainer(
     const lys_node_container *data,
-    const std::shared_ptr<Resources::Endpoint::ParentResource> &parent);
+    const std::shared_ptr<Resources::Body::ParentResource> &parent,
+    bool generate_endpoint);
 
 void ParseGrouping(
     const lys_node_grp *group,
-    const std::shared_ptr<Resources::Endpoint::ParentResource> &parent);
+    const std::shared_ptr<Resources::Body::ParentResource> &parent,
+    bool generate_endpoint);
 
-void ParseList(
-    const lys_node_list *list,
-    const std::shared_ptr<Resources::Endpoint::ParentResource> &parent);
+void ParseList(const lys_node_list *list,
+               const std::shared_ptr<Resources::Body::ParentResource> &parent,
+               bool generate_endpoint);
 
-void ParseLeaf(
-    const lys_node_leaf *leaf,
-    const std::shared_ptr<Resources::Endpoint::ParentResource> &parent);
+void ParseLeaf(const lys_node_leaf *leaf,
+               const std::shared_ptr<Resources::Body::ParentResource> &parent,
+               bool generate_endpoint);
 
 void ParseLeafList(
     const lys_node_leaflist *leaflist,
-    const std::shared_ptr<Resources::Endpoint::ParentResource> &parent);
+    const std::shared_ptr<Resources::Body::ParentResource> &parent,
+    bool generate_endpoint);
 
-void ParseChoice(
-    const lys_node_choice *choice,
-    const std::shared_ptr<Resources::Endpoint::ParentResource> &parent);
+void ParseChoice(const lys_node_choice *choice,
+                 const std::shared_ptr<Resources::Body::ParentResource> &parent,
+                 bool generate_endpoint);
 
-void ParseCase(
-    const lys_node_case *case_node,
-    const std::shared_ptr<Resources::Endpoint::ParentResource> &parent);
+void ParseCase(const lys_node_case *case_node,
+               const std::shared_ptr<Resources::Body::ParentResource> &parent,
+               bool generate_endpoint);
 
-void ParseAny(
-    const lys_node *data,
-    const std::shared_ptr<Resources::Endpoint::ParentResource> &parent);
+void ParseAny(const lys_node *data,
+              const std::shared_ptr<Resources::Body::ParentResource> &parent,
+              bool generate_endpoint);
 
 void ParseRpcAction(
     const lys_node_rpc_action *data,
-    const std::shared_ptr<Resources::Endpoint::ParentResource> &parent);
+    const std::shared_ptr<Resources::Body::ParentResource> &parent);
 // END DECLARATIONS
 
 // BEGIN TYPE VALIDATORS
@@ -236,8 +239,8 @@ ValidatorsType ParseUnion(const lys_type_info_union yunion) {
   return {std::move(validators), std::move(types)};
 }
 
-ValidatorsType ParseInstanceIdentifier(const lys_type_info_inst iid,
-                                       const char *context) {
+ValidatorsType ParseInstanceIdentifier(
+    [[maybe_unused]] const lys_type_info_inst iid, const char *context) {
   // TODO iid contains info about require-instance, missing ATM
   ValidatorList validators{std::static_pointer_cast<Validators::Validator>(
       std::make_shared<Validators::XPathValidator>(context))};
@@ -317,39 +320,45 @@ void ParseModule(const lys_module *module,
   }
   auto data = module->data;
   while (data) {
-    ParseNode(
-        data,
-        std::static_pointer_cast<Resources::Endpoint::ParentResource>(cube));
+    ParseNode(data,
+              std::static_pointer_cast<Resources::Body::ParentResource>(cube),
+              true);
     data = data->next;
   }
 }
 
-void ParseNode(
-    const lys_node *data,
-    const std::shared_ptr<Resources::Endpoint::ParentResource> &parent) {
+void ParseNode(const lys_node *data,
+               const std::shared_ptr<Resources::Body::ParentResource> &parent,
+               bool generate_endpoint) {
   switch (data->nodetype) {
   case LYS_UNKNOWN:
     break;
   case LYS_CONTAINER:
-    ParseContainer(reinterpret_cast<const lys_node_container *>(data), parent);
+    ParseContainer(reinterpret_cast<const lys_node_container *>(data), parent,
+                   generate_endpoint);
     break;
   case LYS_CHOICE:
-    ParseChoice(reinterpret_cast<const lys_node_choice *>(data), parent);
+    ParseChoice(reinterpret_cast<const lys_node_choice *>(data), parent,
+                generate_endpoint);
     break;
   case LYS_LEAF:
-    ParseLeaf(reinterpret_cast<const lys_node_leaf *>(data), parent);
+    ParseLeaf(reinterpret_cast<const lys_node_leaf *>(data), parent,
+              generate_endpoint);
     break;
   case LYS_LEAFLIST:
-    ParseLeafList(reinterpret_cast<const lys_node_leaflist *>(data), parent);
+    ParseLeafList(reinterpret_cast<const lys_node_leaflist *>(data), parent,
+                  generate_endpoint);
     break;
   case LYS_LIST:
-    ParseList(reinterpret_cast<const lys_node_list *>(data), parent);
+    ParseList(reinterpret_cast<const lys_node_list *>(data), parent,
+              generate_endpoint);
     break;
   case LYS_ANYXML:
-    ParseAny(data, parent);
+    ParseAny(data, parent, generate_endpoint);
     break;
   case LYS_CASE:
-    ParseCase(reinterpret_cast<const lys_node_case*>(data), parent);
+    ParseCase(reinterpret_cast<const lys_node_case *>(data), parent,
+              generate_endpoint);
     break;
   case LYS_NOTIF:
     break;
@@ -357,11 +366,13 @@ void ParseNode(
     throw std::invalid_argument("RPC not supported");
     break;
   case LYS_INPUT:
+    ParseNode(data->child, parent, false);
     break;
   case LYS_OUTPUT:
     break;
   case LYS_GROUPING:
-    ParseGrouping(reinterpret_cast<const lys_node_grp *>(data), parent);
+    ParseGrouping(reinterpret_cast<const lys_node_grp *>(data), parent,
+                  generate_endpoint);
     break;
   case LYS_USES:
     break;
@@ -371,7 +382,7 @@ void ParseNode(
     ParseRpcAction(reinterpret_cast<const lys_node_rpc_action *>(data), parent);
     break;
   case LYS_ANYDATA:
-    ParseAny(data, parent);
+    ParseAny(data, parent, generate_endpoint);
     break;
   case LYS_EXT:
     break;
@@ -380,14 +391,23 @@ void ParseNode(
 
 void ParseContainer(
     const lys_node_container *data,
-    const std::shared_ptr<Resources::Endpoint::ParentResource> &parent) {
-  const auto rest_endpoint = parent->Endpoint() + data->name + '/';
-  const auto &resource = std::make_shared<Resources::Endpoint::ParentResource>(
-      data->name, data->module->name, rest_endpoint, parent,
-      data->presence != nullptr);
+    const std::shared_ptr<Resources::Body::ParentResource> &parent,
+    bool generate_endpoint) {
+  std::shared_ptr<Resources::Body::ParentResource> resource;
+  if (generate_endpoint) {
+    auto e_parent =
+        std::dynamic_pointer_cast<Resources::Endpoint::ParentResource>(parent);
+    auto endpoint = e_parent->Endpoint() + data->name + '/';
+    resource = std::make_shared<Resources::Endpoint::ParentResource>(
+        data->name, data->module->name, endpoint, e_parent,
+        data->presence != nullptr);
+  } else {
+    resource = std::make_shared<Resources::Body::ParentResource>(
+        data->name, data->module->name, parent, data->presence != nullptr);
+  }
   auto child = data->child;
   while (child != nullptr) {
-    ParseNode(child, resource);
+    ParseNode(child, resource, generate_endpoint);
     child = child->next;
   }
   parent->AddChild(resource);
@@ -395,28 +415,37 @@ void ParseContainer(
 
 void ParseGrouping(
     const lys_node_grp *group,
-    const std::shared_ptr<Resources::Endpoint::ParentResource> &parent) {
+    const std::shared_ptr<Resources::Body::ParentResource> &parent,
+    bool generate_endpoint) {
   auto child = group->child;
   while (child) {
-    ParseNode(child, parent);
+    ParseNode(child, parent, generate_endpoint);
     child = child->next;
   }
 }
 
-void ParseList(
-    const lys_node_list *list,
-    const std::shared_ptr<Resources::Endpoint::ParentResource> &parent) {
+void ParseList(const lys_node_list *list,
+               const std::shared_ptr<Resources::Body::ParentResource> &parent,
+               bool generate_endpoint) {
   std::vector<std::pair<std::string,
                         std::vector<std::shared_ptr<Validators::Validator>>>>
       keys{};
   auto key_names = std::set<std::string>();
-  auto rest_endpoint = parent->Endpoint() + list->name + '/';
+  std::string rest_endpoint;
+  if (generate_endpoint) {
+    rest_endpoint =
+        std::dynamic_pointer_cast<Resources::Endpoint::ParentResource>(parent)
+            ->Endpoint() +
+        list->name + '/';
+  }
   if (list->keys_size != 0) {
     keys.reserve(list->keys_size);
     std::string item;
     auto stream = std::stringstream(list->keys_str);
     while (std::getline(stream, item, ' ')) {
-      rest_endpoint += ':' + item + '/';
+      if (generate_endpoint) {
+        rest_endpoint += ':' + item + '/';
+      }
       key_names.insert(item);
     }
   }
@@ -431,22 +460,31 @@ void ParseList(
     child = child->next;
   }
 
-  const auto &resource = std::make_shared<Resources::Endpoint::ListResource>(
-      list->name, list->module->name, parent, rest_endpoint, std::move(keys));
+  std::shared_ptr<Resources::Body::ListResource> resource;
+  if (generate_endpoint) {
+    auto e_parent =
+        std::dynamic_pointer_cast<Resources::Endpoint::ParentResource>(parent);
+    resource = std::make_shared<Resources::Endpoint::ListResource>(
+        list->name, list->module->name, e_parent, rest_endpoint,
+        std::move(keys));
+  } else {
+    resource = std::make_shared<Resources::Body::ListResource>(
+        list->name, list->module->name, parent, std::move(keys));
+  }
   // parse each child using the generic "node" parsing function
   child = list->child;
   while (child != nullptr) {
     if (key_names.count(child->name) == 0) {
-      ParseNode(child, resource);
+      ParseNode(child, resource, generate_endpoint);
     }
     child = child->next;
   }
   parent->AddChild(resource);
 }
 
-void ParseLeaf(
-    const lys_node_leaf *leaf,
-    const std::shared_ptr<Resources::Endpoint::ParentResource> &parent) {
+void ParseLeaf(const lys_node_leaf *leaf,
+               const std::shared_ptr<Resources::Body::ParentResource> &parent,
+               bool generate_endpoint) {
   bool configurable = ((leaf->flags & LYS_CONFIG_MASK) ^ 2) != 0;
   bool mandatory = (leaf->flags & LYS_MAND_MASK) != 0;
   auto validators = GetValidators(leaf->type);
@@ -456,15 +494,26 @@ void ParseLeaf(
   if (leaf->dflt != nullptr) {
     default_value = std::make_unique<const std::string>(leaf->dflt);
   }
-  auto leaf_res = std::make_unique<Resources::Endpoint::LeafResource>(
-      leaf->name, leaf->module->name, parent->Endpoint() + leaf->name, parent,
-      std::move(field), configurable, mandatory, std::move(default_value));
+  std::unique_ptr<Resources::Body::LeafResource> leaf_res;
+  if (generate_endpoint) {
+    auto e_parent =
+        std::dynamic_pointer_cast<Resources::Endpoint::ParentResource>(parent);
+    auto endpoint = e_parent->Endpoint() + leaf->name;
+    leaf_res = std::make_unique<Resources::Endpoint::LeafResource>(
+        leaf->name, leaf->module->name, endpoint, e_parent, std::move(field),
+        configurable, mandatory, std::move(default_value));
+  } else {
+    leaf_res = std::make_unique<Resources::Body::LeafResource>(
+        leaf->name, leaf->module->name, parent, std::move(field), configurable,
+        mandatory, std::move(default_value));
+  }
   parent->AddChild(std::move(leaf_res));
 }
 
 void ParseLeafList(
     const lys_node_leaflist *leaflist,
-    const std::shared_ptr<Resources::Endpoint::ParentResource> &parent) {
+    const std::shared_ptr<Resources::Body::ParentResource> &parent,
+    bool generate_endpoint) {
   bool configurable = ((leaflist->flags & LYS_CONFIG_MASK) ^ 2) != 0;
   bool mandatory = (leaflist->flags & LYS_MAND_MASK) != 0;
   auto validators = GetValidators(leaflist->type);
@@ -477,16 +526,25 @@ void ParseLeafList(
       default_value.emplace_back(defaults[i]);
     }
   }
-  auto leaf_res = std::make_unique<Resources::Endpoint::LeafListResource>(
-      leaflist->name, leaflist->module->name,
-      parent->Endpoint() + leaflist->name, parent, std::move(field),
-      configurable, mandatory, std::move(default_value));
-  parent->AddChild(std::move(leaf_res));
+  std::shared_ptr<Resources::Body::LeafListResource> resource;
+  if (generate_endpoint) {
+    auto e_parent =
+        std::dynamic_pointer_cast<Resources::Endpoint::ParentResource>(parent);
+    auto endpoint = e_parent->Endpoint() + leaflist->name;
+    resource = std::make_unique<Resources::Endpoint::LeafListResource>(
+        leaflist->name, leaflist->module->name, endpoint, e_parent,
+        std::move(field), configurable, mandatory, std::move(default_value));
+  } else {
+    resource = std::make_unique<Resources::Body::LeafListResource>(
+        leaflist->name, leaflist->module->name, parent, std::move(field),
+        configurable, mandatory, std::move(default_value));
+  }
+  parent->AddChild(std::move(resource));
 }
 
-void ParseChoice(
-    const lys_node_choice *choice,
-    const std::shared_ptr<Resources::Endpoint::ParentResource> &parent) {
+void ParseChoice(const lys_node_choice *choice,
+                 const std::shared_ptr<Resources::Body::ParentResource> &parent,
+                 bool generate_endpoint) {
   bool mandatory = (choice->flags & LYS_MAND_MASK) != 0;
   std::unique_ptr<const std::string> default_case = nullptr;
   if (choice->dflt != nullptr) {
@@ -499,48 +557,79 @@ void ParseChoice(
       default_case = std::make_unique<const std::string>(choice->dflt->name);
     }
   }
-  auto resource = std::make_shared<Resources::Endpoint::ChoiceResource>(
-      choice->name, choice->module->name, parent, mandatory,
-      std::move(default_case));
-
+  std::shared_ptr<Resources::Body::ChoiceResource> resource;
+  if (generate_endpoint) {
+    auto e_parent =
+        std::dynamic_pointer_cast<Resources::Endpoint::ParentResource>(parent);
+    resource = std::make_shared<Resources::Endpoint::ChoiceResource>(
+        choice->name, choice->module->name, e_parent, mandatory,
+        std::move(default_case));
+  } else {
+    resource = std::make_shared<Resources::Body::ChoiceResource>(
+        choice->name, choice->module->name, parent, mandatory,
+        std::move(default_case));
+  }
   auto child = choice->child;
   while (child != nullptr) {
-    ParseNode(child, resource);
+    ParseNode(child, resource, generate_endpoint);
     child = child->next;
   }
   parent->AddChild(std::move(resource));
 }
 
-void ParseCase(
-    const lys_node_case *case_node,
-    const std::shared_ptr<Resources::Endpoint::ParentResource> &parent) {
-  auto resource = std::make_shared<Resources::Endpoint::CaseResource>(case_node->name,
-      case_node->module->name, parent);
+void ParseCase(const lys_node_case *case_node,
+               const std::shared_ptr<Resources::Body::ParentResource> &parent,
+               bool generate_endpoint) {
+  std::shared_ptr<Resources::Body::CaseResource> resource;
+  if (generate_endpoint) {
+    auto e_parent =
+        std::dynamic_pointer_cast<Resources::Endpoint::ParentResource>(parent);
+    resource = std::make_shared<Resources::Endpoint::CaseResource>(
+        case_node->name, case_node->module->name, e_parent);
+  } else {
+    resource = std::make_shared<Resources::Body::CaseResource>(
+        case_node->name, case_node->module->name, parent);
+  }
   auto child = case_node->child;
   while (child != nullptr) {
-    ParseNode(child, resource);
+    ParseNode(child, resource, generate_endpoint);
     child = child->next;
   }
   parent->AddChild(std::move(resource));
 }
 
-void ParseAny(
-    const lys_node *data,
-    const std::shared_ptr<Resources::Endpoint::ParentResource> &parent) {
+void ParseAny(const lys_node *data,
+              const std::shared_ptr<Resources::Body::ParentResource> &parent,
+              bool generate_endpoint) {
   bool configurable = ((data->flags & LYS_CONFIG_MASK) ^ 2) != 0;
   bool mandatory = (data->flags & LYS_MAND_MASK) != 0;
 
-  auto any_res = std::make_unique<Resources::Endpoint::LeafResource>(
-      data->name, data->module->name, parent->Endpoint() + data->name, parent,
-      std::make_unique<Resources::Body::JsonBodyField>(), configurable,
-      mandatory, nullptr);
-  parent->AddChild(std::move(any_res));
+  std::unique_ptr<Resources::Body::LeafResource> resource;
+  if (generate_endpoint) {
+    auto e_parent =
+        std::dynamic_pointer_cast<Resources::Endpoint::ParentResource>(parent);
+    auto endpoint = e_parent->Endpoint() + data->name;
+    resource = std::make_unique<Resources::Endpoint::LeafResource>(
+        data->name, data->module->name, endpoint, e_parent,
+        std::make_unique<Resources::Body::JsonBodyField>(), configurable,
+        mandatory, nullptr);
+  } else {
+    resource = std::make_unique<Resources::Body::LeafResource>(
+        data->name, data->module->name, parent,
+        std::make_unique<Resources::Body::JsonBodyField>(), configurable,
+        mandatory, nullptr);
+  }
+  parent->AddChild(std::move(resource));
 }
 
 void ParseRpcAction(
     const lys_node_rpc_action *data,
-    const std::shared_ptr<Resources::Endpoint::ParentResource> &parent) {
-  // data->
+    const std::shared_ptr<Resources::Body::ParentResource> &parent) {
+  auto child = data->child;
+  while (child != nullptr) {
+    ParseNode(child, parent, false);
+    child = child->next;
+  }
 }
 // END YANG NODES PARSING
 }  // namespace
