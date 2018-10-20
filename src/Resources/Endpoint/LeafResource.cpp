@@ -42,7 +42,7 @@ LeafResource::LeafResource(
   using Pistache::Rest::Routes::bind;
   auto router = Server::RestServer::Router();
   router->get(rest_endpoint_, bind(&LeafResource::get, this));
-  if (configurable_) {
+  if (configuration_) {
     router->post(rest_endpoint_, bind(&LeafResource::post, this));
     router->put(rest_endpoint_, bind(&LeafResource::put, this));
   }
@@ -52,7 +52,7 @@ LeafResource::~LeafResource() {
   using Pistache::Http::Method;
   auto router = Server::RestServer::Router();
   router->removeRoute(Method::Get, rest_endpoint_);
-  if (configurable_) {
+  if (configuration_) {
     router->removeRoute(Method::Post, rest_endpoint_);
     router->removeRoute(Method::Put, rest_endpoint_);
   }

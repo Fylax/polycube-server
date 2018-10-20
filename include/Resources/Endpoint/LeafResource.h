@@ -31,7 +31,7 @@ class LeafResource : public Resource, public virtual Body::LeafResource {
  public:
   LeafResource(std::string name, std::string module, std::string rest_endpoint,
                std::shared_ptr<ParentResource> parent,
-               std::unique_ptr<Body::JsonBodyField> &&field, bool configurable,
+               std::unique_ptr<Body::JsonBodyField> &&field, bool configuration,
                bool mandatory,
                std::unique_ptr<const std::string> &&default_value);
 

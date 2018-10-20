@@ -20,7 +20,8 @@
 #include <memory>
 #include <string>
 #include <vector>
-#include "../Endpoint/PathParamField.h"
+#include <utility>
+#include "../../Validators/Validator.h"
 
 namespace polycube::polycubed::Rest::Resources::Body {
 class ListResource : public virtual ParentResource {
@@ -31,6 +32,9 @@ class ListResource : public virtual ParentResource {
       std::vector<std::pair<
           std::string, std::vector<std::shared_ptr<Validators::Validator>>>>
           &&keys);
+
+  std::vector<Response> MultipleBodyValidate(nlohmann::json &body,
+                                             bool update) const;
 
   bool ValidateXPath(const std::string &xpath) const final;
 

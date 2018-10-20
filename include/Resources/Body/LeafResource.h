@@ -29,7 +29,7 @@ class LeafResource : public Resource {
  public:
   LeafResource(std::string name, std::string module,
                std::shared_ptr<ParentResource> parent,
-               std::unique_ptr<JsonBodyField> &&field, bool configurable,
+               std::unique_ptr<JsonBodyField> &&field, bool configuration,
                bool mandatory,
                std::unique_ptr<const std::string> &&default_value);
 
@@ -40,13 +40,15 @@ class LeafResource : public Resource {
 
   bool IsMandatory() const final;
 
+  bool IsConfiguration() const final;
+
   void SetDefaultIfMissing(nlohmann::json &body) const override;
 
   bool ValidateXPath(const std::string &xpath) const final;
 
  protected:
   const std::unique_ptr<JsonBodyField> field_;
-  const bool configurable_;
+  const bool configuration_;
   const bool mandatory_;
   const std::unique_ptr<const std::string> default_;
 };

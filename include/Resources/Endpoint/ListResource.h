@@ -18,6 +18,7 @@
 #include <memory>
 #include <string>
 #include <vector>
+#include <utility>
 
 #include "../Body/ListResource.h"
 #include "ParentResource.h"
@@ -29,11 +30,12 @@ class ListResource : public ParentResource, public Body::ListResource {
   ListResource(
       std::string name, std::string module,
       std::shared_ptr<ParentResource> parent, std::string rest_endpoint,
+      std::string rest_endpoint_multiple,
       std::vector<std::pair<
           std::string, std::vector<std::shared_ptr<Validators::Validator>>>>
           &&keys);
 
-  ~ListResource() override = default;
+  ~ListResource() override;
 
   using Body::ListResource::ValidateXPath;
 
@@ -43,5 +45,14 @@ class ListResource : public ParentResource, public Body::ListResource {
 
  private:
   std::vector<PathParamField> key_params_;
+  std::string multiple_endpoint_;
+
+  void get_multiple(const Request &request, ResponseWriter response);
+
+  void post_multiple(const Request &request, ResponseWriter response);
+
+  void put_multiple(const Request &request, ResponseWriter response);
+
+  void patch_multiple(const Request &request, ResponseWriter response);
 };
 }  // namespace polycube::polycubed::Rest::Resources::Endpoint

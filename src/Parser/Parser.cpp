@@ -432,11 +432,13 @@ void ParseList(const lys_node_list *list,
       keys{};
   auto key_names = std::set<std::string>();
   std::string rest_endpoint;
+  std::string rest_endpoint_multiple;
   if (generate_endpoint) {
-    rest_endpoint =
+    rest_endpoint_multiple =
         std::dynamic_pointer_cast<Resources::Endpoint::ParentResource>(parent)
             ->Endpoint() +
         list->name + '/';
+    rest_endpoint = rest_endpoint_multiple;
   }
   if (list->keys_size != 0) {
     keys.reserve(list->keys_size);
@@ -466,7 +468,7 @@ void ParseList(const lys_node_list *list,
         std::dynamic_pointer_cast<Resources::Endpoint::ParentResource>(parent);
     resource = std::make_shared<Resources::Endpoint::ListResource>(
         list->name, list->module->name, e_parent, rest_endpoint,
-        std::move(keys));
+        rest_endpoint_multiple, std::move(keys));
   } else {
     resource = std::make_shared<Resources::Body::ListResource>(
         list->name, list->module->name, parent, std::move(keys));
@@ -485,7 +487,7 @@ void ParseList(const lys_node_list *list,
 void ParseLeaf(const lys_node_leaf *leaf,
                const std::shared_ptr<Resources::Body::ParentResource> &parent,
                bool generate_endpoint) {
-  bool configurable = ((leaf->flags & LYS_CONFIG_MASK) ^ 2) != 0;
+  bool configuration = ((leaf->flags & LYS_CONFIG_MASK) ^ 2) != 0;
   bool mandatory = (leaf->flags & LYS_MAND_MASK) != 0;
   auto validators = GetValidators(leaf->type);
   auto field = std::make_unique<Resources::Body::JsonBodyField>(
@@ -501,10 +503,10 @@ void ParseLeaf(const lys_node_leaf *leaf,
     auto endpoint = e_parent->Endpoint() + leaf->name;
     leaf_res = std::make_unique<Resources::Endpoint::LeafResource>(
         leaf->name, leaf->module->name, endpoint, e_parent, std::move(field),
-        configurable, mandatory, std::move(default_value));
+        configuration, mandatory, std::move(default_value));
   } else {
     leaf_res = std::make_unique<Resources::Body::LeafResource>(
-        leaf->name, leaf->module->name, parent, std::move(field), configurable,
+        leaf->name, leaf->module->name, parent, std::move(field), configuration,
         mandatory, std::move(default_value));
   }
   parent->AddChild(std::move(leaf_res));
@@ -514,7 +516,7 @@ void ParseLeafList(
     const lys_node_leaflist *leaflist,
     const std::shared_ptr<Resources::Body::ParentResource> &parent,
     bool generate_endpoint) {
-  bool configurable = ((leaflist->flags & LYS_CONFIG_MASK) ^ 2) != 0;
+  bool configuration = ((leaflist->flags & LYS_CONFIG_MASK) ^ 2) != 0;
   bool mandatory = (leaflist->flags & LYS_MAND_MASK) != 0;
   auto validators = GetValidators(leaflist->type);
   auto field = std::make_unique<Resources::Body::JsonBodyField>(
@@ -533,11 +535,11 @@ void ParseLeafList(
     auto endpoint = e_parent->Endpoint() + leaflist->name;
     resource = std::make_unique<Resources::Endpoint::LeafListResource>(
         leaflist->name, leaflist->module->name, endpoint, e_parent,
-        std::move(field), configurable, mandatory, std::move(default_value));
+        std::move(field), configuration, mandatory, std::move(default_value));
   } else {
     resource = std::make_unique<Resources::Body::LeafListResource>(
         leaflist->name, leaflist->module->name, parent, std::move(field),
-        configurable, mandatory, std::move(default_value));
+        configuration, mandatory, std::move(default_value));
   }
   parent->AddChild(std::move(resource));
 }
@@ -548,14 +550,7 @@ void ParseChoice(const lys_node_choice *choice,
   bool mandatory = (choice->flags & LYS_MAND_MASK) != 0;
   std::unique_ptr<const std::string> default_case = nullptr;
   if (choice->dflt != nullptr) {
-    // if the descendant is a case node, descend again to the actual
-    // default node
-    if (choice->dflt->nodetype == LYS_CASE) {
-      default_case =
-          std::make_unique<const std::string>(choice->dflt->child->name);
-    } else {
       default_case = std::make_unique<const std::string>(choice->dflt->name);
-    }
   }
   std::shared_ptr<Resources::Body::ChoiceResource> resource;
   if (generate_endpoint) {
@@ -601,7 +596,7 @@ void ParseCase(const lys_node_case *case_node,
 void ParseAny(const lys_node *data,
               const std::shared_ptr<Resources::Body::ParentResource> &parent,
               bool generate_endpoint) {
-  bool configurable = ((data->flags & LYS_CONFIG_MASK) ^ 2) != 0;
+  bool configuration = ((data->flags & LYS_CONFIG_MASK) ^ 2) != 0;
   bool mandatory = (data->flags & LYS_MAND_MASK) != 0;
 
   std::unique_ptr<Resources::Body::LeafResource> resource;
@@ -611,12 +606,12 @@ void ParseAny(const lys_node *data,
     auto endpoint = e_parent->Endpoint() + data->name;
     resource = std::make_unique<Resources::Endpoint::LeafResource>(
         data->name, data->module->name, endpoint, e_parent,
-        std::make_unique<Resources::Body::JsonBodyField>(), configurable,
+        std::make_unique<Resources::Body::JsonBodyField>(), configuration,
         mandatory, nullptr);
   } else {
     resource = std::make_unique<Resources::Body::LeafResource>(
         data->name, data->module->name, parent,
-        std::make_unique<Resources::Body::JsonBodyField>(), configurable,
+        std::make_unique<Resources::Body::JsonBodyField>(), configuration,
         mandatory, nullptr);
   }
   parent->AddChild(std::move(resource));

@@ -33,7 +33,7 @@ class LeafListResource : public LeafResource, public Body::LeafListResource {
                    std::string rest_endpoint,
                    std::shared_ptr<ParentResource> parent,
                    std::unique_ptr<Body::JsonBodyField> &&field,
-                   bool configurable, bool mandatory,
+                   bool configuration, bool mandatory,
                    std::vector<std::string> &&default_value);
 
   ~LeafListResource() override;

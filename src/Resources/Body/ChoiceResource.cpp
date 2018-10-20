@@ -54,12 +54,16 @@ std::vector<Response> ChoiceResource::BodyValidate(nlohmann::json &body,
           errors.push_back({ErrorTag::kMissingAttribute, child->Name().data()});
         }
       } else {
-        child_errors = child->BodyValidate(body.at(child->Name()),
-                                           check_mandatory && IsMandatory());
-        errors.reserve(errors.size() + child_errors.size());
-        body.erase(child->Name());
-        std::copy(std::begin(child_errors), std::end(child_errors),
-                  std::back_inserter(errors));
+        if (!child->IsConfiguration()) {
+          errors.push_back({ErrorTag::kInvalidValue, ""});
+        } else {
+          child_errors = child->BodyValidate(body.at(child->Name()),
+                                             check_mandatory && IsMandatory());
+          errors.reserve(errors.size() + child_errors.size());
+          body.erase(child->Name());
+          std::copy(std::begin(child_errors), std::end(child_errors),
+                    std::back_inserter(errors));
+        }
       }
     }
     if (child_errors.empty()) {

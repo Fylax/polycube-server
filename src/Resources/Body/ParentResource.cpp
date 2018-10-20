@@ -47,16 +47,21 @@ std::vector<Response> ParentResource::BodyValidate(nlohmann::json &body,
           errors.push_back({ErrorTag::kMissingAttribute, child->Name().data()});
         }
       } else {
-        auto child_errors =
-            child->BodyValidate(body.at(child->Name()), check_mandatory);
-        errors.reserve(errors.size() + child_errors.size());
-        // remove current parsed element from the body so that in the
-        // eventuality of choices, they will operate only on unparsed elements.
-        // moreover, this is required for detecting unparsed elements,
-        // that may be typos
-        body.erase(child->Name());
-        std::copy(std::begin(child_errors), std::end(child_errors),
-                  std::back_inserter(errors));
+        // non configuration nodes are read only
+        if (!child->IsConfiguration()) {
+          errors.push_back({ErrorTag::kInvalidValue, ""});
+        } else {
+          auto child_errors =
+              child->BodyValidate(body.at(child->Name()), check_mandatory);
+          errors.reserve(errors.size() + child_errors.size());
+          // remove current parsed element from the body so that in the
+          // eventuality of choices, they will operate only on unparsed elements.
+          // moreover, this is required for detecting unparsed elements,
+          // that may be typos
+          body.erase(child->Name());
+          std::copy(std::begin(child_errors), std::end(child_errors),
+                    std::back_inserter(errors));
+        }
       }
     }
   }
@@ -89,11 +94,19 @@ void ParentResource::AddChild(std::shared_ptr<Resource> child) {
 bool ParentResource::IsMandatory() const {
   if (container_presence_)
     return true;
-  for (const auto &child : children_) {
-    if (child->IsMandatory())
-      return true;
-  }
-  return false;
+  return std::end(children_) !=
+         std::find_if(std::begin(children_), std::end(children_),
+                      [](const std::shared_ptr<Resource> &child) {
+                        return child->IsMandatory();
+                      });
+}
+
+bool ParentResource::IsConfiguration() const {
+  return std::end(children_) !=
+         std::find_if(std::begin(children_), std::end(children_),
+                      [](const std::shared_ptr<Resource> &child) {
+                        return child->IsConfiguration();
+                      });
 }
 
 void ParentResource::SetDefaultIfMissing(nlohmann::json &body) const {

@@ -15,10 +15,20 @@
  */
 #include "../../../include/Resources/Endpoint/ListResource.h"
 
+#include <memory>
+#include <string>
+#include <utility>
+#include <vector>
+#include <Endpoint/ListResource.h>
+
+
+#include "../../../include/Server/RestServer.h"
+
 namespace polycube::polycubed::Rest::Resources::Endpoint {
 ListResource::ListResource(
     std::string name, std::string module,
     std::shared_ptr<ParentResource> parent, std::string rest_endpoint,
+    std::string rest_endpoint_multiple,
     std::vector<std::pair<std::string,
                           std::vector<std::shared_ptr<Validators::Validator>>>>
         &&keys)
@@ -26,10 +36,26 @@ ListResource::ListResource(
                            std::move(parent), false),
       ParentResource(std::move(rest_endpoint)),
       Body::ListResource(std::move(keys)),
-      key_params_{} {
+      key_params_{},
+      multiple_endpoint_(std::move(rest_endpoint_multiple)) {
   for (const auto &key : keys_) {
     key_params_.emplace_back(key.first, key.second);
   }
+  using Pistache::Rest::Routes::bind;
+  auto router = Server::RestServer::Router();
+  router->get(multiple_endpoint_, bind(&ListResource::get_multiple, this));
+  router->post(multiple_endpoint_, bind(&ListResource::post_multiple, this));
+  router->put(multiple_endpoint_, bind(&ListResource::put_multiple, this));
+  router->patch(multiple_endpoint_, bind(&ListResource::patch_multiple, this));
+}
+
+ListResource::~ListResource() {
+  using Pistache::Http::Method;
+  auto router = Server::RestServer::Router();
+  router->removeRoute(Method::Get, multiple_endpoint_);
+  router->removeRoute(Method::Post, multiple_endpoint_);
+  router->removeRoute(Method::Put, multiple_endpoint_);
+  router->removeRoute(Method::Patch, multiple_endpoint_);
 }
 
 std::vector<Response> ListResource::RequestValidate(
@@ -43,5 +69,25 @@ std::vector<Response> ListResource::RequestValidate(
     }
   }
   return errors;
+}
+
+void
+ListResource::get_multiple(const Request& request, ResponseWriter response) {
+
+}
+
+void
+ListResource::post_multiple(const Request& request, ResponseWriter response) {
+
+}
+
+void
+ListResource::put_multiple(const Request& request, ResponseWriter response) {
+
+}
+
+void
+ListResource::patch_multiple(const Request& request, ResponseWriter response) {
+
 }
 }  // namespace polycube::polycubed::Rest::Resources::Endpoint

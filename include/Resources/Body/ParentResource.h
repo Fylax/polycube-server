@@ -41,6 +41,8 @@ class ParentResource : public Resource {
 
   bool IsMandatory() const override;
 
+  bool IsConfiguration() const final;
+
   void SetDefaultIfMissing(nlohmann::json &body) const override;
 
   bool ValidateXPath(const std::string &xpath) const override;

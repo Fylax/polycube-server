@@ -42,6 +42,8 @@ class Resource {
 
   virtual bool IsMandatory() const = 0;
 
+  virtual bool IsConfiguration() const = 0;
+
   const std::string &Name() const;
 
   const std::string &ModuleName() const;

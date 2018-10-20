@@ -29,7 +29,7 @@ LeafResource::LeafResource(std::string name, std::string module,
                            std::unique_ptr<const std::string> &&default_value)
     : Resource(std::move(name), std::move(module), std::move(parent)),
       field_(std::move(field)),
-      configurable_(configurable),
+      configuration_(configurable),
       mandatory_(mandatory),
       default_(std::move(default_value)) {}
 
@@ -50,6 +50,10 @@ std::vector<Response> LeafResource::BodyValidate(
 
 bool LeafResource::IsMandatory() const {
   return mandatory_;
+}
+
+bool LeafResource::IsConfiguration() const {
+  return configuration_;
 }
 
 void LeafResource::SetDefaultIfMissing(nlohmann::json &body) const {
