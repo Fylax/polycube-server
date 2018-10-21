@@ -30,4 +30,8 @@ const std::string &Resource::Name() const {
 const std::string &Resource::ModuleName() const {
   return module_;
 }
+
+std::shared_ptr<ParentResource> Resource::Parent() const {
+  return parent_;
+}
 }  // namespace polycube::polycubed::Rest::Resources::Body

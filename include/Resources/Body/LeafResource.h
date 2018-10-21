@@ -46,6 +46,10 @@ class LeafResource : public Resource {
 
   bool ValidateXPath(const std::string &xpath) const final;
 
+  virtual const std::string &Value() = 0;
+
+  virtual void Value(const std::string &value, bool replace) const = 0;
+
  protected:
   const std::unique_ptr<JsonBodyField> field_;
   const bool configuration_;

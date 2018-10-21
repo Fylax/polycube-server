@@ -36,7 +36,10 @@ class CubeManager {
 
   void operator=(CubeManager const &) = delete;
 
-  bool ExistsCube(const std::string &name);
+  bool ExistsCube(const std::string &name) const;
+
+  std::shared_ptr<Body::Resource> Cube(const std::string &service,
+                                       const std::string &name) const;
 
   bool CreateCube(const std::string &name);
 

@@ -32,9 +32,17 @@ CubeManager::CubeManager()
   Server::RestServer::Router()->post("/", bind(&CubeManager::post, this));
 }
 
-bool CubeManager::ExistsCube(const std::string &name) {
+bool CubeManager::ExistsCube(const std::string &name) const {
   std::unique_lock<std::shared_mutex> lock(mutex_);
   return CubeManager::existing_cubes_impl_.count(name) != 0;
+}
+
+std::shared_ptr<Body::Resource> CubeManager::Cube(
+    const std::string &service, const std::string &name) const {
+  std::unique_lock<std::shared_mutex> lock(mutex_);
+  if (CubeManager::existing_cubes_.count(service) == 0)
+    return nullptr;
+  return CubeManager::existing_cubes_.at(service)->Child(name);
 }
 
 bool CubeManager::CreateCube(const std::string &name) {

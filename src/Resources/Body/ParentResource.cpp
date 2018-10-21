@@ -130,6 +130,13 @@ bool ParentResource::ValidateXPath(const std::string &xpath) const {
   return ValidateXPathChildren(xpath, del_pos);
 }
 
+std::shared_ptr<Resource> ParentResource::Child(
+    const std::string& child_name) const {
+  auto child = std::find_if(std::begin(children_), std::end(children_),
+      [=](std::shared_ptr<Resource> r) { return r->Name() == child_name; });
+  return (child == std::end(children_)) ? nullptr : *child;
+}
+
 bool ParentResource::ValidateXPathChildren(const std::string &xpath,
                                            std::size_t delimiter) const {
   auto del_pos = xpath.find('/', delimiter + 1);  // next token delimiter

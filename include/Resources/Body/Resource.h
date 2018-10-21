@@ -55,6 +55,8 @@ class Resource {
 
   virtual void SetDefaultIfMissing(nlohmann::json &body) const = 0;
 
+  std::shared_ptr<ParentResource> Parent() const;
+
  protected:
   const std::string name_;
   std::shared_ptr<ParentResource> parent_;

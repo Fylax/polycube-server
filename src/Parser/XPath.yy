@@ -10,10 +10,12 @@
 #include <cstdlib>
 #include <fstream>
 #include <memory>
-#include <vector>
+#include <unordered_map>
 #include <utility>
 #include "../../include/Resources/CubeManager.h"
 #include "../../include/Resources/Body/Resource.h"
+#include "../../include/Resources/Body/LeafResource.h"
+#include "../../include/Resources/Body/LeafListResource.h"
 #include "../../include/Resources/Body/ParentResource.h"
 #include "../../include/Resources/Body/ListResource.h"
 
@@ -26,7 +28,7 @@ namespace polycube::polycubed::Rest::Parser {
 %define api.value.type variant
 %define parse.assert
 
-%param {XPathParserDriver &driver}
+%parse-param {XPathParserDriver &driver}
 
 %locations
 
@@ -64,9 +66,9 @@ namespace polycube::polycubed::Rest::Parser {
 %type <std::string> start_path;
 %type <std::string> path;
 
-%type <std::vector<std::pair<std::string, std::string>>> key;
-%type <std::vector<std::pair<std::string, std::string>>> keys;
-%type <std::vector<std::pair<std::string, std::string>>> key_list;
+%type <std::unordered_map<std::string, std::string>> key;
+%type <std::unordered_map<std::string, std::string>> keys;
+%type <std::unordered_map<std::string, std::string>> key_list;
 
 %{
 #include "../../include/Parser/XPathParserDriver.h"
@@ -95,15 +97,31 @@ bool_expr : expr EQ expr { $$ = $1 == $3; } |
             TRUE { $$ = true; } |
             FALSE { $$ = false; };
 
-start_path : DEL ID DEL ID { driver.current = CubeManager.GetInstance.Cube($2)-Child($4); } path { $$ = $6; } |
-             CUR { $$ = resource->Value(); } |
-             CUR DEL { driver.current = resource; } path { $$ = $4; } |
-             PAR { $$ = resource->Parent()->Value(); } |
-             PAR DEL { driver.current = resource->Parent(); } path { $$ = $4; } |
-             ID { $$ = driver.resource->Child($1); } |
-             ID DEL { driver.current = resource->Child($1); } path { $$ = $4; };
+start_path : DEL ID DEL ID {
+               driver.current = Resources::CubeManager::GetInstance().Cube($2, $4);
+             } path { $$ = $6; } |
+             CUR {
+               auto leaf = std::dynamic_pointer_cast<Resources::Body::LeafResource>(driver.current);
+               $$ = leaf->Value();
+             } |
+             CUR DEL path { $$ = $3; } |
+             PAR { YYABORT; } |
+             PAR DEL { driver.current = driver.current->Parent(); } path { $$ = $4; } |
+             ID {
+               auto parent = std::dynamic_pointer_cast<Resources::Body::ParentResource>(driver.current);
+               if (parent != nullptr) driver.current = parent->Child($1);
+               else YYABORT;
+             } |
+             ID DEL {
+               auto parent = std::dynamic_pointer_cast<Resources::Body::ParentResource>(driver.current);
+               if (parent != nullptr) driver.current = parent->Child($1);
+               else YYABORT;
+             } path { $$ = $4; };
 
-path : %empty { $$ = current->Value(); } |
+path : %empty {
+         auto leaf = std::dynamic_pointer_cast<Resources::Body::LeafResource>(driver.current);
+         if (leaf != nullptr) $$ = leaf->Value();
+       } |
        DEL path {} | CUR path {} |
        PAR path { driver.current = driver.current->Parent(); } |
        ID path  {
@@ -118,34 +136,28 @@ path : %empty { $$ = current->Value(); } |
            auto list = std::dynamic_pointer_cast<Resources::Body::ListResource>(driver.current);
            if (list != nullptr) {
              if (!list->ValidateKeys($2)) YYABORT;
+           } else {
+             auto leaflist = std::dynamic_pointer_cast<Resources::Body::LeafListResource>(driver.current);
+             if (leaflist != nullptr) driver.current = leaflist->Entry(std::begin($2)->second);
+             else YYABORT;
            }
-         }
-         else YYABORT;
+         } else YYABORT;
        } |
        ID nkey_list path;
 
 key_list : key_list keys {
-             $1.insert(std::end($1),
-                       std::make_move_iterator(std::begin($2)),
-                       std::make_move_iterator(std::end($2)));
+             $1.merge($2);
              $$ = $1;
            } | keys { $$ = $1; };
 
 keys : SO key SC { $$ = std::move($2); };
 
 key : ID EQ SQSTR {
-        std::vector<std::pair<std::string, std::string>> r;
-        r.emplace_back($1, $3.substr(1, $3.length() - 2));
+        std::unordered_map<std::string, std::string> r;
+        r.emplace($1, $3.substr(1, $3.length() - 2));
         $$ = r;
       };
 
 nkey_list : nkey_list nkeys | nkeys;
 
 nkeys : SO INT SC;
-
-%%
-
-void polycube::polycubed::Rest::Parser::XPathParser::error(
-    const Parser::location_type& l, const std::string& m) {
-    driver.error(l, m);
-}

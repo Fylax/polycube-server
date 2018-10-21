@@ -21,6 +21,7 @@
 #include <string>
 #include <vector>
 #include <utility>
+#include <unordered_map>
 #include "../../Validators/Validator.h"
 
 namespace polycube::polycubed::Rest::Resources::Body {
@@ -37,6 +38,8 @@ class ListResource : public virtual ParentResource {
                                              bool update) const;
 
   bool ValidateXPath(const std::string &xpath) const final;
+
+  bool ValidateKeys(std::unordered_map<std::string, std::string> keys) const;
 
  protected:
   /** Used by derived class: no explicit virtual base initialization */

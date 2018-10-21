@@ -15,6 +15,11 @@
  */
 #include "../../../include/Resources/Body/ListResource.h"
 
+#include <string>
+#include <unordered_map>
+#include <utility>
+#include <vector>
+
 namespace polycube::polycubed::Rest::Resources::Body {
 ListResource::ListResource(
     std::vector<std::pair<std::string,
@@ -109,5 +114,18 @@ bool ListResource::ValidateXPath(const std::string &xpath) const {
 
   return ValidateXPathChildren(xpath, del_pos);
 }
+
+bool ListResource::ValidateKeys(
+    std::unordered_map<std::string, std::string> keys) const {
+  for (const auto &key : keys_) {
+    if (keys.count(key.first) == 0)
+      return false;
+    const auto &value = keys.at(key.first);
+    for (const auto &validator : key.second) {
+      if (!validator->Validate(value))
+        return false;
+    }
+  }
+  return true;
+}
 }  // namespace polycube::polycubed::Rest::Resources::Body
-// namespace polycube::polycubed::Rest::Resources::Body

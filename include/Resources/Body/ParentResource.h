@@ -47,6 +47,8 @@ class ParentResource : public Resource {
 
   bool ValidateXPath(const std::string &xpath) const override;
 
+  std::shared_ptr<Resource> Child(const std::string &child_name) const;
+
  protected:
   std::vector<std::shared_ptr<Resource>> children_;
 

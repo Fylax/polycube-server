@@ -2,7 +2,7 @@
 #include <string>
 
 #include "../../include/Parser/XPathParserDriver.h"
-#include "XPathParser.h"
+#include "XPathParser.hpp"
 
 namespace polycube::polycubed::Rest::Parser {
 using token = XPathParser::token;
