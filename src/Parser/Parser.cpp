@@ -620,9 +620,12 @@ void ParseAny(const lys_node *data,
 void ParseRpcAction(
     const lys_node_rpc_action *data,
     const std::shared_ptr<Resources::Body::ParentResource> &parent) {
+  auto e_parent =
+      std::dynamic_pointer_cast<Resources::Endpoint::ParentResource>(parent);
+  auto action = std::make_shared<Resources::Endpoint::ParentResource>(data->name, data->module->name, e_parent->Endpoint() + data->name, e_parent);
   auto child = data->child;
   while (child != nullptr) {
-    ParseNode(child, parent, false);
+    ParseNode(child, action, false);
     child = child->next;
   }
 }

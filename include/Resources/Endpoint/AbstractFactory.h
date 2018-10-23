@@ -15,19 +15,10 @@
  */
 #pragma once
 
-#include <string>
-#include <memory>
+#include "../Body/AbstractFactory.h"
 
-#include "ParentResource.h"
-namespace polycube::polycubed::Rest::Resources::Body {
-class CaseResource : public virtual ParentResource {
-public:
-  CaseResource(std::string name, std::string module,
-               std::shared_ptr<ParentResource> parent);
+namespace polycube::polycubed::Rest::Resources::Endpoint {
+class AbstractFactory : public Body::AbstractFactory {
 
-  ~CaseResource() override = default;
-
-protected:
-  CaseResource();
 };
-}  // namespace polycube::polycubed::Rest::Resources::Body
+}

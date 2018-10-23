@@ -1,4 +1,5 @@
 set(endpoint_sources
+        ${CMAKE_CURRENT_LIST_DIR}/AbstractFactory.cpp
         ${CMAKE_CURRENT_LIST_DIR}/Resource.cpp
         ${CMAKE_CURRENT_LIST_DIR}/LeafResource.cpp
         ${CMAKE_CURRENT_LIST_DIR}/LeafListResource.cpp

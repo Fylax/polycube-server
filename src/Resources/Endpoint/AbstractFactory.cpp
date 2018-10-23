@@ -13,21 +13,8 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
-#pragma once
+#include "../../../include/Resources/Endpoint/AbstractFactory.h"
 
-#include <string>
-#include <memory>
+namespace polycube::polycubed::Rest::Resources::Endpoint {
 
-#include "ParentResource.h"
-namespace polycube::polycubed::Rest::Resources::Body {
-class CaseResource : public virtual ParentResource {
-public:
-  CaseResource(std::string name, std::string module,
-               std::shared_ptr<ParentResource> parent);
-
-  ~CaseResource() override = default;
-
-protected:
-  CaseResource();
-};
-}  // namespace polycube::polycubed::Rest::Resources::Body
+}
