@@ -1,16 +1,9 @@
-%skeleton "lalr1.cc"
-%require "3.0"
-%define api.namespace {polycube::polycubed::Rest::Parser}
-%define parser_class_name {XPathParser}
-%language "C++"
-%no-lines
-
-%code requires{
+%{
 #include <iostream>
 #include <cstdlib>
 #include <fstream>
 #include <memory>
-#include <unordered_map>
+
 #include <utility>
 #include "../../include/Resources/CubeManager.h"
 #include "../../include/Resources/Body/Resource.h"
@@ -18,7 +11,19 @@
 #include "../../include/Resources/Body/LeafListResource.h"
 #include "../../include/Resources/Body/ParentResource.h"
 #include "../../include/Resources/Body/ListResource.h"
+%}
 
+%require "3.0"
+%skeleton "lalr1.cc"
+%define api.namespace {polycube::polycubed::Rest::Parser}
+%define parser_class_name {XPathParser}
+%defines
+%language "C++"
+%no-lines
+
+%code requires{
+#include <cstdint>
+#include <unordered_map>
 namespace polycube::polycubed::Rest::Parser {
   class XPathParserDriver;
 }
@@ -76,7 +81,6 @@ namespace polycube::polycubed::Rest::Parser {
 
 #undef yylex
 #define yylex driver.lexer->lex
-
 %}
 
 %%

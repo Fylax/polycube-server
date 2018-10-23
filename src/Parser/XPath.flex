@@ -1,14 +1,14 @@
 %{
+#include <cstdint>
 #include <string>
 
-#include "../../include/Parser/XPathParserDriver.h"
-#include "XPathParser.hpp"
+#include "../../include/Parser/XPathScanner.h"
 
-namespace polycube::polycubed::Rest::Parser {
-using token = XPathParser::token;
+using token = polycube::polycubed::Rest::Parser::XPathParser::token;
+using token_type = polycube::polycubed::Rest::Parser::XPathParser::token_type;
 #define yyterminate() return(token::END)
 #define YY_NO_UNISTD_H
-#define YY_USER_ACTION loc->columns(yyleng); yylloc->step();
+#define YY_USER_ACTION yylloc->columns(yyleng);
 %}
 
 %option nounput noinput nomain noyywrap nodefault
@@ -37,7 +37,7 @@ WS      [ \t]+
 %%
 
 %{
-  yylval = lval;
+  yylloc->step();
 %}
 
 NOT     {return token::NOT;}
@@ -59,21 +59,21 @@ PATH    {return token::DEL;}
 \[      {return token::SO;}
 \]      {return token::SC;}
 ID      {
-          yylval->build<std::string>(yytext);
+          yylval->build<std::string>() = yytext;
           return token::ID;
         }
 SQSRT   {
-          yylval->build<std::string>(yytext);
-          return token::SQSRT;
+          yylval->build<std::string>() = yytext;
+          return token::SQSTR;
         }
 INTEGER {
-          yylval->build<std::uint32_t>(yytext);
+          yylval->build<std::uint32_t>() = std::stoul(yytext, nullptr, 10);
           return token::INT;
         }
 
 {WS}|.  {}
 %%
-
+namespace polycube::polycubed::Rest::Parser {
 XPathScanner::XPathScanner(std::istream* in)
     : yyFlexLexer(in, 0){}
 
@@ -85,22 +85,4 @@ void XPathScanner::set_debug(bool b)
 #ifdef yylex
 #undef yylex
 #endif
-
-int XPathScanner::yylex()
-{
-    std::cerr << "in yyFlexLexer::yylex() !" << std::endl;
-    return 0;
-}
-
-int yyFlexLexer::yywrap()
-{
-    return 1;
-}
-
-void
-XPathParserDriver::scan_begin()
-{
-  yy_flex_debug = false;
-  yy_scan_string(string.data());
-}
 }

@@ -1,24 +1,13 @@
 #pragma once
 
-// $Id$
+#undef YY_DECL
+#define	YY_DECL \
+    polycube::polycubed::Rest::Parser::XPathParser::token_type \
+    polycube::polycubed::Rest::Parser::XPathScanner::lex( \
+	polycube::polycubed::Rest::Parser::XPathParser::semantic_type* yylval, \
+	polycube::polycubed::Rest::Parser::XPathParser::location_type* yylloc)
 
-#ifndef EXAMPLE_SCANNER_H
-#define EXAMPLE_SCANNER_H
-
-// Flex expects the signature of yylex to be defined in the macro YY_DECL, and
-// the C++ parser expects it to be declared. We can factor both as follows.
-
-#ifndef YY_DECL
-
-#define	YY_DECL						\
-    polycube::polycubed::Rest::Parser::XPathParser::token_type				\
-    polycube::polycubed::Rest::Parser::XPathScanner::lex(				\
-	polycube::polycubed::Rest::Parser::XPathParser::semantic_type* yylval,		\
-	polycube::polycubed::Rest::Parser::XPathParser::location_type* yylloc		\
-    )
-#endif
-
-#ifndef __FLEX_LEXER_H
+#ifndef yyFlexLexerOnce
 #include "FlexLexer.h"
 #endif
 
@@ -37,7 +26,7 @@ public:
   /** Create a new scanner object. The streams arg_yyin and arg_yyout default
    * to cin and cout, but that assignment is only made when initializing in
    * yylex(). */
-  XPathScanner(std::istream* arg_yyin = 0);
+  explicit XPathScanner(std::istream* arg_yyin = 0);
 
   /** Required for virtual functions */
   ~XPathScanner() override = default;
@@ -47,13 +36,10 @@ public:
    * calls this virtual function to fetch new tokens. */
   virtual XPathParser::token_type lex(
       XPathParser::semantic_type* yylval,
-      XPathParser::location_type* yylloc
-  );
+      XPathParser::location_type* yylloc);
 
   /** Enable debug output (via arg_yyout) if compiled into the scanner. */
   void set_debug(bool b);
 };
 
 } // namespace example
-
-#endif // EXAMPLE_SCANNER_H
