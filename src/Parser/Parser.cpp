@@ -427,9 +427,7 @@ void ParseGrouping(
 void ParseList(const lys_node_list *list,
                const std::shared_ptr<Resources::Body::ParentResource> &parent,
                bool generate_endpoint) {
-  std::vector<std::pair<std::string,
-                        std::vector<std::shared_ptr<Validators::Validator>>>>
-      keys{};
+  std::vector<Resources::Body::ListKey> keys{};
   auto key_names = std::set<std::string>();
   std::string rest_endpoint;
   std::string rest_endpoint_multiple;
@@ -457,7 +455,7 @@ void ParseList(const lys_node_list *list,
     if (key_names.count(child->name) != 0) {
       const auto &key = reinterpret_cast<lys_node_leaf *>(child);
       auto validator = GetValidators(key->type);
-      keys.emplace_back(child->name, std::move(validator));
+      keys.emplace_back(key->type.base, child->name, std::move(validator));
     }
     child = child->next;
   }

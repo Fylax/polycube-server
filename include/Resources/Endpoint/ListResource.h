@@ -24,6 +24,10 @@
 #include "ParentResource.h"
 #include "PathParamField.h"
 
+namespace polycube::polycubed::Rest::Resources::Body {
+class ListKey;
+}
+
 namespace polycube::polycubed::Rest::Resources::Endpoint {
 class ListResource : public ParentResource, public Body::ListResource {
  public:
@@ -31,9 +35,7 @@ class ListResource : public ParentResource, public Body::ListResource {
       std::string name, std::string module,
       std::shared_ptr<ParentResource> parent, std::string rest_endpoint,
       std::string rest_endpoint_multiple,
-      std::vector<std::pair<
-          std::string, std::vector<std::shared_ptr<Validators::Validator>>>>
-          &&keys);
+      std::vector<Body::ListKey> &&keys);
 
   ~ListResource() override;
 

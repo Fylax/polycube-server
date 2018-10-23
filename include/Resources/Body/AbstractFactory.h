@@ -15,24 +15,35 @@
  */
 #pragma once
 
+#include <libyang/tree_schema.h>
+
 #include <memory>
 #include <string>
 #include <utility>
 #include <vector>
 
-#include "CaseResource.h"
-#include "ChoiceResource.h"
-#include "LeafListResource.h"
-#include "LeafResource.h"
-#include "ListResource.h"
+namespace polycube::polycubed::Rest::Validators {
+class Validator;
+}
 
 namespace polycube::polycubed::Rest::Resources::Body {
+
+class CaseResource;
+class ChoiceResource;
+class JsonBodyField;
+class LeafResource;
+class LeafListResource;
+class ListResource;
+class ParentResource;
+class Service;
+
 class AbstractFactory {
  public:
-  std::unique_ptr<CaseResource> Case(std::string name, std::string module,
-                                     std::shared_ptr<ParentResource> parent);
+  virtual std::unique_ptr<CaseResource> Case(
+      std::string name, std::string module,
+      std::shared_ptr<ParentResource> parent);
 
-  std::unique_ptr<ChoiceResource> Choice(
+  virtual std::unique_ptr<ChoiceResource> Choice(
       std::string name, std::string module,
       std::shared_ptr<ParentResource> parent, bool mandatory,
       std::unique_ptr<const std::string> &&default_case);
@@ -43,27 +54,31 @@ class AbstractFactory {
       LY_DATA_TYPE type,
       std::vector<std::shared_ptr<Validators::Validator>> &&validators);
 
-  std::unique_ptr<LeafResource> Leaf(
+  virtual std::unique_ptr<LeafResource> Leaf(
       std::string name, std::string module,
       std::shared_ptr<ParentResource> parent,
       std::unique_ptr<Body::JsonBodyField> &&field, bool configuration,
-      bool mandatory, std::unique_ptr<const std::string> &&default_value);
+      bool mandatory, std::unique_ptr<const std::string> &&default_value) = 0;
 
-  std::unique_ptr<LeafListResource> LeafList(
+  virtual std::unique_ptr<LeafListResource> LeafList(
       std::string name, std::string module,
       std::shared_ptr<ParentResource> parent,
       std::unique_ptr<Body::JsonBodyField> &&field, bool configuration,
-      bool mandatory, std::vector<std::string> &&default_value);
+      bool mandatory, std::vector<std::string> &&default_value) = 0;
 
-  std::unique_ptr<ListResource> List(
+  virtual std::unique_ptr<ListResource> List(
       std::string name, std::string module,
       std::shared_ptr<ParentResource> parent,
       std::vector<std::pair<
           std::string, std::vector<std::unique_ptr<Validators::Validator>>>>
-          &&keys);
+          &&keys) = 0;
 
-  std::unique_ptr<ParentResource> Generic(
+  virtual std::unique_ptr<ParentResource> Generic(
       std::string name, std::string module,
-      std::shared_ptr<ParentResource> parent);
+      std::shared_ptr<ParentResource> parent) = 0;
+
+ protected:
+  AbstractFactory() = default;
+  virtual ~AbstractFactory() = default;
 };
 }  // namespace polycube::polycubed::Rest::Resources::Body

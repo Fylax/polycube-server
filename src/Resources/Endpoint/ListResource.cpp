@@ -19,19 +19,17 @@
 #include <string>
 #include <utility>
 #include <vector>
-#include <Endpoint/ListResource.h>
 
 
 #include "../../../include/Server/RestServer.h"
+#include "../../../include/Resources/Body/ListKey.h"
 
 namespace polycube::polycubed::Rest::Resources::Endpoint {
 ListResource::ListResource(
     std::string name, std::string module,
     std::shared_ptr<ParentResource> parent, std::string rest_endpoint,
     std::string rest_endpoint_multiple,
-    std::vector<std::pair<std::string,
-                          std::vector<std::shared_ptr<Validators::Validator>>>>
-        &&keys)
+    std::vector<ListKey> &&keys)
     : Body::ParentResource(std::move(name), std::move(module),
                            std::move(parent), false),
       ParentResource(std::move(rest_endpoint)),
@@ -39,7 +37,7 @@ ListResource::ListResource(
       key_params_{},
       multiple_endpoint_(std::move(rest_endpoint_multiple)) {
   for (const auto &key : keys_) {
-    key_params_.emplace_back(key.first, key.second);
+    key_params_.emplace_back(key.Name(), key.Validators());
   }
   using Pistache::Rest::Routes::bind;
   auto router = Server::RestServer::Router();

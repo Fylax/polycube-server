@@ -15,11 +15,18 @@
  */
 #include "../../../include/Resources/Body/AbstractFactory.h"
 
-#include <Body/AbstractFactory.h>
 #include <memory>
 #include <string>
 #include <utility>
 #include <vector>
+
+#include "../../../include/Resources/Body/CaseResource.h"
+#include "../../../include/Resources/Body/ChoiceResource.h"
+#include "../../../include/Resources/Body/JsonBodyField.h"
+#include "../../../include/Resources/Body/LeafListResource.h"
+#include "../../../include/Resources/Body/LeafResource.h"
+#include "../../../include/Resources/Body/ListResource.h"
+#include "../../../include/Resources/Body/ParentResource.h"
 
 namespace polycube::polycubed::Rest::Resources::Body {
 
@@ -47,42 +54,5 @@ std::unique_ptr<Body::JsonBodyField> AbstractFactory::JsonBodyField(
     LY_DATA_TYPE type,
     std::vector<std::shared_ptr<Validators::Validator>> &&validators) {
   return std::make_unique<Body::JsonBodyField>(type, std::move(validators));
-}
-
-std::unique_ptr<LeafResource> AbstractFactory::Leaf(
-    std::string name, std::string module,
-    std::shared_ptr<ParentResource> parent,
-    std::unique_ptr<Body::JsonBodyField> &&field, bool configuration,
-    bool mandatory, std::unique_ptr<const std::string> &&default_value) {
-  return std::make_unique<LeafResource>(
-      std::move(name), std::move(module), std::move(parent), std::move(field),
-      configuration, mandatory, std::move(default_value));
-}
-
-std::unique_ptr<LeafListResource> AbstractFactory::LeafList(
-    std::string name, std::string module,
-    std::shared_ptr<ParentResource> parent,
-    std::unique_ptr<Body::JsonBodyField> &&field, bool configuration,
-    bool mandatory, std::vector<std::string> &&default_value) {
-  return std::make_unique<LeafListResource>(
-      std::move(name), std::move(module), std::move(parent), std::move(field),
-      configuration, mandatory, std::move(default_value));
-}
-
-std::unique_ptr<ListResource> AbstractFactory::List(
-    std::string name, std::string module,
-    std::shared_ptr<ParentResource> parent,
-    std::vector<std::pair<std::string,
-                          std::vector<std::unique_ptr<Validators::Validator>>>>
-        &&keys) {
-  return std::make_unique<ListResource>(std::move(name), std::move(module),
-                                        std::move(parent), std::move(keys));
-}
-
-std::unique_ptr<ParentResource> AbstractFactory::Generic(
-    std::string name, std::string module,
-    std::shared_ptr<ParentResource> parent) {
-  return std::make_unique<ParentResource>(std::move(name), std::move(module),
-                                          std::move(parent));
 }
 }  // namespace polycube::polycubed::Rest::Resources::Body

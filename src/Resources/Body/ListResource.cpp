@@ -20,19 +20,17 @@
 #include <utility>
 #include <vector>
 
+#include "../../../include/Resources/Body/ListKey.h"
+
 namespace polycube::polycubed::Rest::Resources::Body {
 ListResource::ListResource(
-    std::vector<std::pair<std::string,
-                          std::vector<std::shared_ptr<Validators::Validator>>>>
-        &&keys)
+    std::vector<ListKey> &&keys)
     : ParentResource("", "", nullptr, false), keys_{std::move(keys)} {}
 
 ListResource::ListResource(
     std::string name, std::string module,
     std::shared_ptr<ParentResource> parent,
-    std::vector<std::pair<std::string,
-                          std::vector<std::shared_ptr<Validators::Validator>>>>
-        &&keys)
+    std::vector<ListKey> &&keys)
     : ParentResource(std::move(name), std::move(module), std::move(parent),
                      false),
       keys_{std::move(keys)} {}
@@ -87,7 +85,7 @@ bool ListResource::ValidateXPath(const std::string &xpath) const {
       auto end_key_name = std::min(eq_pos, end_key_pos);
       // valid for both first and second case
       auto key_name = xpath.substr(key_pos + 1, end_key_name);
-      if (key_name != key.first)
+      if (key_name != key.Name())
         return false;
 
       // first case
@@ -97,7 +95,7 @@ bool ListResource::ValidateXPath(const std::string &xpath) const {
           return false;
         auto end_content_pos = xpath.find('\'', start_content_pos + 1);
         auto content = xpath.substr(start_content_pos + 1, end_content_pos);
-        for (const auto &validator : key.second)
+        for (const auto &validator : key.Validators())
           if (!validator->Validate(content))
             return false;
       }
@@ -118,10 +116,10 @@ bool ListResource::ValidateXPath(const std::string &xpath) const {
 bool ListResource::ValidateKeys(
     std::unordered_map<std::string, std::string> keys) const {
   for (const auto &key : keys_) {
-    if (keys.count(key.first) == 0)
+    if (keys.count(key.Name()) == 0)
       return false;
-    const auto &value = keys.at(key.first);
-    for (const auto &validator : key.second) {
+    const auto &value = keys.at(key.Name());
+    for (const auto &validator : key.Validators()) {
       if (!validator->Validate(value))
         return false;
     }
