@@ -23,12 +23,12 @@
 #include <utility>
 #include <vector>
 
+#include "../../Server/Error.h"
+
 #pragma GCC diagnostic push
 #pragma GCC diagnostic ignored "-Weffc++"
 #include "../../../externals/include/nlohmann/json.hpp"
 #pragma GCC diagnostic pop
-
-#include "../../Server/Error.h"
 
 namespace polycube::polycubed::Rest::Resources::Body {
 class ParentResource;
@@ -56,6 +56,10 @@ class Resource {
   virtual void SetDefaultIfMissing(nlohmann::json &body) const = 0;
 
   std::shared_ptr<ParentResource> Parent() const;
+
+  virtual const nlohmann::json Value(const std::string &cube_name) = 0;
+
+  virtual void Value(nlohmann::json value, bool replace) = 0;
 
  protected:
   const std::string name_;

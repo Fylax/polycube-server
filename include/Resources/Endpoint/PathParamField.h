@@ -24,6 +24,10 @@
 #include "../../Validators/Validator.h"
 #include "../Field.h"
 
+namespace polycube::polycubed::Rest::Resources {
+template class Field<Pistache::Rest::Request>;
+}
+
 namespace polycube::polycubed::Rest::Resources::Endpoint {
 class PathParamField : public Resources::Field<Pistache::Rest::Request> {
  private:

@@ -28,10 +28,9 @@ class ListKey;
 
 class ListResource : public virtual ParentResource {
  public:
-  ListResource(
-      std::string name, std::string module,
-      std::shared_ptr<ParentResource> parent,
-      std::vector<ListKey> &&keys);
+  ListResource(std::string name, std::string module,
+               std::shared_ptr<ParentResource> parent,
+               std::vector<ListKey> &&keys);
 
   std::vector<Response> MultipleBodyValidate(nlohmann::json &body,
                                              bool update) const;
@@ -40,14 +39,10 @@ class ListResource : public virtual ParentResource {
 
   bool ValidateKeys(std::unordered_map<std::string, std::string> keys) const;
 
-  virtual const std::string Value(const std::vector<std::string> &keys) = 0;
+  virtual const nlohmann::json Values(const std::string &cube_name) = 0;
 
-  virtual void Value(const std::vector<std::string> &keys,
-                     const std::string &value, bool replace) = 0;
-
-  virtual const std::vector<std::string> Values() = 0;
-
-  virtual void Values(std::vector<std::string> &values, bool replace) = 0;
+  virtual void Values(const std::string &cube_name, nlohmann::json &values,
+                      bool replace) = 0;
 
  protected:
   /** Used by derived class: no explicit virtual base initialization */

@@ -19,7 +19,6 @@
 #include <string>
 #include <typeindex>
 #include <vector>
-#include "JsonBodyField.h"
 #include "LeafResource.h"
 
 namespace polycube::polycubed::Rest::Resources::Body {

@@ -22,13 +22,14 @@
 
 #include "../Body/ListResource.h"
 #include "ParentResource.h"
-#include "PathParamField.h"
 
 namespace polycube::polycubed::Rest::Resources::Body {
 class ListKey;
 }
 
 namespace polycube::polycubed::Rest::Resources::Endpoint {
+class PathParamField;
+
 class ListResource : public ParentResource, public Body::ListResource {
  public:
   ListResource(

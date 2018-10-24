@@ -21,6 +21,8 @@
 #include <utility>
 #include <vector>
 
+#include "../../../include/Resources/Body/JsonBodyField.h"
+
 namespace polycube::polycubed::Rest::Resources::Body {
 
 LeafListResource::LeafListResource(std::vector<std::string> &&default_value)

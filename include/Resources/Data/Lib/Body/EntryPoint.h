@@ -13,19 +13,18 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
-#include "../../../include/Resources/Endpoint/CaseResource.h"
+#pragma once
 
 #include <memory>
 #include <string>
-#include <utility>
 
-#include "../../../include/Resources/Body/CaseResource.h"
+#include "../../Operations.h"
 
 namespace polycube::polycubed::Rest::Resources::Body {
-CaseResource::CaseResource() : ParentResource("", "", nullptr, false) {}
+class Resource;
+}
 
-CaseResource::CaseResource(std::string name, std::string module,
-                           std::shared_ptr<ParentResource> parent)
-    : ParentResource(std::move(name), std::move(module), std::move(parent),
-                     false) {}
-} // namespace polycube::polycubed::Rest::Resources::Body
+namespace polycube::polycubed::Rest::Resources::Data::Lib::EntryPoint {
+std::string GenerateName(std::shared_ptr<Resources::Body::Resource> resource,
+                         Operation operation);
+}

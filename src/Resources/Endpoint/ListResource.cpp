@@ -23,6 +23,7 @@
 
 #include "../../../include/Server/RestServer.h"
 #include "../../../include/Resources/Body/ListKey.h"
+#include "../../../include/Resources/Endpoint/PathParamField.h"
 
 namespace polycube::polycubed::Rest::Resources::Endpoint {
 ListResource::ListResource(

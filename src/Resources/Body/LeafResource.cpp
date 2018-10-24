@@ -15,6 +15,7 @@
  */
 
 #include "../../../include/Resources/Body/LeafResource.h"
+#include "../../../include/Resources/Body/JsonBodyField.h"
 
 #include "../../../include/Server/RestServer.h"
 

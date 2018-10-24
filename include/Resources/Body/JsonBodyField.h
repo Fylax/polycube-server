@@ -29,6 +29,10 @@
 #include "../../Validators/Validator.h"
 #include "../Field.h"
 
+namespace polycube::polycubed::Rest::Resources {
+template class Field<nlohmann::json>;
+}
+
 namespace polycube::polycubed::Rest::Resources::Body {
 
 class JsonBodyField : public Field<nlohmann::json> {

@@ -25,7 +25,8 @@
 namespace polycube::polycubed::Rest::Parser {
 class XPathParserDriver : std::enable_shared_from_this<XPathParserDriver> {
  public:
-  XPathParserDriver(std::shared_ptr<Resources::Body::Resource> caller);
+  XPathParserDriver(std::shared_ptr<Resources::Body::Resource> caller,
+                    std::string cube_name);
 
   /// enable debug output in the flex scanner
   bool trace_scanning;
@@ -51,6 +52,8 @@ class XPathParserDriver : std::enable_shared_from_this<XPathParserDriver> {
   /** Reference to the calculator context filled during parsing of the
    * expressions. */
   std::shared_ptr<Resources::Body::Resource> current;
+
+  const std::string cube_name;
 
  private:
   /** Invoke the scanner and parser for a stream.

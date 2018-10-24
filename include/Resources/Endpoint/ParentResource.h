@@ -20,7 +20,6 @@
 #include <vector>
 
 #include "../Body/ParentResource.h"
-#include "PathParamField.h"
 #include "Resource.h"
 
 namespace polycube::polycubed::Rest::Resources::Endpoint {
@@ -44,7 +43,7 @@ class ParentResource : public Resource, public virtual Body::ParentResource {
                            Pistache::Http::ResponseWriter response,
                            bool check_mandatory) final;
 
-protected:
+ protected:
   /**
    * Used by ChoiceResource and CaseResource: no endpoint and no
    * explicit virtual base construction
@@ -55,6 +54,7 @@ protected:
    * Used by derived classes: no explicit virtual base construction
    */
   explicit ParentResource(std::string rest_endpoint);
+
  private:
   const bool has_endpoints_;
   void get(const Request &request, ResponseWriter response);

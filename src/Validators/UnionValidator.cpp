@@ -22,6 +22,11 @@
 
 #include "../../include/Resources/Body/JsonBodyField.h"
 
+#pragma GCC diagnostic push
+#pragma GCC diagnostic ignored "-Weffc++"
+#include "../../externals/include/nlohmann/json.hpp"
+#pragma GCC diagnostic pop
+
 namespace polycube::polycubed::Rest::Validators {
 UnionValidator::UnionValidator() : map_{} {}
 

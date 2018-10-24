@@ -16,10 +16,6 @@
 #pragma once
 
 #include <pistache/router.h>
-#pragma GCC diagnostic push
-#pragma GCC diagnostic ignored "-Weffc++"
-#include "../../externals/include/nlohmann/json.hpp"
-#pragma GCC diagnostic pop
 
 #include <memory>
 #include <string>
@@ -27,6 +23,7 @@
 #include <vector>
 #include "../Server/Error.h"
 #include "../Validators/Validator.h"
+
 namespace polycube::polycubed::Rest::Resources {
 template <typename T>
 class Field {
@@ -47,8 +44,4 @@ class Field {
 
   const std::vector<std::shared_ptr<Validators::Validator>> validators_;
 };
-
-template class Field<Pistache::Rest::Request>;
-
-template class Field<nlohmann::json>;
 }  // namespace polycube::polycubed::Rest::Resources

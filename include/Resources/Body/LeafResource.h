@@ -21,10 +21,11 @@
 #include <unordered_map>
 #include <vector>
 #include "../../Server/Error.h"
-#include "JsonBodyField.h"
 #include "Resource.h"
 
 namespace polycube::polycubed::Rest::Resources::Body {
+class JsonBodyField;
+
 class LeafResource : public Resource {
  public:
   LeafResource(std::string name, std::string module,
@@ -45,10 +46,6 @@ class LeafResource : public Resource {
   void SetDefaultIfMissing(nlohmann::json &body) const override;
 
   bool ValidateXPath(const std::string &xpath) const final;
-
-  virtual const std::string &Value() = 0;
-
-  virtual void Value(const std::string &value, bool replace) const = 0;
 
  protected:
   const std::unique_ptr<JsonBodyField> field_;

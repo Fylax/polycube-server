@@ -22,7 +22,6 @@
 #include <string>
 #include <vector>
 
-#include "../../Server/Error.h"
 #include "Resource.h"
 
 namespace polycube::polycubed::Rest::Resources::Body {

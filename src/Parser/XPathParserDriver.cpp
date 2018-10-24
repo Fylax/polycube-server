@@ -17,8 +17,13 @@
 
 namespace polycube::polycubed::Rest::Parser {
 XPathParserDriver::XPathParserDriver(
-    std::shared_ptr<Resources::Body::Resource> caller)
-    : trace_scanning(false), trace_parsing(false), current(std::move(caller)) {}
+    std::shared_ptr<Resources::Body::Resource> caller,
+    std::string cube_name)
+    : trace_scanning(false),
+      trace_parsing(false),
+      lexer{},
+      current(std::move(caller)),
+      cube_name(std::move(cube_name)) {}
 
 bool XPathParserDriver::parse_stream(std::istream &in) {
   lexer = std::make_unique<XPathScanner>(&in);
