@@ -15,14 +15,13 @@
  */
 #include <boost/lexical_cast.hpp>
 
+#include <Yang.h>
 #include <limits>
 #include <memory>
 #include <string>
 #include <typeindex>
 #include <unordered_map>
 #include <utility>
-#include <Yang.h>
-
 
 #include "../../include/Validators/BitsValidator.h"
 #include "../../include/Validators/BoolValidator.h"
@@ -35,9 +34,10 @@
 #include "../../include/Validators/XPathValidator.h"
 
 #include "../../include/Types/Decimal64.h"
+#include "../../include/Types/Dummies.h"
 
 namespace polycube::polycubed::Rest::Parser {
-const ValidatorList Yang::GetValidators(const lys_type type) {
+const ValidatorList Yang::GetValidators(const lys_type type) const {
   bool is_derived = (type.der->type.der != nullptr);
   if (!is_derived) {
     return ParseType(type).first;

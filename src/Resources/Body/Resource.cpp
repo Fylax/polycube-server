@@ -13,8 +13,7 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
-
-#include "Body/Resource.h"
+#include "../../../include/Resources/Body/Resource.h"
 
 namespace polycube::polycubed::Rest::Resources::Body {
 Resource::Resource(std::string &&name, std::string &&module,

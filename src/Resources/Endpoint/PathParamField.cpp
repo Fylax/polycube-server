@@ -13,11 +13,12 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
+#include "../../../include/Resources/Endpoint/PathParamField.h"
+
 #include <memory>
 #include <vector>
 
 #include "../../../include/Validators/EmptyValidator.h"
-#include "Endpoint/PathParamField.h"
 
 namespace polycube::polycubed::Rest::Resources::Endpoint {
 PathParamField::PathParamField(

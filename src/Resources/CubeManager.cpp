@@ -21,9 +21,9 @@
 #pragma GCC diagnostic pop
 
 #include "../../include/Parser/Yang.h"
-#include "../../include/Server/RestServer.h"
-#include "../../include/Server/ResponseGenerator.h"
 #include "../../include/Server/Base64.h"
+#include "../../include/Server/ResponseGenerator.h"
+#include "../../include/Server/RestServer.h"
 
 namespace polycube::polycubed::Rest::Resources {
 CubeManager::CubeManager()
@@ -70,16 +70,18 @@ void CubeManager::post(const Pistache::Rest::Request &request,
     nlohmann::json body = nlohmann::json::parse(request.body());
     auto yang = Server::Base64::decode(body["model"].get<std::string>());
 
-    if (existing_cubes_.count(Parser::GetName(yang)) != 0) {
+    if (existing_cubes_.count(Parser::Yang::ServiceName(yang)) != 0) {
       Server::ResponseGenerator::Generate(
           std::vector<Response>{{ErrorTag::kDataExists, ""}},
           std::move(response));
       return;
     }
-    auto cube = Parser::Parse(std::move(yang));
+    // TODO assign correct factory to parser
+    auto parser = std::make_unique<Parser::Yang>(nullptr);
+    auto cube = parser->Parse(std::move(yang));
     existing_cubes_[cube->Name()] = cube;
-    Server::ResponseGenerator::Generate(std::vector<Response>{{ErrorTag::kCreated, ""}},
-                                std::move(response));
+    Server::ResponseGenerator::Generate(
+        std::vector<Response>{{ErrorTag::kCreated, ""}}, std::move(response));
   } catch (const std::invalid_argument &e) {
     response.send(Pistache::Http::Code::Bad_Request, e.what());
   } catch (...) {

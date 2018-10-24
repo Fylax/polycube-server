@@ -29,23 +29,6 @@
 #include "../../../include/Resources/Body/ParentResource.h"
 
 namespace polycube::polycubed::Rest::Resources::Body {
-
-std::unique_ptr<CaseResource> AbstractFactory::Case(
-    std::string name, std::string module,
-    std::shared_ptr<ParentResource> parent) {
-  return std::make_unique<CaseResource>(std::move(name), std::move(module),
-                                        std::move(parent));
-}
-
-std::unique_ptr<ChoiceResource> AbstractFactory::Choice(
-    std::string name, std::string module,
-    std::shared_ptr<ParentResource> parent, bool mandatory,
-    std::unique_ptr<const std::string> &&default_case) {
-  return std::make_unique<ChoiceResource>(std::move(name), std::move(module),
-                                          std::move(parent), mandatory,
-                                          std::move(default_case));
-}
-
 std::unique_ptr<Body::JsonBodyField> AbstractFactory::JsonBodyField() {
   return std::make_unique<Body::JsonBodyField>();
 }

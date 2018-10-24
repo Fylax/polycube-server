@@ -15,13 +15,16 @@
  */
 #pragma once
 
+#include <libyang/libyang.h>
+
 #include <memory>
 #include <string>
 #include <typeindex>
 #include <vector>
-#include <libyang/tree_schema.h>
 
-#include "../../Validators/Validator.h"
+namespace polycube::polycubed::Rest::Validators {
+class Validator;
+}
 
 namespace polycube::polycubed::Rest::Resources::Body {
 class ListKey {

@@ -15,7 +15,6 @@
  */
 #include "../../../include/Resources/Body/LeafListResource.h"
 
-#include <Body/LeafListResource.h>
 #include <algorithm>
 #include <memory>
 #include <string>

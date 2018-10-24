@@ -21,16 +21,15 @@
 #include <vector>
 
 #include "../../../include/Resources/Body/ListKey.h"
+#include "../../../include/Validators/Validator.h"
 
 namespace polycube::polycubed::Rest::Resources::Body {
-ListResource::ListResource(
-    std::vector<ListKey> &&keys)
+ListResource::ListResource(std::vector<ListKey> &&keys)
     : ParentResource("", "", nullptr, false), keys_{std::move(keys)} {}
 
-ListResource::ListResource(
-    std::string name, std::string module,
-    std::shared_ptr<ParentResource> parent,
-    std::vector<ListKey> &&keys)
+ListResource::ListResource(std::string name, std::string module,
+                           std::shared_ptr<ParentResource> parent,
+                           std::vector<ListKey> &&keys)
     : ParentResource(std::move(name), std::move(module), std::move(parent),
                      false),
       keys_{std::move(keys)} {}

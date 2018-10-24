@@ -33,7 +33,7 @@ namespace polycube::polycubed::Rest::Parser {
 %define api.value.type variant
 %define parse.assert
 
-%parse-param {XPathParserDriver &driver}
+%parse-param {std::shared_ptr<XPathParserDriver> driver}
 
 %locations
 
@@ -80,7 +80,7 @@ namespace polycube::polycubed::Rest::Parser {
 #include "../../include/Parser/XPathScanner.h"
 
 #undef yylex
-#define yylex driver.lexer->lex
+#define yylex driver->lexer->lex
 %}
 
 %%
@@ -102,47 +102,47 @@ bool_expr : expr EQ expr { $$ = $1 == $3; } |
             FALSE { $$ = false; };
 
 start_path : DEL ID DEL ID {
-               driver.current = Resources::CubeManager::GetInstance().Cube($2, $4);
+               driver->current = Resources::CubeManager::GetInstance().Cube($2, $4);
              } path { $$ = $6; } |
              CUR {
-               auto leaf = std::dynamic_pointer_cast<Resources::Body::LeafResource>(driver.current);
+               auto leaf = std::dynamic_pointer_cast<Resources::Body::LeafResource>(driver->current);
                $$ = leaf->Value();
              } |
              CUR DEL path { $$ = $3; } |
              PAR { YYABORT; } |
-             PAR DEL { driver.current = driver.current->Parent(); } path { $$ = $4; } |
+             PAR DEL { driver->current = driver->current->Parent(); } path { $$ = $4; } |
              ID {
-               auto parent = std::dynamic_pointer_cast<Resources::Body::ParentResource>(driver.current);
-               if (parent != nullptr) driver.current = parent->Child($1);
+               auto parent = std::dynamic_pointer_cast<Resources::Body::ParentResource>(driver->current);
+               if (parent != nullptr) driver->current = parent->Child($1);
                else YYABORT;
              } |
              ID DEL {
-               auto parent = std::dynamic_pointer_cast<Resources::Body::ParentResource>(driver.current);
-               if (parent != nullptr) driver.current = parent->Child($1);
+               auto parent = std::dynamic_pointer_cast<Resources::Body::ParentResource>(driver->current);
+               if (parent != nullptr) driver->current = parent->Child($1);
                else YYABORT;
              } path { $$ = $4; };
 
 path : %empty {
-         auto leaf = std::dynamic_pointer_cast<Resources::Body::LeafResource>(driver.current);
+         auto leaf = std::dynamic_pointer_cast<Resources::Body::LeafResource>(driver->current);
          if (leaf != nullptr) $$ = leaf->Value();
        } |
        DEL path {} | CUR path {} |
-       PAR path { driver.current = driver.current->Parent(); } |
+       PAR path { driver->current = driver->current->Parent(); } |
        ID path  {
-         auto parent = std::dynamic_pointer_cast<Resources::Body::ParentResource>(driver.current);
-         if (parent != nullptr) driver.current = parent->Child($1);
+         auto parent = std::dynamic_pointer_cast<Resources::Body::ParentResource>(driver->current);
+         if (parent != nullptr) driver->current = parent->Child($1);
          else YYABORT;
        } |
        ID key_list path {
-         auto parent = std::dynamic_pointer_cast<Resources::Body::ParentResource>(driver.current);
+         auto parent = std::dynamic_pointer_cast<Resources::Body::ParentResource>(driver->current);
          if (parent != nullptr) {
-           driver.current = parent->Child($1);
-           auto list = std::dynamic_pointer_cast<Resources::Body::ListResource>(driver.current);
+           driver->current = parent->Child($1);
+           auto list = std::dynamic_pointer_cast<Resources::Body::ListResource>(driver->current);
            if (list != nullptr) {
              if (!list->ValidateKeys($2)) YYABORT;
            } else {
-             auto leaflist = std::dynamic_pointer_cast<Resources::Body::LeafListResource>(driver.current);
-             if (leaflist != nullptr) driver.current = leaflist->Entry(std::begin($2)->second);
+             auto leaflist = std::dynamic_pointer_cast<Resources::Body::LeafListResource>(driver->current);
+             if (leaflist != nullptr) driver->current = leaflist->Entry(std::begin($2)->second);
              else YYABORT;
            }
          } else YYABORT;
@@ -165,3 +165,12 @@ key : ID EQ SQSTR {
 nkey_list : nkey_list nkeys | nkeys;
 
 nkeys : SO INT SC;
+
+%%
+
+namespace polycube::polycubed::Rest::Parser {
+void XPathParser::error([[maybe_unused]] const XPathParser::location_type& l,
+                        const std::string& m) {
+    driver->error(m);
+}
+}

@@ -86,6 +86,8 @@ void ResponseGenerator::Generate(std::vector<Response> &&response,
       response_code = Code::Method_Not_Allowed;
       single["error-tag"] = "operation-not-supported";
       break;
+    case kUnparsableChoice:
+      break;
     }
     if (std::strlen(err.message))
       single["error-info"] = err.message;

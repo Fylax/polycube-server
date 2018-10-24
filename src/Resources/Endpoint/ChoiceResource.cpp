@@ -28,7 +28,8 @@ ChoiceResource::ChoiceResource(
     : Body::ParentResource(std::move(name), std::move(module),
                            std::move(parent), false),
       ParentResource(),
-      Body::ChoiceResource(mandatory, std::move(default_case)) {}
+      Body::ChoiceResource(mandatory, std::move(default_case)),
+      choice_{} {}
 
 void ChoiceResource::AddChild(std::shared_ptr<Body::Resource> child) {
   Body::ParentResource::AddChild(child);

@@ -1,6 +1,7 @@
 %{
 #include <cstdint>
 #include <string>
+#include <memory>
 
 #include "../../include/Parser/XPathScanner.h"
 

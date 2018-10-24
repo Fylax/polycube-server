@@ -29,7 +29,7 @@ ListResource::ListResource(
     std::string name, std::string module,
     std::shared_ptr<ParentResource> parent, std::string rest_endpoint,
     std::string rest_endpoint_multiple,
-    std::vector<ListKey> &&keys)
+    std::vector<Body::ListKey> &&keys)
     : Body::ParentResource(std::move(name), std::move(module),
                            std::move(parent), false),
       ParentResource(std::move(rest_endpoint)),

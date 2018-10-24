@@ -15,7 +15,7 @@
  */
 #pragma once
 
-#include <libyang/tree_schema.h>
+#include <libyang/libyang.h>
 
 #include <memory>
 #include <string>
@@ -34,19 +34,20 @@ class JsonBodyField;
 class LeafResource;
 class LeafListResource;
 class ListResource;
+class ListKey;
 class ParentResource;
 class Service;
 
 class AbstractFactory {
  public:
-  virtual std::unique_ptr<CaseResource> Case(
+  virtual std::unique_ptr<CaseResource> BodyCase(
       std::string name, std::string module,
-      std::shared_ptr<ParentResource> parent);
+      std::shared_ptr<ParentResource> parent) = 0;
 
-  virtual std::unique_ptr<ChoiceResource> Choice(
+  virtual std::unique_ptr<ChoiceResource> BodyChoice(
       std::string name, std::string module,
       std::shared_ptr<ParentResource> parent, bool mandatory,
-      std::unique_ptr<const std::string> &&default_case);
+      std::unique_ptr<const std::string> &&default_case) = 0;
 
   std::unique_ptr<Body::JsonBodyField> JsonBodyField();
 
@@ -54,28 +55,26 @@ class AbstractFactory {
       LY_DATA_TYPE type,
       std::vector<std::shared_ptr<Validators::Validator>> &&validators);
 
-  virtual std::unique_ptr<LeafResource> Leaf(
+  virtual std::unique_ptr<LeafResource> BodyLeaf(
       std::string name, std::string module,
       std::shared_ptr<ParentResource> parent,
       std::unique_ptr<Body::JsonBodyField> &&field, bool configuration,
       bool mandatory, std::unique_ptr<const std::string> &&default_value) = 0;
 
-  virtual std::unique_ptr<LeafListResource> LeafList(
+  virtual std::unique_ptr<LeafListResource> BodyLeafList(
       std::string name, std::string module,
       std::shared_ptr<ParentResource> parent,
       std::unique_ptr<Body::JsonBodyField> &&field, bool configuration,
       bool mandatory, std::vector<std::string> &&default_value) = 0;
 
-  virtual std::unique_ptr<ListResource> List(
+  virtual std::unique_ptr<ListResource> BodyList(
       std::string name, std::string module,
       std::shared_ptr<ParentResource> parent,
-      std::vector<std::pair<
-          std::string, std::vector<std::unique_ptr<Validators::Validator>>>>
-          &&keys) = 0;
+      std::vector<Resources::Body::ListKey> &&keys) = 0;
 
-  virtual std::unique_ptr<ParentResource> Generic(
+  virtual std::unique_ptr<ParentResource> BodyGeneric(
       std::string name, std::string module,
-      std::shared_ptr<ParentResource> parent) = 0;
+      std::shared_ptr<ParentResource> parent, bool container_presence) = 0;
 
  protected:
   AbstractFactory() = default;
