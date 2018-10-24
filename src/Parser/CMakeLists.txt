@@ -9,7 +9,7 @@ add_compile_definitions(PARSER_INCLUDE="${BISON_XPathParser_OUTPUT_HEADER}")
 set_source_files_properties(${BISON_XPathParser_OUTPUTS} PROPERTIES COMPILE_FLAGS -Wno-effc++)
 set_source_files_properties(${FLEX_XPathScanner_OUTPUTS} PROPERTIES COMPILE_FLAGS -Wno-effc++)
 
-set(parser_sources ${CMAKE_CURRENT_LIST_DIR}/Parser.cpp ${CMAKE_CURRENT_LIST_DIR}/XPathParserDriver.cpp)
+set(parser_sources ${CMAKE_CURRENT_LIST_DIR}/Yang.cpp ${CMAKE_CURRENT_LIST_DIR}/XPathParserDriver.cpp)
 
 add_library(parser OBJECT
         ${BISON_XPathParser_OUTPUTS}
