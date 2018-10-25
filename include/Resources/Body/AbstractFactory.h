@@ -42,39 +42,41 @@ class AbstractFactory {
  public:
   virtual std::unique_ptr<CaseResource> BodyCase(
       std::string name, std::string module,
-      std::shared_ptr<ParentResource> parent) = 0;
+      std::shared_ptr<ParentResource> parent) const = 0;
 
   virtual std::unique_ptr<ChoiceResource> BodyChoice(
       std::string name, std::string module,
       std::shared_ptr<ParentResource> parent, bool mandatory,
-      std::unique_ptr<const std::string> &&default_case) = 0;
+      std::unique_ptr<const std::string> &&default_case) const = 0;
 
-  std::unique_ptr<Body::JsonBodyField> JsonBodyField();
+  std::unique_ptr<Body::JsonBodyField> JsonBodyField() const;
 
   std::unique_ptr<Body::JsonBodyField> JsonBodyField(
       LY_DATA_TYPE type,
-      std::vector<std::shared_ptr<Validators::Validator>> &&validators);
+      std::vector<std::shared_ptr<Validators::Validator>> &&validators) const;
 
   virtual std::unique_ptr<LeafResource> BodyLeaf(
       std::string name, std::string module,
       std::shared_ptr<ParentResource> parent,
       std::unique_ptr<Body::JsonBodyField> &&field, bool configuration,
-      bool mandatory, std::unique_ptr<const std::string> &&default_value) = 0;
+      bool mandatory,
+      std::unique_ptr<const std::string> &&default_value) const = 0;
 
   virtual std::unique_ptr<LeafListResource> BodyLeafList(
       std::string name, std::string module,
       std::shared_ptr<ParentResource> parent,
       std::unique_ptr<Body::JsonBodyField> &&field, bool configuration,
-      bool mandatory, std::vector<std::string> &&default_value) = 0;
+      bool mandatory, std::vector<std::string> &&default_value) const = 0;
 
   virtual std::unique_ptr<ListResource> BodyList(
       std::string name, std::string module,
       std::shared_ptr<ParentResource> parent,
-      std::vector<Resources::Body::ListKey> &&keys) = 0;
+      std::vector<Resources::Body::ListKey> &&keys) const = 0;
 
   virtual std::unique_ptr<ParentResource> BodyGeneric(
       std::string name, std::string module,
-      std::shared_ptr<ParentResource> parent, bool container_presence) = 0;
+      std::shared_ptr<ParentResource> parent,
+      bool container_presence) const = 0;
 
  protected:
   AbstractFactory() = default;

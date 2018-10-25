@@ -29,13 +29,13 @@
 #include "../../../include/Resources/Body/ParentResource.h"
 
 namespace polycube::polycubed::Rest::Resources::Body {
-std::unique_ptr<Body::JsonBodyField> AbstractFactory::JsonBodyField() {
+std::unique_ptr<Body::JsonBodyField> AbstractFactory::JsonBodyField() const {
   return std::make_unique<Body::JsonBodyField>();
 }
 
 std::unique_ptr<Body::JsonBodyField> AbstractFactory::JsonBodyField(
     LY_DATA_TYPE type,
-    std::vector<std::shared_ptr<Validators::Validator>> &&validators) {
+    std::vector<std::shared_ptr<Validators::Validator>> &&validators) const {
   return std::make_unique<Body::JsonBodyField>(type, std::move(validators));
 }
 }  // namespace polycube::polycubed::Rest::Resources::Body
