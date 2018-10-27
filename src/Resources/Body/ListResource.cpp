@@ -127,10 +127,11 @@ bool ListResource::ValidateKeys(
   return true;
 }
 
-const nlohmann::json ListResource::Value(
+const Response ListResource::Value(
     const std::string &cube_name, PerListKeyValues &keys) const {
   const auto &parent_value = Resource::Value(cube_name, keys);
-  for (auto element : parent_value) {
+  auto jparent = nlohmann::json::parse(parent_value.message);
+  for (auto element : jparent) {
     unsigned matching_keys = 0;
     const auto &current_keys = keys.top();
     keys.pop();
@@ -139,7 +140,7 @@ const nlohmann::json ListResource::Value(
         matching_keys += 1;
     }
     if (matching_keys == current_keys.size())
-      return element;
+      return {ErrorTag::kOk, element.dump().data()};
   }
   throw std::runtime_error(
       "Unreachable since keys are mandatory and validated.");

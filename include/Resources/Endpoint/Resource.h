@@ -22,6 +22,11 @@
 #include "../Body/Resource.h"
 
 namespace polycube::polycubed::Rest::Resources::Endpoint {
+using ListKeyValues = std::vector<std::pair<Body::ListKey, std::string>>;
+using PerListKeyValues = std::stack<ListKeyValues>;
+
+enum class Operation { kCreate, kReplace, kUpdate };
+
 class Resource {
  public:
   explicit Resource(std::string &&rest_endpoint);
@@ -37,10 +42,12 @@ class Resource {
  protected:
   const std::string rest_endpoint_;
 
-  virtual void CreateReplaceUpdate(const Pistache::Rest::Request& request,
+  virtual void CreateReplaceUpdate(const Pistache::Rest::Request &request,
                                    Pistache::Http::ResponseWriter response,
                                    bool check_mandatory) = 0;
 
-  virtual Response Value(const nlohmann::json &value, bool replace) = 0;
+  virtual Response Value(const std::string &cube_name,
+                         const nlohmann::json &value, PerListKeyValues &keys,
+                         Operation operation) = 0;
 };
 }  // namespace polycube::polycubed::Rest::Resources::Endpoint

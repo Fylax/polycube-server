@@ -16,20 +16,74 @@
 #pragma once
 
 #include <memory>
+#include <queue>
 #include <string>
 
-#include "../Endpoint/AbstractFactory.h"
+#include "../Body/AbstractFactory.h"
 
 #pragma GCC diagnostic push
 #pragma GCC diagnostic ignored "-Weffc++"
 #include "../../../externals/include/nlohmann/json.hpp"
 #pragma GCC diagnostic pop
 
+namespace polycube::polycubed::Rest::Resources::Endpoint {
+class CaseResource;
+class ChoiceResource;
+class LeafResource;
+class LeafListResource;
+class ListResource;
+class ParentResource;
+class Service;
+}  // namespace polycube::polycubed::Rest::Resources::Endpoint
+
 namespace polycube::polycubed::Rest::Resources::Data {
-class AbstractFactory : Endpoint::AbstractFactory {
+class AbstractFactory : public Body::AbstractFactory {
  public:
   static std::unique_ptr<AbstractFactory> Concrete(
       const nlohmann::json &request_body);
   virtual const std::string Yang() const = 0;
+
+  virtual std::unique_ptr<Endpoint::CaseResource> RestCase(
+      const std::queue<std::string> &tree_names, std::string name,
+      std::string module,
+      std::shared_ptr<Endpoint::ParentResource> parent) const = 0;
+
+  virtual std::unique_ptr<Endpoint::ChoiceResource> RestChoice(
+      const std::queue<std::string> &tree_names, std::string name,
+      std::string module, std::shared_ptr<Endpoint::ParentResource> parent,
+      bool mandatory,
+      std::unique_ptr<const std::string> &&default_case) const = 0;
+
+  virtual std::unique_ptr<Endpoint::LeafResource> RestLeaf(
+      const std::queue<std::string> &tree_names, std::string name,
+      std::string module, std::string rest_endpoint,
+      std::shared_ptr<Endpoint::ParentResource> parent,
+      std::unique_ptr<Body::JsonBodyField> &&field, bool configuration,
+      bool mandatory,
+      std::unique_ptr<const std::string> &&default_value) const = 0;
+
+  virtual std::unique_ptr<Endpoint::LeafListResource> RestLeafList(
+      const std::queue<std::string> &tree_names, std::string name,
+      std::string module, std::string rest_endpoint,
+      std::shared_ptr<Endpoint::ParentResource> parent,
+      std::unique_ptr<Body::JsonBodyField> &&field, bool configuration,
+      bool mandatory, std::vector<std::string> &&default_value) const = 0;
+
+  virtual std::unique_ptr<Endpoint::ListResource> RestList(
+      const std::queue<std::string> &tree_names, std::string name,
+      std::string module, std::string rest_endpoint,
+      std::string rest_endpoint_whole_list,
+      std::shared_ptr<Endpoint::ParentResource> parent,
+      std::vector<Resources::Body::ListKey> &&keys) const = 0;
+
+  virtual std::unique_ptr<Endpoint::ParentResource> RestGeneric(
+      const std::queue<std::string> &tree_names, std::string name,
+      std::string module, std::string rest_endpoint,
+      std::shared_ptr<Endpoint::ParentResource> parent,
+      bool container_presence) const = 0;
+
+  virtual std::unique_ptr<Endpoint::Service> RestService(
+      const std::queue<std::string> &tree_names, std::string name,
+      std::string base_endpoint) const = 0;
 };
 }  // namespace polycube::polycubed::Rest::Resources::Data

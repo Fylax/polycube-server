@@ -62,7 +62,7 @@ class Resource {
 
   std::shared_ptr<ParentResource> Parent() const;
 
-  virtual const nlohmann::json Value(
+  virtual const Response Value(
       const std::string &cube_name, PerListKeyValues &keys) const;
 
  protected:

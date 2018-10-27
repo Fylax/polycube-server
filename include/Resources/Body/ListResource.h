@@ -41,7 +41,7 @@ class ListResource : public virtual ParentResource {
 
   const std::vector<ListKey> Keys() const;
 
-  const nlohmann::json Value(
+  const Response Value(
       const std::string &cube_name, PerListKeyValues &keys) const override;
 
  protected:

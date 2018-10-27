@@ -57,7 +57,7 @@ ListType ListKey::FromYang(LY_DATA_TYPE type) {
   case LY_TYPE_STRING:
   case LY_TYPE_UNION:
   case LY_TYPE_DEC64:
-    return ListType::kString;
+    return ListType::kDecimal;
   case LY_TYPE_EMPTY:
     return ListType::kString;
   case LY_TYPE_INT8:

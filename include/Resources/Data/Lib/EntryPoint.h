@@ -17,6 +17,7 @@
 
 #include <functional>
 #include <memory>
+#include <queue>
 #include <string>
 
 namespace polycube::polycubed::Rest::Resources::Body {
@@ -26,29 +27,44 @@ class Resource;
 namespace polycube::polycubed::Rest::Resources::Data::Lib::EntryPoint {
 enum class Operation { kCreate, kRead, kUpdate, kReplace, kDelete };
 
-std::string GenerateName(std::shared_ptr<Resources::Body::Resource> resource,
-                         Operation operation);
+std::string GenerateName(std::queue<std::string> names, Operation operation);
 
 }  // namespace polycube::polycubed::Rest::Resources::Data::Lib::EntryPoint
 
 #ifdef __cplusplus
 extern "C" {
 #endif
-enum ElementType { INTEGER, UNSIGNED_INTEGER, BOOL, DECIMAL, STRING, EMPTY };
+enum ElementType {
+  BOOLEAN,
+  STRING,
+  INT8,
+  INT16,
+  INT32,
+  INT64,
+  UINT8,
+  UINT16,
+  UINT32,
+  UINT64,
+  DECIMAL
+};
+
+union ElementValue {
+  bool boolean;
+  const char *string;
+  int8_t int8;
+  int16_t int16;
+  int32_t int32;
+  int64_t int64;
+  uint8_t uint8;
+  uint16_t uint16;
+  uint32_t uint32;
+  uint64_t uint64;
+};
 
 typedef struct {
-  ElementType type;
-  union {
-    long long integer;
-    unsigned long long unsigned_integer;
-    bool boolean;
-    const char *string;
-  };
-} Element;
-
-typedef struct {
-  Element element;
   const char *name;
+  ElementType type;
+  ElementValue value;
 } Key;
 #ifdef __cplusplus
 }

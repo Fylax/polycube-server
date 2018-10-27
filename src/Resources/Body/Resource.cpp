@@ -38,7 +38,7 @@ std::shared_ptr<ParentResource> Resource::Parent() const {
   return parent_;
 }
 
-const nlohmann::json Resource::Value(
+const Response Resource::Value(
     const std::string &cube_name, PerListKeyValues &keys) const {
   return parent_->Value(cube_name, keys);
 }

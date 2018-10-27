@@ -28,7 +28,7 @@ namespace polycube::polycubed::Rest::Resources::Data::Lib {
 using ListKeyValues = std::vector<std::pair<Body::ListKey, std::string>>;
 using PerListKeyValues = std::stack<ListKeyValues>;
 
-class ParentResource : Endpoint::ParentResource {
+class ParentResource : public Endpoint::ParentResource {
  public:
   ParentResource(
       std::function<Response(const char *, Key *, size_t, const char *)>
@@ -37,16 +37,17 @@ class ParentResource : Endpoint::ParentResource {
           replace_handler,
       std::function<Response(const char *, Key *, size_t, const char *)>
           update_handler,
-      std::function<Element(const char *, Key *, size_t)> read_handler,
+      std::function<Response(const char *, Key *, size_t)> read_handler,
       std::function<Response(const char *, Key *, size_t)> delete_handler,
       std::string name, std::string module, std::string rest_endpoint,
       std::shared_ptr<Endpoint::ParentResource> parent,
       bool container_presence = false);
 
-  const nlohmann::json Value(const std::string &cube_name,
-                             PerListKeyValues &keys) const override;
+  const Response Value(const std::string &cube_name,
+                       PerListKeyValues &keys) const override;
 
-  Response Value(const nlohmann::json &value, bool replace) override;
+  Response Value(const std::string& cube_name, const nlohmann::json& value,
+                 PerListKeyValues& keys, Endpoint::Operation operation) override;
 
  private:
   const std::function<Response(const char *, Key *, size_t, const char *)>
@@ -55,7 +56,7 @@ class ParentResource : Endpoint::ParentResource {
       replace_handler_;
   const std::function<Response(const char *, Key *, size_t, const char *)>
       update_handler_;
-  const std::function<Element(const char *, Key *, size_t)> read_handler_;
+  const std::function<Response(const char *, Key *, size_t)> read_handler_;
   const std::function<Response(const char *, Key *, size_t)> delete_handler_;
 };
 }  // namespace polycube::polycubed::Rest::Resources::Data::Lib

@@ -19,13 +19,14 @@
 
 #include <cstring>
 #include <memory>
+#include <queue>
 #include <string>
 #include <typeindex>
 #include <unordered_map>
 #include <unordered_set>
 #include <utility>
 #include <vector>
-#include "../Resources/Endpoint/AbstractFactory.h"
+#include "../Resources/Data/AbstractFactory.h"
 
 namespace polycube::polycubed::Rest::Validators {
 class Validator;
@@ -47,13 +48,12 @@ using ValidatorsType =
 
 class Yang {
  public:
-  explicit Yang(
-      std::unique_ptr<Resources::Endpoint::AbstractFactory> &&factory);
+  explicit Yang(std::unique_ptr<Resources::Data::AbstractFactory> &&factory);
   static const std::string ServiceName(const std::string &yang);
   const std::shared_ptr<Resources::Endpoint::Service> Parse(std::string &&yang);
 
  private:
-  std::unique_ptr<Resources::Endpoint::AbstractFactory> factory_;
+  std::unique_ptr<Resources::Data::AbstractFactory> factory_;
   /** Stores typedef name and associated list of Validators */
   std::unordered_map<std::string, ValidatorList>
       typedef_validators_[LY_DATA_TYPE_COUNT];
@@ -68,7 +68,7 @@ class Yang {
   static const std::shared_ptr<Validators::LengthValidator> ParseLength(
       const lys_restr *length, bool binary);
 
-  static const ValidatorsType ParseEnum(const lys_type_info_enums enums);
+  static const ValidatorsType ParseEnum(lys_type_info_enums enums);
 
   static const ValidatorsType ParseString(lys_type_info_str str);
 
@@ -92,51 +92,54 @@ class Yang {
   static const ValidatorsType ParseInstanceIdentifier(lys_type_info_inst iid,
                                                       const char *context);
 
-  void ParseModule(const lys_module *module,
+  void ParseModule(const lys_module *module, std::queue<std::string> parsed_names,
                    const std::shared_ptr<Resources::Endpoint::Service> &cube);
 
-  void ParseNode(const lys_node *data,
+  void ParseNode(const lys_node *data, std::queue<std::string> parsed_names,
                  const std::shared_ptr<Resources::Body::ParentResource> &parent,
                  bool generate_endpoint) const;
 
   void ParseContainer(
-      const lys_node_container *data,
+      const lys_node_container *data, std::queue<std::string> parsed_names,
       const std::shared_ptr<Resources::Body::ParentResource> &parent,
       bool generate_endpoint) const;
 
   void ParseGrouping(
-      const lys_node_grp *group,
+      const lys_node_grp *group, std::queue<std::string> parsed_names,
       const std::shared_ptr<Resources::Body::ParentResource> &parent,
       bool generate_endpoint) const;
 
   void ParseList(const lys_node_list *list,
+                 std::queue<std::string> parsed_names,
                  const std::shared_ptr<Resources::Body::ParentResource> &parent,
                  bool generate_endpoint) const;
 
   void ParseLeaf(const lys_node_leaf *leaf,
+                 std::queue<std::string> parsed_names,
                  const std::shared_ptr<Resources::Body::ParentResource> &parent,
                  bool generate_endpoint) const;
 
   void ParseLeafList(
-      const lys_node_leaflist *leaflist,
+      const lys_node_leaflist *leaflist, std::queue<std::string> parsed_names,
       const std::shared_ptr<Resources::Body::ParentResource> &parent,
       bool generate_endpoint) const;
 
   void ParseChoice(
-      const lys_node_choice *choice,
+      const lys_node_choice *choice, std::queue<std::string> parsed_names,
       const std::shared_ptr<Resources::Body::ParentResource> &parent,
       bool generate_endpoint) const;
 
   void ParseCase(const lys_node_case *case_node,
+                 std::queue<std::string> parsed_names,
                  const std::shared_ptr<Resources::Body::ParentResource> &parent,
                  bool generate_endpoint) const;
 
-  void ParseAny(const lys_node *data,
+  void ParseAny(const lys_node *data, std::queue<std::string> parsed_names,
                 const std::shared_ptr<Resources::Body::ParentResource> &parent,
                 bool generate_endpoint) const;
 
   void ParseRpcAction(
-      const lys_node_rpc_action *data,
+      const lys_node_rpc_action *data, std::queue<std::string> parsed_names,
       const std::shared_ptr<Resources::Body::ParentResource> &parent) const;
 };
 

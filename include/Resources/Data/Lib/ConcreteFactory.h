@@ -16,6 +16,7 @@
 #pragma once
 
 #include <memory>
+#include <queue>
 #include <string>
 #include <vector>
 
@@ -32,45 +33,52 @@ class ConcreteFactory : public Data::AbstractFactory {
   const std::string Yang() const final;
 
   std::unique_ptr<Endpoint::CaseResource> RestCase(
-      std::string name, std::string module,
+      const std::queue<std::string> &tree_names, std::string name,
+      std::string module,
       std::shared_ptr<Endpoint::ParentResource> parent) const final;
 
   std::unique_ptr<Endpoint::ChoiceResource> RestChoice(
-      std::string name, std::string module,
-      std::shared_ptr<Endpoint::ParentResource> parent, bool mandatory,
+      const std::queue<std::string> &tree_names, std::string name,
+      std::string module, std::shared_ptr<Endpoint::ParentResource> parent,
+      bool mandatory,
       std::unique_ptr<const std::string> &&default_case) const final;
 
   std::unique_ptr<Endpoint::LeafResource> RestLeaf(
-      std::string name, std::string module, std::string rest_endpoint,
+      const std::queue<std::string> &tree_names, std::string name,
+      std::string module, std::string rest_endpoint,
       std::shared_ptr<Endpoint::ParentResource> parent,
       std::unique_ptr<Body::JsonBodyField> &&field, bool configuration,
       bool mandatory,
       std::unique_ptr<const std::string> &&default_value) const final;
 
   std::unique_ptr<Endpoint::LeafListResource> RestLeafList(
-      std::string name, std::string module, std::string rest_endpoint,
+      const std::queue<std::string> &tree_names, std::string name,
+      std::string module, std::string rest_endpoint,
       std::shared_ptr<Endpoint::ParentResource> parent,
       std::unique_ptr<Body::JsonBodyField> &&field, bool configuration,
       bool mandatory, std::vector<std::string> &&default_value) const final;
 
   std::unique_ptr<Endpoint::ListResource> RestList(
-      std::string name, std::string module, std::string rest_endpoint,
+      const std::queue<std::string> &tree_names, std::string name,
+      std::string module, std::string rest_endpoint,
       std::string rest_endpoint_whole_list,
       std::shared_ptr<Endpoint::ParentResource> parent,
       std::vector<Resources::Body::ListKey> &&keys) const final;
 
   std::unique_ptr<Endpoint::ParentResource> RestGeneric(
-      std::string name, std::string module, std::string rest_endpoint,
+      const std::queue<std::string> &tree_names, std::string name,
+      std::string module, std::string rest_endpoint,
       std::shared_ptr<Endpoint::ParentResource> parent,
       bool container_presence) const final;
 
   std::unique_ptr<Endpoint::Service> RestService(
-      std::string name, std::string base_endpoint) const final;
-
- private:
-  std::unique_ptr<void, void (*)(void *)> handle_;
+      const std::queue<std::string> &tree_names, std::string name,
+      std::string base_endpoint) const final;
 
   template <typename T>
   std::function<T> LoadHandler(const std::string &function_name) const;
+
+ private:
+  std::unique_ptr<void, void (*)(void *)> handle_;
 };
 }  // namespace polycube::polycubed::Rest::Resources::Data::Lib

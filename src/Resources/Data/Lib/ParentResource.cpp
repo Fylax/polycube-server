@@ -20,6 +20,7 @@
 #include <string>
 #include <utility>
 
+#include "../../../../include/Resources/Data/Lib/KeyListArray.h"
 #include "../../../../include/Resources/Body/ListKey.h"
 
 namespace polycube::polycubed::Rest::Resources::Data::Lib {
@@ -31,7 +32,7 @@ ParentResource::ParentResource(
         replace_handler,
     std::function<Response(const char *, Key *, size_t, const char *)>
         update_handler,
-    std::function<Element(const char *, Key *, size_t)> read_handler,
+    std::function<Response(const char *, Key *, size_t)> read_handler,
     std::function<Response(const char *, Key *, size_t)> delete_handler,
     std::string name, std::string module, std::string rest_endpoint,
     std::shared_ptr<Endpoint::ParentResource> parent, bool container_presence)
@@ -44,17 +45,29 @@ ParentResource::ParentResource(
       read_handler_{std::move(read_handler)},
       delete_handler_{std::move(delete_handler)} {}
 
-const nlohmann::json ParentResource::Value(const std::string &cube_name,
-                                           PerListKeyValues &keys) const {
-  std::vector<Key> key_params;
-  while (!keys.empty()) {
-    const auto &list_keys = keys.top();
-    keys.pop();
-    for (const auto &key : list_keys) {
-      const auto &lk = key.first;
-      key_params.push_back()
-    }
+const Response ParentResource::Value(const std::string &cube_name,
+                                     PerListKeyValues &keys) const {
+  auto key_params = KeyListArray::Generate(keys);
+  return read_handler_(cube_name.data(), key_params.data(), key_params.size());
+}
+
+Response ParentResource::Value(const std::string &cube_name,
+                               const nlohmann::json &value,
+                               PerListKeyValues &keys,
+                               Endpoint::Operation operation) {
+  auto key_params = KeyListArray::Generate(keys);
+  switch (operation) {
+  case Endpoint::Operation::kCreate:
+    return create_handler_(cube_name.data(), key_params.data(),
+                           key_params.size(), value.dump().data());
+  case Endpoint::Operation::kReplace:
+    return replace_handler_(cube_name.data(), key_params.data(),
+                            key_params.size(), value.dump().data());
+  case Endpoint::Operation::kUpdate:
+    return update_handler_(cube_name.data(), key_params.data(),
+                           key_params.size(), value.dump().data());
+  default:
+    throw std::runtime_error("Unreachable: fully covered enum");
   }
-  return Resource::Value(cube_name, keys);
 }
 }  // namespace polycube::polycubed::Rest::Resources::Data::Lib

@@ -37,8 +37,10 @@ enum class ListType {
   kUint8,
   kUint16,
   kUint32,
-  kUint64
+  kUint64,
+  kDecimal
 };
+
 class ListKey {
  public:
   ListKey(LY_DATA_TYPE type, std::string name,

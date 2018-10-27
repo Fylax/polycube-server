@@ -21,8 +21,8 @@
 #include "YangNodes.tcpp"
 #include "YangTypes.tcpp"
 
-#include "../../include/Resources/Endpoint/AbstractFactory.h"
+#include "../../include/Resources/Data/AbstractFactory.h"
 
 polycube::polycubed::Rest::Parser::Yang::Yang(
-    std::unique_ptr<Resources::Endpoint::AbstractFactory> &&factory)
+    std::unique_ptr<Resources::Data::AbstractFactory> &&factory)
     : factory_(std::move(factory)) {}

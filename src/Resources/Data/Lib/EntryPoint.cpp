@@ -19,7 +19,7 @@
 
 #include <functional>
 #include <memory>
-#include <stack>
+#include <queue>
 #include <string>
 #include <string_view>
 
@@ -41,31 +41,17 @@ constexpr OperationName operation_names_[] = {
     {Operation::kDelete, "delete_"sv}};
 }  // namespace
 
-std::string GenerateName(std::shared_ptr<Resources::Body::Resource> resource,
-                         Operation operation) {
-  std::stack<std::string> parent_names;
-  parent_names.emplace("by_id");
-  parent_names.emplace(resource->Name() + '_');
-  std::size_t name_length = 6 + resource->Name().length();
-
-  std::shared_ptr<Resources::Body::ParentResource> current = resource->Parent();
-  while (current != nullptr) {
-    parent_names.emplace(current->Name() + '-');
-    name_length += current->Name().length() + 1;
-    current = current->Parent();
-  }
-
+std::string GenerateName(std::queue<std::string> names, Operation operation) {
   std::string_view operation_name =
       std::find_if(std::begin(operation_names_), std::end(operation_names_),
                    [=](const OperationName &on) { return on.op == operation; })
           ->name;
-  name_length += operation_name.length();
+  names.emplace("by_id");
 
   std::string entry_point_name{operation_name};
-  entry_point_name.reserve(name_length);
-  while (!parent_names.empty()) {
-    entry_point_name.append(parent_names.top());
-    parent_names.pop();
+  while (!names.empty()) {
+    entry_point_name.append(names.front() + '_');
+    names.pop();
   }
   return entry_point_name;
 }

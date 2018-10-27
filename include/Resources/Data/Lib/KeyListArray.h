@@ -15,6 +15,17 @@
  */
 #pragma once
 
-namespace polycube::polycubed::Rest::Resources::Data {
-enum class Operation { kCreate, kReplace, kUpdate, kDelete };
-}
+#include <stack>
+#include <string>
+#include <utility>
+#include <vector>
+
+#include "../../Body/ListKey.h"
+#include "EntryPoint.h"
+
+namespace polycube::polycubed::Rest::Resources::Data::Lib::KeyListArray {
+using ListKeyValues = std::vector<std::pair<Body::ListKey, std::string>>;
+using PerListKeyValues = std::stack<ListKeyValues>;
+
+std::vector<Key> Generate(PerListKeyValues &keys);
+}  // namespace polycube::polycubed::Rest::Resources::Data::Lib::KeyListArray
