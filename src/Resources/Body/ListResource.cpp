@@ -15,6 +15,7 @@
  */
 #include "../../../include/Resources/Body/ListResource.h"
 
+#include <ListResource.h>
 #include <string>
 #include <unordered_map>
 #include <utility>
@@ -124,5 +125,27 @@ bool ListResource::ValidateKeys(
     }
   }
   return true;
+}
+
+const nlohmann::json ListResource::Value(
+    const std::string &cube_name, PerListKeyValues &keys) const {
+  const auto &parent_value = Resource::Value(cube_name, keys);
+  for (auto element : parent_value) {
+    unsigned matching_keys = 0;
+    const auto &current_keys = keys.top();
+    keys.pop();
+    for (const auto &key : current_keys) {
+      if (element[key.first.Name()] == key.second)
+        matching_keys += 1;
+    }
+    if (matching_keys == current_keys.size())
+      return element;
+  }
+  throw std::runtime_error(
+      "Unreachable since keys are mandatory and validated.");
+}
+
+const std::vector<ListKey> ListResource::Keys() const {
+  return keys_;
 }
 }  // namespace polycube::polycubed::Rest::Resources::Body

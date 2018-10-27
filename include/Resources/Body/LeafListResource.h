@@ -36,8 +36,6 @@ class LeafListResource : public virtual LeafResource {
 
   void SetDefaultIfMissing(nlohmann::json &body) const final;
 
-  virtual std::shared_ptr<LeafResource> &Entry(const std::string &value) const = 0;
-
  protected:
   explicit LeafListResource(std::vector<std::string> &&default_value);
 

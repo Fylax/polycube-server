@@ -13,6 +13,10 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
+#include <Resource.h>
+
+#include "../../../include/Resources/Body/ListResource.h"
+#include "../../../include/Resources/Body/ParentResource.h"
 #include "../../../include/Resources/Body/Resource.h"
 
 namespace polycube::polycubed::Rest::Resources::Body {
@@ -32,5 +36,10 @@ const std::string &Resource::ModuleName() const {
 
 std::shared_ptr<ParentResource> Resource::Parent() const {
   return parent_;
+}
+
+const nlohmann::json Resource::Value(
+    const std::string &cube_name, PerListKeyValues &keys) const {
+  return parent_->Value(cube_name, keys);
 }
 }  // namespace polycube::polycubed::Rest::Resources::Body

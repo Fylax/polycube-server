@@ -27,21 +27,33 @@ class Validator;
 }
 
 namespace polycube::polycubed::Rest::Resources::Body {
+enum class ListType {
+  kBool,
+  kString,
+  kInt8,
+  kInt16,
+  kInt32,
+  kInt64,
+  kUint8,
+  kUint16,
+  kUint32,
+  kUint64
+};
 class ListKey {
  public:
   ListKey(LY_DATA_TYPE type, std::string name,
           std::vector<std::shared_ptr<Validators::Validator>> &&validators);
 
-  const std::type_index Type() const;
+  ListType Type() const;
 
   const std::string Name() const;
 
   const std::vector<std::shared_ptr<Validators::Validator>> &Validators() const;
 
  private:
-  const std::type_index type_;
+  const ListType type_;
   const std::string name_;
   const std::vector<std::shared_ptr<Validators::Validator>> validators_;
-  static std::type_index FromYang(LY_DATA_TYPE type);
+  static ListType FromYang(LY_DATA_TYPE type);
 };
 }  // namespace polycube::polycubed::Rest::Resources::Body

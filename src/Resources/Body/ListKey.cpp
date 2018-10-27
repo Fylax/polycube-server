@@ -32,7 +32,7 @@ ListKey::ListKey(
       name_(std::move(name)),
       validators_(std::move(validators)) {}
 
-const std::type_index ListKey::Type() const {
+ListType ListKey::Type() const {
   return type_;
 }
 
@@ -45,10 +45,10 @@ const std::vector<std::shared_ptr<Validators::Validator>> &ListKey::Validators()
   return validators_;
 }
 
-std::type_index ListKey::FromYang(LY_DATA_TYPE type) {
+ListType ListKey::FromYang(LY_DATA_TYPE type) {
   switch (type) {
   case LY_TYPE_BOOL:
-    return std::type_index(typeid(bool));
+    return ListType::kBool;
   case LY_TYPE_BINARY:
   case LY_TYPE_BITS:
   case LY_TYPE_ENUM:
@@ -57,25 +57,25 @@ std::type_index ListKey::FromYang(LY_DATA_TYPE type) {
   case LY_TYPE_STRING:
   case LY_TYPE_UNION:
   case LY_TYPE_DEC64:
-    return std::type_index(typeid(std::string));
+    return ListType::kString;
   case LY_TYPE_EMPTY:
-    return std::type_index(typeid(std::string));
+    return ListType::kString;
   case LY_TYPE_INT8:
-    return std::type_index(typeid(std::int8_t));
+    return ListType::kInt8;
   case LY_TYPE_UINT8:
-    return std::type_index(typeid(std::uint8_t));
+    return ListType::kUint8;
   case LY_TYPE_INT16:
-    return std::type_index(typeid(std::int16_t));
+    return ListType::kInt16;
   case LY_TYPE_UINT16:
-    return std::type_index(typeid(std::uint16_t));
+    return ListType::kUint16;
   case LY_TYPE_INT32:
-    return std::type_index(typeid(std::int32_t));
+    return ListType::kInt32;
   case LY_TYPE_UINT32:
-    return std::type_index(typeid(std::uint32_t));
+    return ListType::kUint32;
   case LY_TYPE_INT64:
-    return std::type_index(typeid(std::int64_t));
+    return ListType::kInt64;
   case LY_TYPE_UINT64:
-    return std::type_index(typeid(std::uint64_t));
+    return ListType::kUint64;
     default:
       throw std::runtime_error("Unrecognized YANG data type");
   }

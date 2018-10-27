@@ -15,16 +15,20 @@
  */
 #pragma once
 
-#include <memory>
 #include <string>
 
-#include "../../Operations.h"
+#include "../../Body/ListKey.h"
+#include "EntryPoint.h"
 
-namespace polycube::polycubed::Rest::Resources::Body {
-class Resource;
-}
+namespace polycube::polycubed::Rest::Resources::Data::Lib::KeyListArray {
 
-namespace polycube::polycubed::Rest::Resources::Data::Lib::EntryPoint {
-std::string GenerateName(std::shared_ptr<Resources::Body::Resource> resource,
-                         Operation operation);
-}
+using Body::ListType;
+template <ListType T>
+Key Generate(const std::string &key_name,
+             const std::string &key_value) = delete;
+
+template <>
+Key Generate<ListType::kBool>(const std::string &key_name,
+                              const std::string &key_value);
+
+};  // namespace polycube::polycubed::Rest::Resources::Data::Lib::KeyListArray

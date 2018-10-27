@@ -15,6 +15,7 @@
  */
 #include "../../../include/Resources/Body/AbstractFactory.h"
 
+#include <AbstractFactory.h>
 #include <memory>
 #include <string>
 #include <utility>
@@ -25,6 +26,7 @@
 #include "../../../include/Resources/Body/JsonBodyField.h"
 #include "../../../include/Resources/Body/LeafListResource.h"
 #include "../../../include/Resources/Body/LeafResource.h"
+#include "../../../include/Resources/Body/ListKey.h"
 #include "../../../include/Resources/Body/ListResource.h"
 #include "../../../include/Resources/Body/ParentResource.h"
 
@@ -37,5 +39,57 @@ std::unique_ptr<Body::JsonBodyField> AbstractFactory::JsonBodyField(
     LY_DATA_TYPE type,
     std::vector<std::shared_ptr<Validators::Validator>> &&validators) const {
   return std::make_unique<Body::JsonBodyField>(type, std::move(validators));
+}
+
+std::unique_ptr<CaseResource> AbstractFactory::BodyCase(
+    std::string name, std::string module,
+    std::shared_ptr<ParentResource> parent) const {
+  return std::make_unique<CaseResource>(std::move(name), std::move(module),
+                                        std::move(parent));
+}
+
+std::unique_ptr<ChoiceResource> AbstractFactory::BodyChoice(
+    std::string name, std::string module,
+    std::shared_ptr<ParentResource> parent, bool mandatory,
+    std::unique_ptr<const std::string> &&default_case) const {
+  return std::make_unique<ChoiceResource>(std::move(name), std::move(module),
+                                          std::move(parent), mandatory,
+                                          std::move(default_case));
+}
+
+std::unique_ptr<LeafResource> AbstractFactory::BodyLeaf(
+    std::string name, std::string module,
+    std::shared_ptr<ParentResource> parent,
+    std::unique_ptr<Body::JsonBodyField> &&field, bool configuration,
+    bool mandatory, std::unique_ptr<const std::string> &&default_value) const {
+  return std::make_unique<LeafResource>(
+      std::move(name), std::move(module), std::move(parent), std::move(field),
+      configuration, mandatory, std::move(default_value));
+}
+
+std::unique_ptr<LeafListResource> AbstractFactory::BodyLeafList(
+    std::string name, std::string module,
+    std::shared_ptr<ParentResource> parent,
+    std::unique_ptr<Body::JsonBodyField> &&field, bool configuration,
+    bool mandatory, std::vector<std::string> &&default_value) const {
+  return std::make_unique<LeafListResource>(
+      std::move(name), std::move(module), std::move(parent), std::move(field),
+      configuration, mandatory, std::move(default_value));
+}
+
+std::unique_ptr<ListResource> AbstractFactory::BodyList(
+    std::string name, std::string module,
+    std::shared_ptr<ParentResource> parent,
+    std::vector<Resources::Body::ListKey> &&keys) const {
+  return std::make_unique<ListResource>(std::move(name), std::move(module),
+                                        std::move(parent), std::move(keys));
+}
+
+std::unique_ptr<ParentResource> AbstractFactory::BodyGeneric(
+    std::string name, std::string module,
+    std::shared_ptr<ParentResource> parent, bool container_presence) const {
+  return std::make_unique<ParentResource>(std::move(name), std::move(module),
+                                          std::move(parent),
+                                          container_presence);
 }
 }  // namespace polycube::polycubed::Rest::Resources::Body

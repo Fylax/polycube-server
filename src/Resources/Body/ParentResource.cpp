@@ -165,5 +165,4 @@ bool ParentResource::ValidateXPathChildren(const std::string &xpath,
   }
   return false;
 }
-
 }  // namespace polycube::polycubed::Rest::Resources::Body

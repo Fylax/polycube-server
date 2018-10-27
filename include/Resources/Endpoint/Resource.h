@@ -40,5 +40,7 @@ class Resource {
   virtual void CreateReplaceUpdate(const Pistache::Rest::Request& request,
                                    Pistache::Http::ResponseWriter response,
                                    bool check_mandatory) = 0;
+
+  virtual Response Value(const nlohmann::json &value, bool replace) = 0;
 };
 }  // namespace polycube::polycubed::Rest::Resources::Endpoint

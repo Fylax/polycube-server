@@ -13,15 +13,18 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
-#include "../../../../../include/Resources/Data/Lib/Body/EntryPoint.h"
+#include "../../../../include/Resources/Data/Lib/EntryPoint.h"
 
+#include <dlfcn.h>
+
+#include <functional>
 #include <memory>
 #include <stack>
 #include <string>
 #include <string_view>
 
-#include "../../../../../include/Resources/Body/ParentResource.h"
-#include "../../../../../include/Resources/Body/Resource.h"
+#include "../../../../include/Resources/Body/ParentResource.h"
+#include "../../../../include/Resources/Body/Resource.h"
 
 namespace polycube::polycubed::Rest::Resources::Data::Lib::EntryPoint {
 namespace {
@@ -32,10 +35,11 @@ struct OperationName {
 };
 constexpr OperationName operation_names_[] = {
     {Operation::kCreate, "create_"sv},
+    {Operation::kRead, "read_"sv},
     {Operation::kReplace, "replace_"sv},
     {Operation::kUpdate, "update_"sv},
     {Operation::kDelete, "delete_"sv}};
-};  // namespace
+}  // namespace
 
 std::string GenerateName(std::shared_ptr<Resources::Body::Resource> resource,
                          Operation operation) {
@@ -55,6 +59,7 @@ std::string GenerateName(std::shared_ptr<Resources::Body::Resource> resource,
       std::find_if(std::begin(operation_names_), std::end(operation_names_),
                    [=](const OperationName &on) { return on.op == operation; })
           ->name;
+  name_length += operation_name.length();
 
   std::string entry_point_name{operation_name};
   entry_point_name.reserve(name_length);

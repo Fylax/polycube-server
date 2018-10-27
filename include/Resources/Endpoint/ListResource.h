@@ -17,8 +17,8 @@
 
 #include <memory>
 #include <string>
-#include <vector>
 #include <utility>
+#include <vector>
 
 #include "../Body/ListResource.h"
 #include "ParentResource.h"
@@ -32,11 +32,10 @@ class PathParamField;
 
 class ListResource : public ParentResource, public Body::ListResource {
  public:
-  ListResource(
-      std::string name, std::string module,
-      std::shared_ptr<ParentResource> parent, std::string rest_endpoint,
-      std::string rest_endpoint_multiple,
-      std::vector<Body::ListKey> &&keys);
+  ListResource(std::string name, std::string module,
+               std::shared_ptr<ParentResource> parent,
+               std::string rest_endpoint, std::string rest_endpoint_multiple,
+               std::vector<Body::ListKey> &&keys);
 
   ~ListResource() override;
 
@@ -45,6 +44,11 @@ class ListResource : public ParentResource, public Body::ListResource {
   std::vector<Response> RequestValidate(
       const Pistache::Rest::Request &request,
       const std::string &caller_name) const final;
+
+  using Body::Resource::Value;
+  virtual Response Value(const std::string &cube_name,
+                         const nlohmann::json &value,
+                         const std::vector<std::string> &key, bool replace) = 0;
 
  private:
   std::vector<PathParamField> key_params_;

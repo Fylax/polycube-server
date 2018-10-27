@@ -18,6 +18,7 @@
 #include <pistache/router.h>
 
 #include <memory>
+#include <stack>
 #include <shared_mutex>
 #include <string>
 #include <utility>
@@ -32,6 +33,10 @@
 
 namespace polycube::polycubed::Rest::Resources::Body {
 class ParentResource;
+class ListKey;
+
+using ListKeyValues = std::vector<std::pair<ListKey, std::string>>;
+using PerListKeyValues = std::stack<ListKeyValues>;
 
 class Resource {
  public:
@@ -57,9 +62,8 @@ class Resource {
 
   std::shared_ptr<ParentResource> Parent() const;
 
-  virtual const nlohmann::json Value(const std::string &cube_name) = 0;
-
-  virtual void Value(nlohmann::json value, bool replace) = 0;
+  virtual const nlohmann::json Value(
+      const std::string &cube_name, PerListKeyValues &keys) const;
 
  protected:
   const std::string name_;

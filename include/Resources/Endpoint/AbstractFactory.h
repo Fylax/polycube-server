@@ -39,36 +39,38 @@ class AbstractFactory : public Body::AbstractFactory {
  public:
   virtual std::unique_ptr<CaseResource> RestCase(
       std::string name, std::string module,
-      std::shared_ptr<ParentResource> parent) = 0;
+      std::shared_ptr<ParentResource> parent) const = 0;
 
   virtual std::unique_ptr<ChoiceResource> RestChoice(
       std::string name, std::string module,
       std::shared_ptr<ParentResource> parent, bool mandatory,
-      std::unique_ptr<const std::string> &&default_case) = 0;
+      std::unique_ptr<const std::string> &&default_case) const = 0;
 
   virtual std::unique_ptr<LeafResource> RestLeaf(
       std::string name, std::string module, std::string rest_endpoint,
       std::shared_ptr<ParentResource> parent,
       std::unique_ptr<Body::JsonBodyField> &&field, bool configuration,
-      bool mandatory, std::unique_ptr<const std::string> &&default_value) = 0;
+      bool mandatory,
+      std::unique_ptr<const std::string> &&default_value) const = 0;
 
   virtual std::unique_ptr<LeafListResource> RestLeafList(
       std::string name, std::string module, std::string rest_endpoint,
       std::shared_ptr<ParentResource> parent,
       std::unique_ptr<Body::JsonBodyField> &&field, bool configuration,
-      bool mandatory, std::vector<std::string> &&default_value) = 0;
+      bool mandatory, std::vector<std::string> &&default_value) const = 0;
 
   virtual std::unique_ptr<ListResource> RestList(
       std::string name, std::string module, std::string rest_endpoint,
       std::string rest_endpoint_whole_list,
       std::shared_ptr<ParentResource> parent,
-      std::vector<Resources::Body::ListKey> &&keys) = 0;
+      std::vector<Resources::Body::ListKey> &&keys) const = 0;
 
   virtual std::unique_ptr<ParentResource> RestGeneric(
       std::string name, std::string module, std::string rest_endpoint,
-      std::shared_ptr<ParentResource> parent, bool container_presence) = 0;
+      std::shared_ptr<ParentResource> parent,
+      bool container_presence) const = 0;
 
-  virtual std::unique_ptr<Service> RestService(std::string name,
-                                               std::string base_endpoint) = 0;
+  virtual std::unique_ptr<Service> RestService(
+      std::string name, std::string base_endpoint) const = 0;
 };
 }  // namespace polycube::polycubed::Rest::Resources::Endpoint

@@ -39,10 +39,10 @@ class ListResource : public virtual ParentResource {
 
   bool ValidateKeys(std::unordered_map<std::string, std::string> keys) const;
 
-  virtual const nlohmann::json Values(const std::string &cube_name) = 0;
+  const std::vector<ListKey> Keys() const;
 
-  virtual void Values(const std::string &cube_name, nlohmann::json &values,
-                      bool replace) = 0;
+  const nlohmann::json Value(
+      const std::string &cube_name, PerListKeyValues &keys) const override;
 
  protected:
   /** Used by derived class: no explicit virtual base initialization */
