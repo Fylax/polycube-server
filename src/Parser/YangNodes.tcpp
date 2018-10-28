@@ -125,6 +125,7 @@ void Yang::ParseContainer(
     const std::shared_ptr<Resources::Body::ParentResource> &parent,
     bool generate_endpoint) const {
   std::shared_ptr<Resources::Body::ParentResource> resource;
+  parsed_names.emplace(data->name);
   if (generate_endpoint) {
     auto e_parent =
         std::dynamic_pointer_cast<Resources::Endpoint::ParentResource>(parent);
@@ -164,6 +165,7 @@ void Yang::ParseList(
   auto key_names = std::unordered_set<std::string>();
   std::string rest_endpoint;
   std::string rest_endpoint_multiple;
+  parsed_names.emplace(list->name);
   if (generate_endpoint) {
     rest_endpoint_multiple =
         std::dynamic_pointer_cast<Resources::Endpoint::ParentResource>(parent)
@@ -223,6 +225,7 @@ void Yang::ParseLeaf(
   bool mandatory = (leaf->flags & LYS_MAND_MASK) != 0;
   auto validators = GetValidators(leaf->type);
   auto field = factory_->JsonBodyField(leaf->type.base, std::move(validators));
+  parsed_names.emplace(leaf->name);
   std::unique_ptr<const std::string> default_value = nullptr;
   if (leaf->dflt != nullptr) {
     default_value = std::make_unique<const std::string>(leaf->dflt);
@@ -232,9 +235,10 @@ void Yang::ParseLeaf(
     auto e_parent =
         std::dynamic_pointer_cast<Resources::Endpoint::ParentResource>(parent);
     auto endpoint = e_parent->Endpoint() + leaf->name;
-    leaf_res = factory_->RestLeaf(parsed_names, leaf->name, leaf->module->name, endpoint,
-                                  e_parent, std::move(field), configuration,
-                                  mandatory, std::move(default_value));
+    leaf_res = factory_->RestLeaf(std::move(parsed_names), leaf->name,
+                                  leaf->module->name, endpoint, e_parent,
+                                  std::move(field), configuration, mandatory,
+                                  std::move(default_value));
   } else {
     leaf_res = factory_->BodyLeaf(leaf->name, leaf->module->name, parent,
                                   std::move(field), configuration, mandatory,
@@ -252,6 +256,7 @@ void Yang::ParseLeafList(
   auto validators = GetValidators(leaflist->type);
   auto field =
       factory_->JsonBodyField(leaflist->type.base, std::move(validators));
+  parsed_names.emplace(leaflist->name);
   std::vector<std::string> default_value;
   if (leaflist->dflt != nullptr) {
     const auto defaults = leaflist->dflt;
@@ -264,7 +269,7 @@ void Yang::ParseLeafList(
     auto e_parent =
         std::dynamic_pointer_cast<Resources::Endpoint::ParentResource>(parent);
     auto endpoint = e_parent->Endpoint() + leaflist->name;
-    resource = factory_->RestLeafList(parsed_names,
+    resource = factory_->RestLeafList(std::move(parsed_names),
         leaflist->name, leaflist->module->name, endpoint, e_parent,
         std::move(field), configuration, mandatory, std::move(default_value));
   } else {
@@ -279,6 +284,7 @@ void Yang::ParseChoice(
     const lys_node_choice *choice, std::queue<std::string> parsed_names,
     const std::shared_ptr<Resources::Body::ParentResource> &parent,
     const bool generate_endpoint) const {
+  // TODO not clear how to manage parsed_names here
   bool mandatory = (choice->flags & LYS_MAND_MASK) != 0;
   std::unique_ptr<const std::string> default_case = nullptr;
   if (choice->dflt != nullptr) {
@@ -307,6 +313,7 @@ void Yang::ParseCase(
     const lys_node_case *case_node, std::queue<std::string> parsed_names,
     const std::shared_ptr<Resources::Body::ParentResource> &parent,
     const bool generate_endpoint) const {
+  // TODO not clear how to manage parsed_names here
   std::shared_ptr<Resources::Body::CaseResource> resource;
   if (generate_endpoint) {
     auto e_parent =
@@ -332,14 +339,15 @@ void Yang::ParseAny(
   bool configuration = ((data->flags & LYS_CONFIG_MASK) ^ 2) != 0;
   bool mandatory = (data->flags & LYS_MAND_MASK) != 0;
 
+  parsed_names.emplace(data->name);
   std::unique_ptr<Resources::Body::LeafResource> resource;
   if (generate_endpoint) {
     auto e_parent =
         std::dynamic_pointer_cast<Resources::Endpoint::ParentResource>(parent);
     auto endpoint = e_parent->Endpoint() + data->name;
-    resource = factory_->RestLeaf(parsed_names, data->name, data->module->name, endpoint,
-                                  e_parent, factory_->JsonBodyField(),
-                                  configuration, mandatory, nullptr);
+    resource = factory_->RestLeaf(
+        std::move(parsed_names), data->name, data->module->name, endpoint,
+        e_parent, factory_->JsonBodyField(), configuration, mandatory, nullptr);
   } else {
     resource = factory_->BodyLeaf(data->name, data->module->name, parent,
                                   factory_->JsonBodyField(), configuration,
@@ -351,6 +359,7 @@ void Yang::ParseAny(
 void Yang::ParseRpcAction(
     const lys_node_rpc_action *data, std::queue<std::string> parsed_names,
     const std::shared_ptr<Resources::Body::ParentResource> &parent) const {
+  parsed_names.emplace(data->name);
   auto e_parent =
       std::dynamic_pointer_cast<Resources::Endpoint::ParentResource>(parent);
   auto action =

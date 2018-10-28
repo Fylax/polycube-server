@@ -24,9 +24,11 @@
 #include "../../../../include/Resources/Endpoint/ParentResource.h"
 #include "../../../../include/Resources/Endpoint/LeafResource.h"
 #include "../../../../include/Resources/Endpoint/ListResource.h"
+#include "../../../../include/Resources/Endpoint/Service.h"
 
 #include "../../../../include/Resources/Data/Lib/EntryPoint.h"
 #include "../../../../include/Resources/Data/Lib/ParentResource.h"
+#include "../../../../include/Resources/Data/Lib/LeafResource.h"
 
 namespace polycube::polycubed::Rest::Resources::Data::Lib {
 using EntryPoint::GenerateName;
@@ -78,7 +80,30 @@ std::unique_ptr<Endpoint::LeafResource> ConcreteFactory::RestLeaf(
     std::shared_ptr<Endpoint::ParentResource> parent,
     std::unique_ptr<Body::JsonBodyField> &&field, bool configuration,
     bool mandatory, std::unique_ptr<const std::string> &&default_value) const {
-  return nullptr;
+  auto read_handler = LoadHandler<Response(const char *, Key *, size_t)>(
+      GenerateName(tree_names, Operation::kRead));
+  if (!configuration) {
+    return std::make_unique<NonConfigLeafResource>(
+        std::move(read_handler), std::move(name), std::move(module),
+        std::move(rest_endpoint), std::move(parent), std::move(field),
+        mandatory, std::move(default_value));
+  }
+  auto create_handler =
+      LoadHandler<Response(const char *, Key *, size_t, const char *)>(
+          GenerateName(tree_names, Operation::kCreate));
+  auto replace_handler =
+      LoadHandler<Response(const char *, Key *, size_t, const char *)>(
+          GenerateName(tree_names, Operation::kReplace));
+  auto update_handler =
+      LoadHandler<Response(const char *, Key *, size_t, const char *)>(
+          GenerateName(tree_names, Operation::kUpdate));
+  auto delete_handler = LoadHandler<Response(const char *, Key *, size_t)>(
+      GenerateName(tree_names, Operation::kDelete));
+  return std::make_unique<ConfigLeafResource>(
+      std::move(create_handler), std::move(replace_handler),
+      std::move(delete_handler), std::move(read_handler), std::move(name),
+      std::move(module), std::move(rest_endpoint), std::move(parent),
+      std::move(field), mandatory, std::move(default_value));
 }
 
 std::unique_ptr<Endpoint::LeafListResource> ConcreteFactory::RestLeafList(
@@ -97,7 +122,25 @@ std::unique_ptr<Endpoint::ListResource> ConcreteFactory::RestList(
     std::string rest_endpoint_whole_list,
     std::shared_ptr<Endpoint::ParentResource> parent,
     std::vector<Resources::Body::ListKey> &&keys) const {
-  return nullptr;
+  // TODO missing ListResource (for whole list management & help)
+  auto create_handler =
+      LoadHandler<Response(const char *, Key *, size_t, const char *)>(
+          GenerateName(tree_names, Operation::kCreate));
+  auto replace_handler =
+      LoadHandler<Response(const char *, Key *, size_t, const char *)>(
+          GenerateName(tree_names, Operation::kReplace));
+  auto update_handler =
+      LoadHandler<Response(const char *, Key *, size_t, const char *)>(
+          GenerateName(tree_names, Operation::kUpdate));
+  auto read_handler = LoadHandler<Response(const char *, Key *, size_t)>(
+      GenerateName(tree_names, Operation::kRead));
+  auto delete_handler = LoadHandler<Response(const char *, Key *, size_t)>(
+      GenerateName(tree_names, Operation::kDelete));
+  return std::make_unique<ParentResource>(
+      std::move(create_handler), std::move(replace_handler),
+      std::move(update_handler), std::move(read_handler),
+      std::move(delete_handler), std::move(name), std::move(module),
+      std::move(rest_endpoint), std::move(parent));
 }
 
 std::unique_ptr<Endpoint::ParentResource> ConcreteFactory::RestGeneric(
