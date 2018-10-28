@@ -45,11 +45,6 @@ class ListResource : public ParentResource, public Body::ListResource {
       const Pistache::Rest::Request &request,
       const std::string &caller_name) const final;
 
-  using Body::Resource::Value;
-  virtual Response Value(const std::string &cube_name,
-                         const nlohmann::json &value,
-                         const std::vector<std::string> &key, bool replace) = 0;
-
  private:
   std::vector<PathParamField> key_params_;
   std::string multiple_endpoint_;

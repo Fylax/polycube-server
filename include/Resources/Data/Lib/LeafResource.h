@@ -33,12 +33,24 @@ namespace polycube::polycubed::Rest::Resources::Data::Lib {
 using ListKeyValues = std::vector<std::pair<Body::ListKey, std::string>>;
 using PerListKeyValues = std::stack<ListKeyValues>;
 
-class NonConfigLeafResource : public Endpoint::LeafResource {
+class LeafResource : public Endpoint::LeafResource {
  public:
-  NonConfigLeafResource(
+  LeafResource(
       std::function<Response(const char *, Key *, size_t)> read_handler,
       std::string name, std::string module, std::string rest_endpoint,
       std::shared_ptr<Endpoint::ParentResource> parent,
+      std::unique_ptr<Body::JsonBodyField> &&field, bool mandatory,
+      std::unique_ptr<const std::string> &&default_value);
+
+  LeafResource(
+      std::function<Response(const char *, Key *, size_t, const char *)>
+  create_handler,
+  std::function<Response(const char *, Key *, size_t, const char *)>
+      replace_handler,
+      std::function<Response(const char *, Key *, size_t)> delete_handler,
+  std::function<Response(const char *, Key *, size_t)> read_handler,
+      std::string name, std::string module, std::string rest_endpoint,
+  std::shared_ptr<Endpoint::ParentResource> parent,
       std::unique_ptr<Body::JsonBodyField> &&field, bool mandatory,
       std::unique_ptr<const std::string> &&default_value);
 
@@ -47,41 +59,15 @@ class NonConfigLeafResource : public Endpoint::LeafResource {
 
   Response Value(const std::string &cube_name, const nlohmann::json &value,
                  PerListKeyValues &keys,
-                 Endpoint::Operation operation) override;
+                 Endpoint::Operation operation) final;
 
- protected:
-  NonConfigLeafResource(
-      std::function<Response(const char *, Key *, size_t)> read_handler,
-      std::string rest_endpoint);
 
  private:
   const std::function<Response(const char *, Key *, size_t)> read_handler_;
-};
-
-class ConfigLeafResource : public NonConfigLeafResource {
- public:
-  ConfigLeafResource(
-      std::function<Response(const char *, Key *, size_t, const char *)>
-          create_handler,
-      std::function<Response(const char *, Key *, size_t, const char *)>
-          replace_handler,
-      std::function<Response(const char *, Key *, size_t)> delete_handler,
-      std::function<Response(const char *, Key *, size_t)> read_handler,
-      std::string name, std::string module, std::string rest_endpoint,
-      std::shared_ptr<Endpoint::ParentResource> parent,
-      std::unique_ptr<Body::JsonBodyField> &&field, bool mandatory,
-      std::unique_ptr<const std::string> &&default_value);
-
-  Response Value(const std::string &cube_name, const nlohmann::json &value,
-                 PerListKeyValues &keys,
-                 Endpoint::Operation operation) final;
-
- private:
   const std::function<Response(const char *, Key *, size_t, const char *)>
       create_handler_;
   const std::function<Response(const char *, Key *, size_t, const char *)>
       replace_handler_;
   const std::function<Response(const char *, Key *, size_t)> delete_handler_;
 };
-
 }  // namespace polycube::polycubed::Rest::Resources::Data::Lib

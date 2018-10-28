@@ -21,14 +21,15 @@
 #include <string>
 #include <vector>
 
-#include "../../../../include/Resources/Endpoint/ParentResource.h"
 #include "../../../../include/Resources/Endpoint/LeafResource.h"
 #include "../../../../include/Resources/Endpoint/ListResource.h"
+#include "../../../../include/Resources/Endpoint/ParentResource.h"
 #include "../../../../include/Resources/Endpoint/Service.h"
 
 #include "../../../../include/Resources/Data/Lib/EntryPoint.h"
-#include "../../../../include/Resources/Data/Lib/ParentResource.h"
 #include "../../../../include/Resources/Data/Lib/LeafResource.h"
+#include "../../../../include/Resources/Data/Lib/ParentResource.h"
+#include "../../../../include/Resources/Data/Lib/ListResource.h"
 
 namespace polycube::polycubed::Rest::Resources::Data::Lib {
 using EntryPoint::GenerateName;
@@ -83,7 +84,7 @@ std::unique_ptr<Endpoint::LeafResource> ConcreteFactory::RestLeaf(
   auto read_handler = LoadHandler<Response(const char *, Key *, size_t)>(
       GenerateName(tree_names, Operation::kRead));
   if (!configuration) {
-    return std::make_unique<NonConfigLeafResource>(
+    return std::make_unique<LeafResource>(
         std::move(read_handler), std::move(name), std::move(module),
         std::move(rest_endpoint), std::move(parent), std::move(field),
         mandatory, std::move(default_value));
@@ -99,7 +100,7 @@ std::unique_ptr<Endpoint::LeafResource> ConcreteFactory::RestLeaf(
           GenerateName(tree_names, Operation::kUpdate));
   auto delete_handler = LoadHandler<Response(const char *, Key *, size_t)>(
       GenerateName(tree_names, Operation::kDelete));
-  return std::make_unique<ConfigLeafResource>(
+  return std::make_unique<LeafResource>(
       std::move(create_handler), std::move(replace_handler),
       std::move(delete_handler), std::move(read_handler), std::move(name),
       std::move(module), std::move(rest_endpoint), std::move(parent),
@@ -122,25 +123,59 @@ std::unique_ptr<Endpoint::ListResource> ConcreteFactory::RestList(
     std::string rest_endpoint_whole_list,
     std::shared_ptr<Endpoint::ParentResource> parent,
     std::vector<Resources::Body::ListKey> &&keys) const {
-  // TODO missing ListResource (for whole list management & help)
-  auto create_handler =
+  auto create_name = GenerateName(tree_names, Operation::kCreate);
+  auto replace_name = GenerateName(tree_names, Operation::kReplace);
+  auto update_name = GenerateName(tree_names, Operation::kUpdate);
+  auto read_name = GenerateName(tree_names, Operation::kRead);
+  auto delete_name = GenerateName(tree_names, Operation::kDelete);
+
+  auto create_entry_handler =
       LoadHandler<Response(const char *, Key *, size_t, const char *)>(
-          GenerateName(tree_names, Operation::kCreate));
-  auto replace_handler =
+          create_name);
+  auto replace_entry_handler =
       LoadHandler<Response(const char *, Key *, size_t, const char *)>(
-          GenerateName(tree_names, Operation::kReplace));
-  auto update_handler =
+          replace_name);
+  auto update_entry_handler =
       LoadHandler<Response(const char *, Key *, size_t, const char *)>(
-          GenerateName(tree_names, Operation::kUpdate));
-  auto read_handler = LoadHandler<Response(const char *, Key *, size_t)>(
-      GenerateName(tree_names, Operation::kRead));
-  auto delete_handler = LoadHandler<Response(const char *, Key *, size_t)>(
-      GenerateName(tree_names, Operation::kDelete));
-  return std::make_unique<ParentResource>(
-      std::move(create_handler), std::move(replace_handler),
-      std::move(update_handler), std::move(read_handler),
-      std::move(delete_handler), std::move(name), std::move(module),
-      std::move(rest_endpoint), std::move(parent));
+          update_name);
+  auto read_entry_handler =
+      LoadHandler<Response(const char *, Key *, size_t)>(read_name);
+  auto delete_entry_handler =
+      LoadHandler<Response(const char *, Key *, size_t)>(delete_name);
+
+  std::string replace = name + "_list";
+  create_name.replace(create_name.find(name), name.length(), replace);
+  replace_name.replace(create_name.find(name), name.length(), replace);
+  update_name.replace(create_name.find(name), name.length(), replace);
+  read_name.replace(create_name.find(name), name.length(), replace);
+  delete_name.replace(create_name.find(name), name.length(), replace);
+
+  auto create_whole_handler =
+      LoadHandler<Response(const char *, Key *, size_t, const char *)>(
+          create_name);
+  auto replace_whole_handler =
+      LoadHandler<Response(const char *, Key *, size_t, const char *)>(
+          replace_name);
+  auto update_whole_handler =
+      LoadHandler<Response(const char *, Key *, size_t, const char *)>(
+          update_name);
+  auto read_whole_handler =
+      LoadHandler<Response(const char *, Key *, size_t)>(read_name);
+  auto delete_whole_handler =
+      LoadHandler<Response(const char *, Key *, size_t)>(delete_name);
+
+  auto help_handler = LoadHandler<Response(const char *, Key *, size_t)>(
+      read_name + "_get_list");
+
+  return std::make_unique<ListResource>(
+      std::move(create_entry_handler), std::move(replace_entry_handler),
+      std::move(update_entry_handler), std::move(read_entry_handler),
+      std::move(delete_entry_handler), std::move(create_whole_handler),
+      std::move(replace_whole_handler), std::move(update_whole_handler),
+      std::move(read_whole_handler), std::move(delete_whole_handler),
+      std::move(help_handler), std::move(name), std::move(module),
+      std::move(rest_endpoint), std::move(rest_endpoint_whole_list),
+      std::move(parent), std::move(keys));
 }
 
 std::unique_ptr<Endpoint::ParentResource> ConcreteFactory::RestGeneric(

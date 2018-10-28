@@ -23,7 +23,7 @@
 #include "../../../../include/Resources/Data/Lib/KeyListArray.h"
 
 namespace polycube::polycubed::Rest::Resources::Data::Lib {
-NonConfigLeafResource::NonConfigLeafResource(
+LeafResource::LeafResource(
     std::function<Response(const char *, Key *, size_t)> read_handler,
     std::string name, std::string module, std::string rest_endpoint,
     std::shared_ptr<Endpoint::ParentResource> parent,
@@ -33,33 +33,17 @@ NonConfigLeafResource::NonConfigLeafResource(
                          std::move(field), false, mandatory,
                          std::move(default_value)),
       Endpoint::LeafResource(std::move(rest_endpoint)),
-      read_handler_{std::move(read_handler)} {}
+      read_handler_{std::move(read_handler)},
+      create_handler_{},
+      replace_handler_{},
+      delete_handler_{} {}
 
-NonConfigLeafResource::NonConfigLeafResource(
-    std::function<Response(const char *, Key *, size_t)> read_handler,
-    std::string rest_endpoint)
-    : Body::LeafResource("", "", nullptr, nullptr, false, false, nullptr),
-      Endpoint::LeafResource(std::move(rest_endpoint)),
-      read_handler_{std::move(read_handler)} {}
 
-const Response NonConfigLeafResource::Value(const std::string &cube_name,
-                                            PerListKeyValues &keys) const {
-  auto key_params = KeyListArray::Generate(keys);
-  return read_handler_(cube_name.data(), key_params.data(), key_params.size());
-}
-
-Response NonConfigLeafResource::Value(const std::string &cube_name,
-                                      const nlohmann::json &value,
-                                      PerListKeyValues &keys,
-                                      Endpoint::Operation operation) {
-  throw std::runtime_error("Not implemented");
-}
-
-ConfigLeafResource::ConfigLeafResource(
+LeafResource::LeafResource(
     std::function<Response(const char *, Key *, size_t, const char *)>
-        create_handler,
+    create_handler,
     std::function<Response(const char *, Key *, size_t, const char *)>
-        replace_handler,
+    replace_handler,
     std::function<Response(const char *, Key *, size_t)> delete_handler,
     std::function<Response(const char *, Key *, size_t)> read_handler,
     std::string name, std::string module, std::string rest_endpoint,
@@ -67,14 +51,21 @@ ConfigLeafResource::ConfigLeafResource(
     std::unique_ptr<Body::JsonBodyField> &&field, bool mandatory,
     std::unique_ptr<const std::string> &&default_value)
     : Body::LeafResource(std::move(name), std::move(module), std::move(parent),
-                         std::move(field), false, mandatory,
+                         std::move(field), true, mandatory,
                          std::move(default_value)),
-      NonConfigLeafResource(std::move(read_handler), std::move(rest_endpoint)),
+      Endpoint::LeafResource(std::move(rest_endpoint)),
+      read_handler_{std::move(read_handler)},
       create_handler_{std::move(create_handler)},
       replace_handler_{std::move(replace_handler)},
       delete_handler_{std::move(delete_handler)} {}
 
-Response ConfigLeafResource::Value(const std::string &cube_name,
+const Response LeafResource::Value(const std::string &cube_name,
+                                            PerListKeyValues &keys) const {
+  auto key_params = KeyListArray::Generate(keys);
+  return read_handler_(cube_name.data(), key_params.data(), key_params.size());
+}
+
+Response LeafResource::Value(const std::string &cube_name,
                                    const nlohmann::json &value,
                                    PerListKeyValues &keys,
                                    Endpoint::Operation operation) {
@@ -86,9 +77,6 @@ Response ConfigLeafResource::Value(const std::string &cube_name,
   case Endpoint::Operation::kReplace:
     return replace_handler_(cube_name.data(), key_params.data(),
                             key_params.size(), value.dump().data());
-  case Endpoint::Operation::kUpdate:
-    return update_handler_(cube_name.data(), key_params.data(),
-                           key_params.size(), value.dump().data());
   default:
     throw std::runtime_error("Unreachable: fully covered enum");
   }
