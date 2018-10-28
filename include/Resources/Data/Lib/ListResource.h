@@ -15,11 +15,18 @@
  */
 #pragma once
 
+#include <functional>
+#include <memory>
+#include <string>
+#include <vector>
+
 #include "../../Endpoint/ListResource.h"
 #include "EntryPoint.h"
+#include "ParentResource.h"
 
 namespace polycube::polycubed::Rest::Resources::Data::Lib {
 class ListResource : public Endpoint::ListResource {
+ public:
   ListResource(
       std::function<Response(const char *, Key *, size_t, const char *)>
           create_entry_handler,
@@ -40,7 +47,37 @@ class ListResource : public Endpoint::ListResource {
       std::function<Response(const char *, Key *, size_t)> help_handler,
       std::string name, std::string module, std::string rest_endpoint,
       std::string rest_endpoint_multiple,
-      std::shared_ptr<ParentResource> parent,
+      std::shared_ptr<Endpoint::ParentResource> parent,
       std::vector<Body::ListKey> &&keys);
+
+  const Response Value(const std::string &cube_name,
+                       PerListKeyValues &keys) const final;
+
+  Response Value(const std::string &cube_name, const nlohmann::json &value,
+                 PerListKeyValues &keys,
+                 Endpoint::Operation operation) final;
+
+ private:
+  const std::function<Response(const char *, Key *, size_t, const char *)>
+      create_entry_handler_;
+  const std::function<Response(const char *, Key *, size_t, const char *)>
+      replace_entry_handler_;
+  const std::function<Response(const char *, Key *, size_t, const char *)>
+      update_entry_handler_;
+  const std::function<Response(const char *, Key *, size_t)>
+      read_entry_handler_;
+  const std::function<Response(const char *, Key *, size_t)>
+      delete_entry_handler_;
+  const std::function<Response(const char *, Key *, size_t, const char *)>
+      create_whole_handler_;
+  const std::function<Response(const char *, Key *, size_t, const char *)>
+      replace_whole_handler_;
+  const std::function<Response(const char *, Key *, size_t, const char *)>
+      update_whole_handler_;
+  const std::function<Response(const char *, Key *, size_t)>
+      read_whole_handler_;
+  const std::function<Response(const char *, Key *, size_t)>
+      delete_whole_handler_;
+  const std::function<Response(const char *, Key *, size_t)> help_handler_;
 };
 }  // namespace polycube::polycubed::Rest::Resources::Data::Lib

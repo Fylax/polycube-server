@@ -19,6 +19,7 @@
 #include <string>
 #include <utility>
 #include <vector>
+#include <ListResource.h>
 
 
 #include "../../../include/Server/RestServer.h"
@@ -69,6 +70,12 @@ std::vector<Response> ListResource::RequestValidate(
   }
   return errors;
 }
+
+ListResource::ListResource(std::string rest_endpoint,
+                           std::string rest_endpoint_multiple,
+                           std::vector<Body::ListKey> &&keys)
+    : ListResource("", "", nullptr, std::move(rest_endpoint),
+                   std::move(rest_endpoint_multiple), std::move(keys)) {}
 
 void
 ListResource::get_multiple(const Request& request, ResponseWriter response) {

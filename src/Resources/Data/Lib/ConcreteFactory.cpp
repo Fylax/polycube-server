@@ -30,6 +30,7 @@
 #include "../../../../include/Resources/Data/Lib/LeafResource.h"
 #include "../../../../include/Resources/Data/Lib/ParentResource.h"
 #include "../../../../include/Resources/Data/Lib/ListResource.h"
+#include "../../../../include/Resources/Data/Lib/Service.h"
 
 namespace polycube::polycubed::Rest::Resources::Data::Lib {
 using EntryPoint::GenerateName;
@@ -201,6 +202,42 @@ std::unique_ptr<Endpoint::ParentResource> ConcreteFactory::RestGeneric(
       std::move(update_handler), std::move(read_handler),
       std::move(delete_handler), std::move(name), std::move(module),
       std::move(rest_endpoint), std::move(parent), container_presence);
+}
+
+std::unique_ptr<Endpoint::Service>
+ConcreteFactory::RestService(const std::queue<std::string>& tree_names,
+                             std::string name,
+                             std::string base_endpoint) const {
+  std::string create_single {"create_" + name + "_by_id"};
+  std::string update_single {"create_" + name + "_by_id"};
+  std::string read_single {"create_" + name + "_by_id"};
+  std::string replace_single {"create_" + name + "_by_id"};
+  std::string delete_single {"create_" + name + "_by_id"};
+
+  std::string read_whole {"read_" + name + "_list_by_id"};
+  std::string update_whole{"update_" + name + "_list_by_id"};
+  std::string help{read_whole + "_get_list"};
+
+  auto create_handler =
+      LoadHandler<Response(const char *, const char *)>(create_single);
+  auto update_handler =
+      LoadHandler<Response(const char *, const char *)>(update_single);
+  auto read_handler =
+      LoadHandler<Response(const char *)>(read_single);
+  auto replace_handler =
+      LoadHandler<Response(const char *, const char *)>(replace_single);
+  auto delete_handler = LoadHandler<Response(const char *)>(delete_single);
+
+  auto read_list_handler = LoadHandler<Response(void)>(read_whole);
+  auto help_handler = LoadHandler<Response(void)>(help);
+  auto update_list_handler = LoadHandler<Response(const char *)>(update_whole);
+
+  return std::make_unique<Service>(
+      std::move(create_handler), std::move(update_handler),
+      std::move(read_handler), std::move(replace_handler),
+      std::move(delete_handler), std::move(read_list_handler),
+      std::move(help_handler), std::move(update_list_handler), std::move(name),
+      std::move(base_endpoint));
 }
 
 }  // namespace polycube::polycubed::Rest::Resources::Data::Lib

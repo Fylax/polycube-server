@@ -45,6 +45,10 @@ class ListResource : public ParentResource, public Body::ListResource {
       const Pistache::Rest::Request &request,
       const std::string &caller_name) const final;
 
+ protected:
+  ListResource(std::string rest_endpoint, std::string rest_endpoint_multiple,
+               std::vector<Body::ListKey> &&keys);
+
  private:
   std::vector<PathParamField> key_params_;
   std::string multiple_endpoint_;

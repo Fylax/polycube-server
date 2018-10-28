@@ -35,7 +35,7 @@ class Service : public ParentResource, public Body::Service {
  public:
   Service(const std::string &name, std::string base_address);
 
-  ~Service() final;
+  ~Service() override;
 
   using Body::Service::ValidateXPath;
 
