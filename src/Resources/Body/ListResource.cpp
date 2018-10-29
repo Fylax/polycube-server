@@ -127,9 +127,9 @@ bool ListResource::ValidateKeys(
   return true;
 }
 
-const Response ListResource::Value(
-    const std::string &cube_name, PerListKeyValues &keys) const {
-  const auto &parent_value = Resource::Value(cube_name, keys);
+const Response ListResource::ReadValue(
+    const std::string& cube_name, PerListKeyValues& keys) const {
+  const auto &parent_value = Resource::ReadValue(cube_name, keys);
   auto jparent = nlohmann::json::parse(parent_value.message);
   for (auto element : jparent) {
     unsigned matching_keys = 0;

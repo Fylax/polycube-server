@@ -20,8 +20,8 @@
 #include <string>
 #include <utility>
 
-#include "../../../../include/Resources/Data/Lib/KeyListArray.h"
 #include "../../../../include/Resources/Body/ListKey.h"
+#include "../../../../include/Resources/Data/Lib/KeyListArray.h"
 
 namespace polycube::polycubed::Rest::Resources::Data::Lib {
 
@@ -45,16 +45,16 @@ ParentResource::ParentResource(
       read_handler_{std::move(read_handler)},
       delete_handler_{std::move(delete_handler)} {}
 
-const Response ParentResource::Value(const std::string &cube_name,
-                                     PerListKeyValues &keys) const {
+const Response ParentResource::ReadValue(const std::string &cube_name,
+                                         PerListKeyValues &keys) const {
   auto key_params = KeyListArray::Generate(keys);
   return read_handler_(cube_name.data(), key_params.data(), key_params.size());
 }
 
-Response ParentResource::Value(const std::string &cube_name,
-                               const nlohmann::json &value,
-                               PerListKeyValues &keys,
-                               Endpoint::Operation operation) {
+Response ParentResource::WriteValue(const std::string &cube_name,
+                                    const nlohmann::json &value,
+                                    PerListKeyValues &keys,
+                                    Endpoint::Operation operation) {
   auto key_params = KeyListArray::Generate(keys);
   switch (operation) {
   case Endpoint::Operation::kCreate:

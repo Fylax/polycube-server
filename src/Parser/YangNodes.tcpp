@@ -37,8 +37,7 @@
 
 namespace polycube::polycubed::Rest::Parser {
 void Yang::ParseModule(
-    const lys_module *module,
-    std::queue<std::string> parsed_names,
+    const lys_module *module, std::queue<std::string> parsed_names,
     const std::shared_ptr<Resources::Endpoint::Service> &cube) {
   auto typedefs = module->tpdf;
   for (auto i = 0; i < module->tpdf_size; ++i) {
@@ -134,9 +133,8 @@ void Yang::ParseContainer(
         factory_->RestGeneric(parsed_names, data->name, data->module->name,
                               endpoint, e_parent, data->presence != nullptr);
   } else {
-    resource =
-        factory_->BodyGeneric(data->name, data->module->name,
-                              parent, data->presence != nullptr);
+    resource = factory_->BodyGeneric(data->name, data->module->name, parent,
+                                     data->presence != nullptr);
   }
   auto child = data->child;
   while (child != nullptr) {
@@ -199,9 +197,9 @@ void Yang::ParseList(
   if (generate_endpoint) {
     auto e_parent =
         std::dynamic_pointer_cast<Resources::Endpoint::ParentResource>(parent);
-    resource =
-        factory_->RestList(parsed_names, list->name, list->module->name, rest_endpoint,
-                           rest_endpoint_multiple, e_parent, std::move(keys));
+    resource = factory_->RestList(parsed_names, list->name, list->module->name,
+                                  rest_endpoint, rest_endpoint_multiple,
+                                  e_parent, std::move(keys));
   } else {
     resource = factory_->BodyList(list->name, list->module->name, parent,
                                   std::move(keys));
@@ -269,9 +267,10 @@ void Yang::ParseLeafList(
     auto e_parent =
         std::dynamic_pointer_cast<Resources::Endpoint::ParentResource>(parent);
     auto endpoint = e_parent->Endpoint() + leaflist->name;
-    resource = factory_->RestLeafList(std::move(parsed_names),
-        leaflist->name, leaflist->module->name, endpoint, e_parent,
-        std::move(field), configuration, mandatory, std::move(default_value));
+    resource = factory_->RestLeafList(std::move(parsed_names), leaflist->name,
+                                      leaflist->module->name, endpoint,
+                                      e_parent, std::move(field), configuration,
+                                      mandatory, std::move(default_value));
   } else {
     resource = factory_->BodyLeafList(leaflist->name, leaflist->module->name,
                                       parent, std::move(field), configuration,
@@ -295,8 +294,8 @@ void Yang::ParseChoice(
     auto e_parent =
         std::dynamic_pointer_cast<Resources::Endpoint::ParentResource>(parent);
     resource =
-        factory_->RestChoice(parsed_names, choice->name, choice->module->name, e_parent,
-                             mandatory, std::move(default_case));
+        factory_->RestChoice(parsed_names, choice->name, choice->module->name,
+                             e_parent, mandatory, std::move(default_case));
   } else {
     resource = factory_->BodyChoice(choice->name, choice->module->name, parent,
                                     mandatory, std::move(default_case));
@@ -318,15 +317,15 @@ void Yang::ParseCase(
   if (generate_endpoint) {
     auto e_parent =
         std::dynamic_pointer_cast<Resources::Endpoint::ParentResource>(parent);
-    resource =
-        factory_->RestCase(parsed_names, case_node->name, case_node->module->name, e_parent);
+    resource = factory_->RestCase(parsed_names, case_node->name,
+                                  case_node->module->name, e_parent);
   } else {
     resource =
         factory_->BodyCase(case_node->name, case_node->module->name, parent);
   }
   auto child = case_node->child;
   while (child != nullptr) {
-    ParseNode(child,parsed_names, resource, generate_endpoint);
+    ParseNode(child, parsed_names, resource, generate_endpoint);
     child = child->next;
   }
   parent->AddChild(std::move(resource));
@@ -374,7 +373,7 @@ void Yang::ParseRpcAction(
 
 const std::string Yang::ServiceName(const std::string &yang) {
   const auto &context =
-      ly_ctx_new("/home/nico/dev/iovnet/services/resources/", 0);
+      ly_ctx_new("/home/nico/dev/iovnet/src/services/datamodel-common", 0);
   if (!context) {
     throw std::runtime_error("cannot create new context");
   }
@@ -386,15 +385,15 @@ const std::string Yang::ServiceName(const std::string &yang) {
   return std::string{module->name};
 }
 
-const std::shared_ptr<Resources::Endpoint::Service> Yang::Parse(
-    std::string &&yang) {
+const std::shared_ptr<Resources::Endpoint::Service> Yang::Parse() {
   const auto &context =
-      ly_ctx_new("/home/nico/dev/iovnet/services/resources/", 0);
+      ly_ctx_new("/home/nico/dev/iovnet/src/services/datamodel-common/", 0);
   if (!context) {
     throw std::runtime_error("cannot create new context");
   }
 
-  const auto &module = lys_parse_mem(context, yang.data(), LYS_IN_YANG);
+  const auto &module =
+      lys_parse_mem(context, factory_->Yang().data(), LYS_IN_YANG);
 
   if (!module) {
     throw std::invalid_argument("invalid yang data");

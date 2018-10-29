@@ -32,6 +32,9 @@ ListKey::ListKey(
       name_(std::move(name)),
       validators_(std::move(validators)) {}
 
+ListKey::ListKey(const ListKey &copy)
+    : type_(copy.Type()), name_(copy.Name()), validators_{} {}
+
 ListType ListKey::Type() const {
   return type_;
 }

@@ -23,10 +23,13 @@
 #include "Resource.h"
 
 namespace polycube::polycubed::Rest::Resources::Endpoint {
+using ListKeyValues = std::vector<std::pair<Body::ListKey, std::string>>;
+using PerListKeyValues = std::stack<ListKeyValues>;
 using Pistache::Http::ResponseWriter;
 using Pistache::Rest::Request;
 
 class ParentResource : public Resource, public virtual Body::ParentResource {
+
  public:
   ParentResource(std::string name, std::string module,
                  std::string rest_endpoint,
@@ -41,7 +44,10 @@ class ParentResource : public Resource, public virtual Body::ParentResource {
 
   void CreateReplaceUpdate(const Pistache::Rest::Request &request,
                            Pistache::Http::ResponseWriter response,
-                           bool check_mandatory) final;
+                           bool update, bool check_mandatory) final;
+
+  virtual void Keys(const Pistache::Rest::Request &request,
+                    PerListKeyValues &parsed) const;
 
  protected:
   /**

@@ -62,8 +62,8 @@ class Resource {
 
   std::shared_ptr<ParentResource> Parent() const;
 
-  virtual const Response Value(
-      const std::string &cube_name, PerListKeyValues &keys) const;
+  virtual const Response ReadValue(
+      const std::string& cube_name, PerListKeyValues& keys) const;
 
  protected:
   const std::string name_;

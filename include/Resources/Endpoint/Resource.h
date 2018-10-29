@@ -39,15 +39,17 @@ class Resource {
       const Pistache::Rest::Request &request,
       const std::string &caller_name) const = 0;
 
+  virtual Response WriteValue(const std::string &cube_name,
+                              const nlohmann::json &value,
+                              PerListKeyValues &keys, Operation operation) = 0;
+
  protected:
   const std::string rest_endpoint_;
 
   virtual void CreateReplaceUpdate(const Pistache::Rest::Request &request,
                                    Pistache::Http::ResponseWriter response,
-                                   bool check_mandatory) = 0;
+                                   bool update, bool check_mandatory) = 0;
 
-  virtual Response Value(const std::string &cube_name,
-                         const nlohmann::json &value, PerListKeyValues &keys,
-                         Operation operation) = 0;
+  static Operation OperationType(bool update, bool check_mandatory);
 };
 }  // namespace polycube::polycubed::Rest::Resources::Endpoint

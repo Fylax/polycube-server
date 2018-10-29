@@ -14,6 +14,8 @@
  * limitations under the License.
  */
 
+#include <Lib/Service.h>
+
 #include "../../../../include/Resources/Data/Lib/Service.h"
 namespace polycube::polycubed::Rest::Resources::Data::Lib {
 
@@ -38,15 +40,16 @@ Service::Service(
       help_handler_{std::move(help_handler)},
       update_list_handler_{std::move(update_list_handler)} {}
 
-const Response Service::Value(const std::string &cube_name,
-                              [[maybe_unused]] PerListKeyValues &keys) const {
+const Response Service::ReadValue(
+    const std::string &cube_name,
+    [[maybe_unused]] PerListKeyValues &keys) const {
   return read_handler_(cube_name.data());
 }
 
-Response Service::Value(const std::string &cube_name,
-                        const nlohmann::json &value,
-                        [[maybe_unused]] PerListKeyValues &keys,
-                        Endpoint::Operation operation) {
+Response Service::WriteValue(const std::string &cube_name,
+                             const nlohmann::json &value,
+                             [[maybe_unused]] PerListKeyValues &keys,
+                             Endpoint::Operation operation) {
   switch (operation) {
   case Endpoint::Operation::kCreate:
     return create_handler_(cube_name.data(), value.dump().data());

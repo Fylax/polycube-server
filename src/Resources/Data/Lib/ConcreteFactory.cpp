@@ -54,7 +54,7 @@ std::function<T> ConcreteFactory::LoadHandler(
   if (!result) {
     char *const error = ::dlerror();
     if (error) {
-      throw std::domain_error("Cannot find handler " + function_name);
+      throw std::invalid_argument("Cannot find handler " + function_name);
     }
   }
   return reinterpret_cast<T *>(result);
@@ -64,7 +64,7 @@ std::unique_ptr<Endpoint::CaseResource> ConcreteFactory::RestCase(
     const std::queue<std::string> &tree_names, std::string name,
     std::string module,
     std::shared_ptr<Endpoint::ParentResource> parent) const {
-  throw std::domain_error(
+  throw std::invalid_argument(
       "Yang case node not supported with shared object protocol.");
 }
 
@@ -72,7 +72,7 @@ std::unique_ptr<Endpoint::ChoiceResource> ConcreteFactory::RestChoice(
     const std::queue<std::string> &tree_names, std::string name,
     std::string module, std::shared_ptr<Endpoint::ParentResource> parent,
     bool mandatory, std::unique_ptr<const std::string> &&default_case) const {
-  throw std::domain_error(
+  throw std::invalid_argument(
       "Yang choice node not supported with shared object protocol.");
 }
 
@@ -114,7 +114,7 @@ std::unique_ptr<Endpoint::LeafListResource> ConcreteFactory::RestLeafList(
     std::shared_ptr<Endpoint::ParentResource> parent,
     std::unique_ptr<Body::JsonBodyField> &&field, bool configuration,
     bool mandatory, std::vector<std::string> &&default_value) const {
-  throw std::domain_error(
+  throw std::invalid_argument(
       "Yang case leaf-list not supported with shared object protocol.");
 }
 

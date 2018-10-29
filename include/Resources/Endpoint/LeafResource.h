@@ -48,7 +48,7 @@ class LeafResource : public Resource, public virtual Body::LeafResource {
 
   void CreateReplaceUpdate(const Pistache::Rest::Request &request,
                            Pistache::Http::ResponseWriter response,
-                           bool check_mandatory) final;
+                           bool update, bool check_mandatory) final;
 
   void post(const Request &request, ResponseWriter response);
 

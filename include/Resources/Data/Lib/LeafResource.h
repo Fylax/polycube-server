@@ -44,23 +44,22 @@ class LeafResource : public Endpoint::LeafResource {
 
   LeafResource(
       std::function<Response(const char *, Key *, size_t, const char *)>
-  create_handler,
-  std::function<Response(const char *, Key *, size_t, const char *)>
-      replace_handler,
+          create_handler,
+      std::function<Response(const char *, Key *, size_t, const char *)>
+          replace_handler,
       std::function<Response(const char *, Key *, size_t)> delete_handler,
-  std::function<Response(const char *, Key *, size_t)> read_handler,
+      std::function<Response(const char *, Key *, size_t)> read_handler,
       std::string name, std::string module, std::string rest_endpoint,
-  std::shared_ptr<Endpoint::ParentResource> parent,
+      std::shared_ptr<Endpoint::ParentResource> parent,
       std::unique_ptr<Body::JsonBodyField> &&field, bool mandatory,
       std::unique_ptr<const std::string> &&default_value);
 
-  const Response Value(const std::string &cube_name,
-                       PerListKeyValues &keys) const final;
+  const Response ReadValue(const std::string &cube_name,
+                           PerListKeyValues &keys) const final;
 
-  Response Value(const std::string &cube_name, const nlohmann::json &value,
-                 PerListKeyValues &keys,
-                 Endpoint::Operation operation) final;
-
+  Response WriteValue(const std::string &cube_name, const nlohmann::json &value,
+                      PerListKeyValues &keys,
+                      Endpoint::Operation operation) final;
 
  private:
   const std::function<Response(const char *, Key *, size_t)> read_handler_;

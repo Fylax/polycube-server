@@ -39,6 +39,8 @@ class Service : public ParentResource, public Body::Service {
 
   using Body::Service::ValidateXPath;
 
+  static const std::string Cube(const Pistache::Rest::Request &request);
+
  private:
   const std::string body_rest_endpoint_;
   Validators::InSetValidator path_param_;
@@ -49,6 +51,10 @@ class Service : public ParentResource, public Body::Service {
   std::vector<Response> RequestValidate(
       const Pistache::Rest::Request &request,
       const std::string &caller_name) const final;
+
+  Response WriteValue(const std::string& cube_name,
+                      const nlohmann::json& value, PerListKeyValues& keys,
+                      Operation operation) override = 0;
 
   void post(const Request &request, ResponseWriter response) final;
 

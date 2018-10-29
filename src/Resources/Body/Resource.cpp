@@ -38,8 +38,8 @@ std::shared_ptr<ParentResource> Resource::Parent() const {
   return parent_;
 }
 
-const Response Resource::Value(
-    const std::string &cube_name, PerListKeyValues &keys) const {
-  return parent_->Value(cube_name, keys);
+const Response Resource::ReadValue(
+    const std::string& cube_name, PerListKeyValues& keys) const {
+  return parent_->ReadValue(cube_name, keys);
 }
 }  // namespace polycube::polycubed::Rest::Resources::Body

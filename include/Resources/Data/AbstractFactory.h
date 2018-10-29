@@ -41,6 +41,7 @@ class AbstractFactory : public Body::AbstractFactory {
  public:
   static std::unique_ptr<AbstractFactory> Concrete(
       const nlohmann::json &request_body);
+
   virtual const std::string Yang() const = 0;
 
   virtual std::unique_ptr<Endpoint::CaseResource> RestCase(

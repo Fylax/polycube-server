@@ -19,6 +19,9 @@
 #include <memory>
 #include <string>
 #include <utility>
+#include <ParentResource.h>
+
+#include "../../../include/Resources/Body/ListKey.h"
 
 #include "../../../include/Server/ResponseGenerator.h"
 #include "../../../include/Server/RestServer.h"
@@ -59,29 +62,10 @@ ParentResource::~ParentResource() {
   }
 }
 
-std::vector<Response> ParentResource::RequestValidate(
-    const Pistache::Rest::Request &request,
-    [[maybe_unused]] const std::string &caller_name) const {
-  return std::dynamic_pointer_cast<ParentResource>(parent_)->RequestValidate(
-      request, name_);
-}
-
-void ParentResource::get(const Request &request, ResponseWriter response) {
-  std::vector<Response> errors;
-  if (parent_ != nullptr) {
-    std::dynamic_pointer_cast<ParentResource>(parent_)->RequestValidate(request,
-                                                                        name_);
-  }
-  // TODO: call user code and merge responses
-  if (errors.empty()) {
-    errors.push_back({ErrorTag::kOk, ""});
-  }
-  Server::ResponseGenerator::Generate(std::move(errors), std::move(response));
-}
-
 void ParentResource::CreateReplaceUpdate(
     const Pistache::Rest::Request &request,
-    Pistache::Http::ResponseWriter response, bool check_mandatory) {
+    Pistache::Http::ResponseWriter response,
+    bool update, bool check_mandatory) {
   std::vector<Response> errors =
       std::dynamic_pointer_cast<ParentResource>(parent_)->RequestValidate(
           request, name_);
@@ -98,22 +82,58 @@ void ParentResource::CreateReplaceUpdate(
   auto body = BodyValidate(jbody, check_mandatory);
   errors.reserve(errors.size() + body.size());
   std::copy(std::begin(body), std::end(body), std::back_inserter(errors));
-  // TODO: call user code and merge responses
+
   if (errors.empty()) {
-    errors.push_back({ErrorTag::kCreated, ""});
+    auto op = OperationType(update, check_mandatory);
+    const auto cube_name = Service::Cube(request);
+    PerListKeyValues keys{};
+    Keys(request, keys);
+    auto resp = WriteValue(cube_name, jbody, keys, op);
+    if (resp.error_tag == ErrorTag::kOk) {
+      errors.push_back({ErrorTag::kCreated, ""});
+    } else {
+      errors.push_back(resp);
+    }
+  }
+  Server::ResponseGenerator::Generate(std::move(errors), std::move(response));
+}
+
+std::vector<Response> ParentResource::RequestValidate(
+    const Pistache::Rest::Request &request,
+    [[maybe_unused]] const std::string &caller_name) const {
+  return std::dynamic_pointer_cast<ParentResource>(parent_)->RequestValidate(
+      request, name_);
+}
+
+void ParentResource::Keys(const Pistache::Rest::Request &request,
+                          PerListKeyValues &parsed) const {
+  std::dynamic_pointer_cast<ParentResource>(parent_)->Keys(request, parsed);
+}
+
+void ParentResource::get(const Request &request, ResponseWriter response) {
+  std::vector<Response> errors;
+  if (parent_ != nullptr) {
+    std::dynamic_pointer_cast<ParentResource>(parent_)->RequestValidate(request,
+                                                                        name_);
+  }
+  if (errors.empty()) {
+    const auto &cube_name = Service::Cube(request);
+    PerListKeyValues keys{};
+    std::dynamic_pointer_cast<ParentResource>(parent_)->Keys(request, keys);
+    errors.push_back(ReadValue(cube_name, keys));
   }
   Server::ResponseGenerator::Generate(std::move(errors), std::move(response));
 }
 
 void ParentResource::post(const Request &request, ResponseWriter response) {
-  CreateReplaceUpdate(request, std::move(response), true);
+  CreateReplaceUpdate(request, std::move(response), false, true);
 }
 
 void ParentResource::put(const Request &request, ResponseWriter response) {
-  CreateReplaceUpdate(request, std::move(response), true);
+  CreateReplaceUpdate(request, std::move(response), true, true);
 }
 
 void ParentResource::patch(const Request &request, ResponseWriter response) {
-  CreateReplaceUpdate(request, std::move(response), false);
+  CreateReplaceUpdate(request, std::move(response), true, false);
 }
 }  // namespace polycube::polycubed::Rest::Resources::Endpoint

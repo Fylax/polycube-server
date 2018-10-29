@@ -50,7 +50,7 @@ class Yang {
  public:
   explicit Yang(std::unique_ptr<Resources::Data::AbstractFactory> &&factory);
   static const std::string ServiceName(const std::string &yang);
-  const std::shared_ptr<Resources::Endpoint::Service> Parse(std::string &&yang);
+  const std::shared_ptr<Resources::Endpoint::Service> Parse();
 
  private:
   std::unique_ptr<Resources::Data::AbstractFactory> factory_;

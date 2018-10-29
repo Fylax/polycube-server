@@ -41,8 +41,8 @@ class ListResource : public virtual ParentResource {
 
   const std::vector<ListKey> Keys() const;
 
-  const Response Value(
-      const std::string &cube_name, PerListKeyValues &keys) const override;
+  const Response ReadValue(
+      const std::string& cube_name, PerListKeyValues& keys) const override;
 
  protected:
   /** Used by derived class: no explicit virtual base initialization */

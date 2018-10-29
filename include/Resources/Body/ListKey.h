@@ -46,6 +46,8 @@ class ListKey {
   ListKey(LY_DATA_TYPE type, std::string name,
           std::vector<std::shared_ptr<Validators::Validator>> &&validators);
 
+  ListKey(const ListKey &copy);
+
   ListType Type() const;
 
   const std::string Name() const;

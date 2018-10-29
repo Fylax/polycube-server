@@ -20,10 +20,15 @@
 #include <string>
 #include <utility>
 
+#include "../../../include/Resources/Body/ListKey.h"
+
 #include "../../../include/Server/ResponseGenerator.h"
 #include "../../../include/Server/RestServer.h"
 
 namespace polycube::polycubed::Rest::Resources::Endpoint {
+using ListKeyValues = std::vector<std::pair<Body::ListKey, std::string>>;
+using PerListKeyValues = std::stack<ListKeyValues>;
+
 LeafResource::LeafResource(std::string rest_endpoint)
     : LeafResource("", "", std::move(rest_endpoint), nullptr, nullptr, false,
                    false, nullptr) {}
@@ -61,16 +66,18 @@ void LeafResource::get(const Request &request, ResponseWriter response) {
   auto errors =
       std::dynamic_pointer_cast<ParentResource>(parent_)->RequestValidate(
           request, name_);
-  // TODO: call user code and merge responses
   if (errors.empty()) {
-    errors.push_back({kOk, ""});
+    const auto &cube_name = Service::Cube(request);
+    PerListKeyValues keys{};
+    std::dynamic_pointer_cast<ParentResource>(parent_)->Keys(request, keys);
+    errors.push_back(ReadValue(cube_name, keys));
   }
   Server::ResponseGenerator::Generate(std::move(errors), std::move(response));
 }
 
 void LeafResource::CreateReplaceUpdate(const Pistache::Rest::Request &request,
                                        Pistache::Http::ResponseWriter response,
-                                       bool check_mandatory) {
+                                       bool update, bool check_mandatory) {
   auto errors = RequestValidate(request, name_);
   nlohmann::json jbody;
   if (request.body().empty()) {
@@ -85,9 +92,17 @@ void LeafResource::CreateReplaceUpdate(const Pistache::Rest::Request &request,
   errors.reserve(errors.size() + body.size());
   std::copy(std::begin(body), std::end(body), std::back_inserter(errors));
 
-  // TODO: call user code and merge responses
   if (errors.empty()) {
-    errors.push_back({kCreated, ""});
+    auto op = OperationType(update, check_mandatory);
+    const auto cube_name = Service::Cube(request);
+    PerListKeyValues keys{};
+    std::dynamic_pointer_cast<ParentResource>(parent_)->Keys(request, keys);
+    auto resp = WriteValue(cube_name, jbody, keys, op);
+    if (resp.error_tag == ErrorTag::kOk) {
+      errors.push_back({ErrorTag::kCreated, ""});
+    } else {
+      errors.push_back(resp);
+    }
   }
   Server::ResponseGenerator::Generate(std::move(errors), std::move(response));
 }
@@ -100,10 +115,10 @@ std::vector<Response> LeafResource::RequestValidate(
 }
 
 void LeafResource::post(const Request &request, ResponseWriter response) {
-  CreateReplaceUpdate(request, std::move(response), true);
+  CreateReplaceUpdate(request, std::move(response), false, true);
 }
 
 void LeafResource::put(const Request &request, ResponseWriter response) {
-  CreateReplaceUpdate(request, std::move(response), true);
+  CreateReplaceUpdate(request, std::move(response), true, true);
 }
 }  // namespace polycube::polycubed::Rest::Resources::Endpoint

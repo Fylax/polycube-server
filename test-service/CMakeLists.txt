@@ -1,0 +1,1 @@
+add_library(pcn-helloworld SHARED helloworld.c)

@@ -16,6 +16,8 @@
 #include "../../../include/Resources/Endpoint/Resource.h"
 
 #include <string>
+#include <Resource.h>
+
 
 namespace polycube::polycubed::Rest::Resources::Endpoint {
 
@@ -24,5 +26,17 @@ Resource::Resource(std::string&& rest_endpoint)
 
 const std::string& Resource::Endpoint() const {
   return rest_endpoint_;
+}
+
+Operation Resource::OperationType(bool update, bool check_mandatory) {
+  if (!update) {
+    return Operation::kCreate;
+  } else {
+    if (check_mandatory) {
+      return Operation::kReplace;
+    } else {
+      return Operation::kUpdate;
+    }
+  }
 }
 }  // namespace polycube::polycubed::Rest::Resources::Endpoint

@@ -19,13 +19,16 @@
 namespace polycube::polycubed::Rest::Resources::Data {
 std::unique_ptr<AbstractFactory> AbstractFactory::Concrete(
     const nlohmann::json &request_body) {
-  if (request_body.count("protocol") == 0 || request_body.count("data")) {
-    const auto &protocol = request_body.at("protocol").get<std::string>();
-    const auto &data = request_body.at("data").get<std::string>();
-    if (protocol == "lib") {
-      return std::make_unique<Lib::ConcreteFactory>(data);
-    }
+  if (request_body.count("protocol") == 0) {
+    throw std::runtime_error("Missing protocol.");
   }
-  throw std::domain_error("Invalid protocol.");
+  if (request_body.count("data") == 0) {
+    throw std::runtime_error("Missing data.");
+  }
+  const auto &protocol = request_body.at("protocol").get<std::string>();
+  const auto &data = request_body.at("data").get<std::string>();
+  if (protocol == "lib") {
+    return std::make_unique<Lib::ConcreteFactory>(data);
+  }
 }
 }  // namespace polycube::polycubed::Rest::Resources::Data

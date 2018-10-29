@@ -71,6 +71,16 @@ std::vector<Response> ListResource::RequestValidate(
   return errors;
 }
 
+void ListResource::Keys(const Pistache::Rest::Request &request,
+                          PerListKeyValues &parsed) const {
+  ListKeyValues keys {};
+  for (const auto &k: keys_) {
+    keys.emplace_back(k, request.param(k.Name()).as<std::string>());
+  }
+  parsed.push(std::move(keys));
+  std::dynamic_pointer_cast<ParentResource>(parent_)->Keys(request, parsed);
+}
+
 ListResource::ListResource(std::string rest_endpoint,
                            std::string rest_endpoint_multiple,
                            std::vector<Body::ListKey> &&keys)

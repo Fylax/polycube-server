@@ -21,6 +21,7 @@
 #pragma GCC diagnostic pop
 
 #include "../../include/Parser/Yang.h"
+#include "../../include/Resources/Data/AbstractFactory.h"
 #include "../../include/Server/Base64.h"
 #include "../../include/Server/ResponseGenerator.h"
 #include "../../include/Server/RestServer.h"
@@ -68,17 +69,16 @@ void CubeManager::post(const Pistache::Rest::Request &request,
   std::unique_lock<std::shared_mutex> lock(mutex_);
   try {
     nlohmann::json body = nlohmann::json::parse(request.body());
-    auto yang = Server::Base64::decode(body["model"].get<std::string>());
+    auto factory = Data::AbstractFactory::Concrete(body);
 
-    if (existing_cubes_.count(Parser::Yang::ServiceName(yang)) != 0) {
+    if (existing_cubes_.count(Parser::Yang::ServiceName(factory->Yang())) != 0) {
       Server::ResponseGenerator::Generate(
           std::vector<Response>{{ErrorTag::kDataExists, ""}},
           std::move(response));
       return;
     }
-    // TODO assign correct factory to parser
-    auto parser = std::make_unique<Parser::Yang>(nullptr);
-    auto cube = parser->Parse(std::move(yang));
+
+    auto cube = Parser::Yang(std::move(factory)).Parse();
     existing_cubes_[cube->Name()] = cube;
     Server::ResponseGenerator::Generate(
         std::vector<Response>{{ErrorTag::kCreated, ""}}, std::move(response));

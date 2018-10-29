@@ -59,17 +59,17 @@ ListResource::ListResource(
       delete_whole_handler_{std::move(delete_whole_handler)},
       help_handler_{std::move(help_handler)} {}
 
-const Response ListResource::Value(const std::string &cube_name,
-                                   PerListKeyValues &keys) const {
+const Response ListResource::ReadValue(const std::string &cube_name,
+                                       PerListKeyValues &keys) const {
   auto key_params = KeyListArray::Generate(keys);
   return read_entry_handler_(cube_name.data(), key_params.data(),
                              key_params.size());
 }
 
-Response ListResource::Value(const std::string &cube_name,
-                             const nlohmann::json &value,
-                             PerListKeyValues &keys,
-                             Endpoint::Operation operation) {
+Response ListResource::WriteValue(const std::string &cube_name,
+                                  const nlohmann::json &value,
+                                  PerListKeyValues &keys,
+                                  Endpoint::Operation operation) {
   auto key_params = KeyListArray::Generate(keys);
   switch (operation) {
   case Endpoint::Operation::kCreate:

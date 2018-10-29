@@ -13,13 +13,19 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
+#include <Service.h>
+
 #include "Service.h"
 
-#include "../../Server/ResponseGenerator.h"
-#include "../../Server/RestServer.h"
-#include "../CubeManager.h"
+#include "../../../include/Resources/Body/ListKey.h"
+#include "../../../include/Resources/CubeManager.h"
+#include "../../../include/Server/ResponseGenerator.h"
+#include "../../../include/Server/RestServer.h"
 
 namespace polycube::polycubed::Rest::Resources::Endpoint {
+using ListKeyValues = std::vector<std::pair<Body::ListKey, std::string>>;
+using PerListKeyValues = std::stack<ListKeyValues>;
+
 Service::Service(const std::string &name, std::string base_address)
     : Body::ParentResource(name, name, nullptr),
       ParentResource(base_address + name + "/:cube_name/"),
@@ -39,6 +45,10 @@ Service::~Service() {
   router->removeRoute(Method::Post, body_rest_endpoint_);
 }
 
+const std::string Service::Cube(const Pistache::Rest::Request& request) {
+  return request.param(":cube_name").as<std::string>();
+}
+
 std::vector<Response> Service::RequestValidate(
     const Request &request,
     [[maybe_unused]] const std::string &caller_name) const {
@@ -50,14 +60,20 @@ std::vector<Response> Service::RequestValidate(
 }
 
 void Service::CreateReplaceUpdate(const std::string &name, nlohmann::json body,
-                                  ResponseWriter response, bool replace,
+                                  ResponseWriter response, bool update,
                                   bool check_mandatory) {
-  if (CubeManager::GetInstance().CreateCube(name) || replace) {
+  if (CubeManager::GetInstance().CreateCube(name) || update) {
     auto errors = BodyValidate(body, check_mandatory);
     if (errors.empty()) {
-      // TODO call user code
-      path_param_.AddValue(name);
-      errors.push_back({ErrorTag::kCreated, ""});
+      auto op = OperationType(update, check_mandatory);
+      auto k = PerListKeyValues{};
+      auto resp = WriteValue(name, std::move(body), k, op);
+      if (resp.error_tag == ErrorTag::kOk) {
+        path_param_.AddValue(name);
+        errors.push_back({ErrorTag::kCreated, ""});
+      } else {
+        errors.push_back(resp);
+      }
     }
     Server::ResponseGenerator::Generate(std::move(errors), std::move(response));
   } else {
@@ -74,10 +90,7 @@ void Service::get_body(const Request &request, ResponseWriter response) {
         std::move(response));
     return;
   }
-  for (const auto &name : path_param_.Values()) {
-    // TODO call user code
-  }
-  // TODO data is fetched from lib
+  // TODO call get-list
   Server::ResponseGenerator::Generate(
       std::vector<Response>{{ErrorTag::kOk, ""}}, std::move(response));
 }

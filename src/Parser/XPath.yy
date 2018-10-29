@@ -106,7 +106,7 @@ start_path : DEL ID DEL ID {
              } path { $$ = $6; } |
              CUR {
                auto leaf = std::dynamic_pointer_cast<Resources::Body::LeafResource>(driver->current);
-               $$ = leaf->Value(driver->cube_name).get<std::string>();
+               $$ = leaf->ReadValue(driver->cube_name).message;
              } |
              CUR DEL path { $$ = $3; } |
              PAR { YYABORT; } |
@@ -124,7 +124,7 @@ start_path : DEL ID DEL ID {
 
 path : %empty {
          auto leaf = std::dynamic_pointer_cast<Resources::Body::LeafResource>(driver->current);
-         if (leaf != nullptr) $$ = leaf->Value(driver->cube_name).get<std::string>();
+         if (leaf != nullptr) $$ = leaf->ReadValue(driver->cube_name).message;
        } |
        DEL path {} | CUR path {} |
        PAR path { driver->current = driver->current->Parent(); } |

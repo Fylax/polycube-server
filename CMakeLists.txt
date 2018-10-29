@@ -21,3 +21,5 @@ add_executable(service_controller main.cpp
         $<TARGET_OBJECTS:validators>)
 
 target_link_libraries(service_controller yang pistache ${CMAKE_DL_LIBS})
+
+add_subdirectory(test-service)

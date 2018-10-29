@@ -37,11 +37,12 @@ class Service : public Endpoint::Service {
           std::function<Response(const char *)> update_list_handler,
           std::string name, std::string base_address);
 
-  const Response Value(const std::string &cube_name,
-                       PerListKeyValues &keys) const final;
+  const Response ReadValue(const std::string &cube_name,
+                           PerListKeyValues &keys) const final;
 
-  Response Value(const std::string &cube_name, const nlohmann::json &value,
-                 PerListKeyValues &keys, Endpoint::Operation operation) final;
+  Response WriteValue(const std::string &cube_name, const nlohmann::json &value,
+                      PerListKeyValues &keys,
+                      Endpoint::Operation operation) final;
 
  private:
   const std::function<Response(const char *, const char *)> create_handler_;

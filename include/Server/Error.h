@@ -56,7 +56,7 @@ enum ErrorTag {
 };
 
 typedef struct Response {
-  const ErrorTag error_tag;
+  const enum ErrorTag error_tag;
   const char *message;
 } Response;
 #ifdef __cplusplus

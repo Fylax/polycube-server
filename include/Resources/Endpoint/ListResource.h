@@ -45,6 +45,9 @@ class ListResource : public ParentResource, public Body::ListResource {
       const Pistache::Rest::Request &request,
       const std::string &caller_name) const final;
 
+  void Keys(const Pistache::Rest::Request &request,
+            PerListKeyValues &parsed) const final;
+
  protected:
   ListResource(std::string rest_endpoint, std::string rest_endpoint_multiple,
                std::vector<Body::ListKey> &&keys);
