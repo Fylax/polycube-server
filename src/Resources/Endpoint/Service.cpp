@@ -18,7 +18,7 @@
 #include "Service.h"
 
 #include "../../../include/Resources/Body/ListKey.h"
-#include "../../../include/Resources/CubeManager.h"
+#include "../../../include/Resources/ServiceManager.h"
 #include "../../../include/Server/ResponseGenerator.h"
 #include "../../../include/Server/RestServer.h"
 
@@ -62,7 +62,7 @@ std::vector<Response> Service::RequestValidate(
 void Service::CreateReplaceUpdate(const std::string &name, nlohmann::json body,
                                   ResponseWriter response, bool update,
                                   bool check_mandatory) {
-  if (CubeManager::GetInstance().CreateCube(name) || update) {
+  if (ServiceManager::GetInstance().CreateCube(name) || update) {
     auto errors = BodyValidate(body, check_mandatory);
     if (errors.empty()) {
       auto op = OperationType(update, check_mandatory);

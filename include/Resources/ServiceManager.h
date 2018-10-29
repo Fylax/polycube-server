@@ -25,16 +25,16 @@
 #include "Endpoint/Service.h"
 
 namespace polycube::polycubed::Rest::Resources {
-class CubeManager {
+class ServiceManager {
  public:
-  static CubeManager &GetInstance() {
-    static CubeManager instance;
+  static ServiceManager &GetInstance() {
+    static ServiceManager instance;
     return instance;
   }
 
-  CubeManager(CubeManager const &) = delete;
+  ServiceManager(ServiceManager const &) = delete;
 
-  void operator=(CubeManager const &) = delete;
+  void operator=(ServiceManager const &) = delete;
 
   bool ExistsCube(const std::string &name) const;
 
@@ -60,7 +60,7 @@ class CubeManager {
       existing_cubes_;
   std::unordered_set<std::string> existing_cubes_impl_;
 
-  CubeManager();
+  ServiceManager();
 
   void post(const Pistache::Rest::Request &request,
             Pistache::Http::ResponseWriter response);

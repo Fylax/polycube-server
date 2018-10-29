@@ -2,7 +2,7 @@ add_subdirectory(Body)
 add_subdirectory(Endpoint)
 add_subdirectory(Data)
 set(resources_sources
-        ${CMAKE_CURRENT_LIST_DIR}/CubeManager.cpp
+        ${CMAKE_CURRENT_LIST_DIR}/ServiceManager.cpp
         ${body_sources}
         ${endpoint_sources}
         ${data_sources})

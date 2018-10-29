@@ -20,7 +20,7 @@
 #include <pistache/router.h>
 
 #include <memory>
-#include "../Resources/CubeManager.h"
+#include "../Resources/ServiceManager.h"
 namespace polycube::polycubed::Rest::Server {
 class RestServer {
  public:

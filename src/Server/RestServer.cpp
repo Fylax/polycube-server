@@ -14,7 +14,7 @@
  * limitations under the License.
  */
 #include "../../include/Server/RestServer.h"
-#include "../../include/Resources/CubeManager.h"
+#include "../../include/Resources/ServiceManager.h"
 
 #include <pistache/endpoint.h>
 #include <pistache/http.h>
@@ -43,7 +43,7 @@ void RestServer::init(std::size_t thr) {
   auto opts = Pistache::Http::Endpoint::options().threads(thr).flags(
       Pistache::Tcp::Options::InstallSignalHandler);
   httpEndpoint_->init(opts);
-  Resources::CubeManager::GetInstance();
+  Resources::ServiceManager::GetInstance();
 }
 
 void RestServer::start() {

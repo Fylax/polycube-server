@@ -13,7 +13,7 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
-#include "../../include/Resources/CubeManager.h"
+#include "../../include/Resources/ServiceManager.h"
 
 #pragma GCC diagnostic push
 #pragma GCC diagnostic ignored "-Weffc++"
@@ -27,36 +27,36 @@
 #include "../../include/Server/RestServer.h"
 
 namespace polycube::polycubed::Rest::Resources {
-CubeManager::CubeManager()
+ServiceManager::ServiceManager()
     : mutex_{}, existing_cubes_{}, existing_cubes_impl_{} {
   using Pistache::Rest::Routes::bind;
-  Server::RestServer::Router()->post("/", bind(&CubeManager::post, this));
+  Server::RestServer::Router()->post("/", bind(&ServiceManager::post, this));
 }
 
-bool CubeManager::ExistsCube(const std::string &name) const {
+bool ServiceManager::ExistsCube(const std::string &name) const {
   std::unique_lock<std::shared_mutex> lock(mutex_);
-  return CubeManager::existing_cubes_impl_.count(name) != 0;
+  return ServiceManager::existing_cubes_impl_.count(name) != 0;
 }
 
-std::shared_ptr<Body::Resource> CubeManager::Cube(
+std::shared_ptr<Body::Resource> ServiceManager::Cube(
     const std::string &service, const std::string &name) const {
   std::unique_lock<std::shared_mutex> lock(mutex_);
-  if (CubeManager::existing_cubes_.count(service) == 0)
+  if (ServiceManager::existing_cubes_.count(service) == 0)
     return nullptr;
-  return CubeManager::existing_cubes_.at(service)->Child(name);
+  return ServiceManager::existing_cubes_.at(service)->Child(name);
 }
 
-bool CubeManager::CreateCube(const std::string &name) {
+bool ServiceManager::CreateCube(const std::string &name) {
   std::unique_lock<std::shared_mutex> lock(mutex_);
-  return CubeManager::existing_cubes_impl_.insert(name).second;
+  return ServiceManager::existing_cubes_impl_.insert(name).second;
 }
 
-void CubeManager::RemoveCube(const std::string &name) {
+void ServiceManager::RemoveCube(const std::string &name) {
   std::unique_lock<std::shared_mutex> lock(mutex_);
   existing_cubes_impl_.erase(name);
 }
 
-bool CubeManager::ValidateXpath(const std::string &xpath,
+bool ServiceManager::ValidateXpath(const std::string &xpath,
                                 const std::string &context) const {
   std::shared_lock<std::shared_mutex> lock(mutex_);
   if (existing_cubes_.count(context) == 0)
@@ -64,7 +64,7 @@ bool CubeManager::ValidateXpath(const std::string &xpath,
   return existing_cubes_.at(context)->ValidateXPath(xpath);
 }
 
-void CubeManager::post(const Pistache::Rest::Request &request,
+void ServiceManager::post(const Pistache::Rest::Request &request,
                        Pistache::Http::ResponseWriter response) {
   std::unique_lock<std::shared_mutex> lock(mutex_);
   try {

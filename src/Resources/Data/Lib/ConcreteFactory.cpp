@@ -208,6 +208,9 @@ std::unique_ptr<Endpoint::Service>
 ConcreteFactory::RestService(const std::queue<std::string>& tree_names,
                              std::string name,
                              std::string base_endpoint) const {
+  // Required for ensuring handle lifetime
+  EntryPoint::AddService(name, handle_);
+
   std::string create_single {"create_" + name + "_by_id"};
   std::string update_single {"create_" + name + "_by_id"};
   std::string read_single {"create_" + name + "_by_id"};

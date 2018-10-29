@@ -17,13 +17,13 @@
 
 #include <string>
 
-#include "../../include/Resources/CubeManager.h"
+#include "../../include/Resources/ServiceManager.h"
 
 namespace polycube::polycubed::Rest::Validators {
 XPathValidator::XPathValidator(const std::string &context)
     : context_(context) {}
 
 bool XPathValidator::Validate(const std::string &value) const {
-  return Resources::CubeManager::GetInstance().ValidateXpath(value, context_);
+  return Resources::ServiceManager::GetInstance().ValidateXpath(value, context_);
 }
 }  // namespace polycube::polycubed::Rest::Validators

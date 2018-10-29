@@ -29,6 +29,10 @@ enum class Operation { kCreate, kRead, kUpdate, kReplace, kDelete };
 
 std::string GenerateName(std::queue<std::string> names, Operation operation);
 
+void AddService(std::string service_name, std::shared_ptr<void> handle);
+
+void RemoveService(std::string service_name);
+
 }  // namespace polycube::polycubed::Rest::Resources::Data::Lib::EntryPoint
 
 #ifdef __cplusplus

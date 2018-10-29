@@ -79,6 +79,6 @@ class ConcreteFactory : public Data::AbstractFactory {
   std::function<T> LoadHandler(const std::string &function_name) const;
 
  private:
-  std::unique_ptr<void, void (*)(void *)> handle_;
+  std::shared_ptr<void> handle_;
 };
 }  // namespace polycube::polycubed::Rest::Resources::Data::Lib
