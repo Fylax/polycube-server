@@ -50,8 +50,6 @@ class LeafResource : public Resource, public virtual Body::LeafResource {
                            Pistache::Http::ResponseWriter response,
                            bool update, bool check_mandatory) final;
 
-  void post(const Request &request, ResponseWriter response);
-
   void put(const Request &request, ResponseWriter response);
 };
 }  // namespace polycube::polycubed::Rest::Resources::Endpoint

@@ -34,16 +34,11 @@ LeafResource::LeafResource(
                          std::move(default_value)),
       Endpoint::LeafResource(std::move(rest_endpoint)),
       read_handler_{std::move(read_handler)},
-      create_handler_{},
-      replace_handler_{},
-      delete_handler_{} {}
+      replace_handler_{} {}
 
 LeafResource::LeafResource(
     std::function<Response(const char *, Key *, size_t, const char *)>
-        create_handler,
-    std::function<Response(const char *, Key *, size_t, const char *)>
         replace_handler,
-    std::function<Response(const char *, Key *, size_t)> delete_handler,
     std::function<Response(const char *, Key *, size_t)> read_handler,
     std::string name, std::string module, std::string rest_endpoint,
     std::shared_ptr<Endpoint::ParentResource> parent,
@@ -54,9 +49,7 @@ LeafResource::LeafResource(
                          std::move(default_value)),
       Endpoint::LeafResource(std::move(rest_endpoint)),
       read_handler_{std::move(read_handler)},
-      create_handler_{std::move(create_handler)},
-      replace_handler_{std::move(replace_handler)},
-      delete_handler_{std::move(delete_handler)} {}
+      replace_handler_{std::move(replace_handler)} {}
 
 const Response LeafResource::ReadValue(const std::string &cube_name,
                                        PerListKeyValues &keys) const {
@@ -70,9 +63,6 @@ Response LeafResource::WriteValue(const std::string &cube_name,
                                   Endpoint::Operation operation) {
   auto key_params = KeyListArray::Generate(keys);
   switch (operation) {
-  case Endpoint::Operation::kCreate:
-    return create_handler_(cube_name.data(), key_params.data(),
-                           key_params.size(), value.dump().data());
   case Endpoint::Operation::kReplace:
     return replace_handler_(cube_name.data(), key_params.data(),
                             key_params.size(), value.dump().data());

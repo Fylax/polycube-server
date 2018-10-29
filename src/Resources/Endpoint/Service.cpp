@@ -42,7 +42,9 @@ Service::Service(const std::string &name, std::string base_address)
 Service::~Service() {
   using Pistache::Http::Method;
   auto router = Server::RestServer::Router();
+  router->removeRoute(Method::Get, body_rest_endpoint_);
   router->removeRoute(Method::Post, body_rest_endpoint_);
+  router->removeRoute(Method::Patch, body_rest_endpoint_);
 }
 
 const std::string Service::Cube(const Pistache::Rest::Request& request) {

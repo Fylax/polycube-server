@@ -57,7 +57,7 @@ void ServiceManager::RemoveCube(const std::string &name) {
 }
 
 bool ServiceManager::ValidateXpath(const std::string &xpath,
-                                const std::string &context) const {
+                                   const std::string &context) const {
   std::shared_lock<std::shared_mutex> lock(mutex_);
   if (existing_cubes_.count(context) == 0)
     return false;
@@ -65,13 +65,14 @@ bool ServiceManager::ValidateXpath(const std::string &xpath,
 }
 
 void ServiceManager::post(const Pistache::Rest::Request &request,
-                       Pistache::Http::ResponseWriter response) {
+                          Pistache::Http::ResponseWriter response) {
   std::unique_lock<std::shared_mutex> lock(mutex_);
   try {
     nlohmann::json body = nlohmann::json::parse(request.body());
     auto factory = Data::AbstractFactory::Concrete(body);
 
-    if (existing_cubes_.count(Parser::Yang::ServiceName(factory->Yang())) != 0) {
+    if (existing_cubes_.count(Parser::Yang::ServiceName(factory->Yang())) !=
+        0) {
       Server::ResponseGenerator::Generate(
           std::vector<Response>{{ErrorTag::kDataExists, ""}},
           std::move(response));
@@ -84,8 +85,8 @@ void ServiceManager::post(const Pistache::Rest::Request &request,
         std::vector<Response>{{ErrorTag::kCreated, ""}}, std::move(response));
   } catch (const std::invalid_argument &e) {
     response.send(Pistache::Http::Code::Bad_Request, e.what());
-  } catch (...) {
-    response.send(Pistache::Http::Code::Internal_Server_Error);
+  } catch (const std::exception& e) {
+    response.send(Pistache::Http::Code::Internal_Server_Error, e.what());
   }
 }
 }  // namespace polycube::polycubed::Rest::Resources

@@ -67,8 +67,8 @@ union ElementValue {
 
 typedef struct {
   const char *name;
-  ElementType type;
-  ElementValue value;
+  enum ElementType type;
+  union ElementValue value;
 } Key;
 #ifdef __cplusplus
 }

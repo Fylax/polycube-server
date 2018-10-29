@@ -48,7 +48,6 @@ LeafResource::LeafResource(
   auto router = Server::RestServer::Router();
   router->get(rest_endpoint_, bind(&LeafResource::get, this));
   if (configuration_) {
-    router->post(rest_endpoint_, bind(&LeafResource::post, this));
     router->put(rest_endpoint_, bind(&LeafResource::put, this));
   }
 }
@@ -112,10 +111,6 @@ std::vector<Response> LeafResource::RequestValidate(
     [[maybe_unused]] const std::string &caller_name) const {
   return std::dynamic_pointer_cast<ParentResource>(parent_)->RequestValidate(
       request, name_);
-}
-
-void LeafResource::post(const Request &request, ResponseWriter response) {
-  CreateReplaceUpdate(request, std::move(response), false, true);
 }
 
 void LeafResource::put(const Request &request, ResponseWriter response) {

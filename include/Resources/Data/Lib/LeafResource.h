@@ -44,10 +44,7 @@ class LeafResource : public Endpoint::LeafResource {
 
   LeafResource(
       std::function<Response(const char *, Key *, size_t, const char *)>
-          create_handler,
-      std::function<Response(const char *, Key *, size_t, const char *)>
           replace_handler,
-      std::function<Response(const char *, Key *, size_t)> delete_handler,
       std::function<Response(const char *, Key *, size_t)> read_handler,
       std::string name, std::string module, std::string rest_endpoint,
       std::shared_ptr<Endpoint::ParentResource> parent,
@@ -64,9 +61,6 @@ class LeafResource : public Endpoint::LeafResource {
  private:
   const std::function<Response(const char *, Key *, size_t)> read_handler_;
   const std::function<Response(const char *, Key *, size_t, const char *)>
-      create_handler_;
-  const std::function<Response(const char *, Key *, size_t, const char *)>
       replace_handler_;
-  const std::function<Response(const char *, Key *, size_t)> delete_handler_;
 };
 }  // namespace polycube::polycubed::Rest::Resources::Data::Lib
