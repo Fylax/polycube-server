@@ -65,19 +65,19 @@ void Service::CreateReplaceUpdate(const std::string &name, nlohmann::json body,
                                   ResponseWriter response, bool update,
                                   bool check_mandatory) {
   if (ServiceManager::GetInstance().CreateCube(name) || update) {
-    auto errors = BodyValidate(body, check_mandatory);
-    if (errors.empty()) {
-      auto op = OperationType(update, check_mandatory);
+    auto op = OperationType(update, check_mandatory);
       auto k = PerListKeyValues{};
-      auto resp = WriteValue(name, std::move(body), k, op);
+      auto resp = WriteValue(name, body, k, op);
       if (resp.error_tag == ErrorTag::kOk) {
         path_param_.AddValue(name);
-        errors.push_back({ErrorTag::kCreated, ""});
+        Server::ResponseGenerator::Generate(
+            std::vector<Response>{{ErrorTag::kCreated, ""}},
+            std::move(response));
       } else {
-        errors.push_back(resp);
+        Server::ResponseGenerator::Generate(
+            std::vector<Response>{resp},
+            std::move(response));
       }
-    }
-    Server::ResponseGenerator::Generate(std::move(errors), std::move(response));
   } else {
     Server::ResponseGenerator::Generate(
         std::vector<Response>{{ErrorTag::kDataExists, ""}},
