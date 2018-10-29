@@ -46,13 +46,14 @@ std::string GenerateName(std::queue<std::string> names, Operation operation) {
       std::find_if(std::begin(operation_names_), std::end(operation_names_),
                    [=](const OperationName &on) { return on.op == operation; })
           ->name;
-  names.emplace("by_id");
 
   std::string entry_point_name{operation_name};
   while (!names.empty()) {
     entry_point_name.append(names.front() + '_');
     names.pop();
   }
+
+  entry_point_name.append("by_id");
   return entry_point_name;
 }
 }  // namespace polycube::polycubed::Rest::Resources::Data::Lib::EntryPoint
