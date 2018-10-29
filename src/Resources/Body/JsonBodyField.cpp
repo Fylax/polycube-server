@@ -38,7 +38,7 @@ JsonBodyField::JsonBodyField(
 ErrorTag JsonBodyField::Validate(const nlohmann::json &value) const {
   if (allowed_types_.count(value.type()) == 0)
     return ErrorTag::kBadAttribute;
-  auto parsed = value.dump();
+  auto parsed = value.get<std::string>();
 
   for (const auto &validator : validators_) {
     if (!validator->Validate(parsed))

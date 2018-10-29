@@ -112,8 +112,8 @@ void Service::post_body(const Request &request, ResponseWriter response) {
 
 void Service::post(const Request &request, ResponseWriter response) {
   auto name = request.param(":cube_name").as<std::string>();
-  CreateReplaceUpdate(name, nlohmann::json::parse(request.body()),
-                      std::move(response), false, true);
+  nlohmann::json body = { "name", name };
+  CreateReplaceUpdate(name, body, std::move(response), false, true);
 }
 
 void Service::put(const Request &request, ResponseWriter response) {

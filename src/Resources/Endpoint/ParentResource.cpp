@@ -107,7 +107,9 @@ std::vector<Response> ParentResource::RequestValidate(
 
 void ParentResource::Keys(const Pistache::Rest::Request &request,
                           PerListKeyValues &parsed) const {
-  std::dynamic_pointer_cast<ParentResource>(parent_)->Keys(request, parsed);
+  if (parent_ != nullptr) {
+    std::dynamic_pointer_cast<ParentResource>(parent_)->Keys(request, parsed);
+  }
 }
 
 void ParentResource::get(const Request &request, ResponseWriter response) {
