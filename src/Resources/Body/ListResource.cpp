@@ -146,7 +146,8 @@ const Response ListResource::ReadValue(
       "Unreachable since keys are mandatory and validated.");
 }
 
-const std::vector<ListKey> ListResource::Keys() const {
-  return keys_;
+const Response ListResource::ReadWhole(const std::string& cube_name,
+                                       PerListKeyValues& keys) const {
+  return ParentResource::ReadValue(cube_name, keys);
 }
 }  // namespace polycube::polycubed::Rest::Resources::Body

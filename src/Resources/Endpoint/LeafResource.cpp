@@ -15,6 +15,7 @@
  */
 #include "../../../include/Resources/Endpoint/LeafResource.h"
 
+#include <LeafResource.h>
 #include <algorithm>
 #include <memory>
 #include <string>
@@ -61,6 +62,13 @@ LeafResource::~LeafResource() {
     router->removeRoute(Method::Put, rest_endpoint_);
   }
 }
+
+void LeafResource::Keys(const Pistache::Rest::Request &request,
+                        PerListKeyValues &parsed) const {
+  return std::dynamic_pointer_cast<ParentResource>(parent_)->Keys(request,
+                                                                  parsed);
+}
+
 void LeafResource::get(const Request &request, ResponseWriter response) {
   auto errors =
       std::dynamic_pointer_cast<ParentResource>(parent_)->RequestValidate(

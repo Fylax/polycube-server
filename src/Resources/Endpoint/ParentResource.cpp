@@ -28,27 +28,31 @@
 
 namespace polycube::polycubed::Rest::Resources::Endpoint {
 ParentResource::ParentResource()
-    : Body::ParentResource("", "", nullptr, false),
+    : Body::ParentResource("", "", nullptr, false, false),
       Endpoint::Resource(""),
       has_endpoints_(false) {}
 
-ParentResource::ParentResource(std::string rest_endpoint)
-    : ParentResource("", "", std::move(rest_endpoint), nullptr, false) {}
+ParentResource::ParentResource(std::string rest_endpoint, bool configuration)
+    : ParentResource("", "", std::move(rest_endpoint), nullptr, configuration,
+                     false) {}
 
 ParentResource::ParentResource(std::string name, std::string module,
                                std::string rest_endpoint,
                                std::shared_ptr<ParentResource> parent,
-                               bool container_presence)
+                               bool configuration, bool container_presence)
     : Body::ParentResource(std::move(name), std::move(module),
-                           std::move(parent), container_presence),
+                           std::move(parent), configuration,
+                           container_presence),
       Endpoint::Resource(std::move(rest_endpoint)),
       has_endpoints_(true) {
   using Pistache::Rest::Routes::bind;
   auto router = Server::RestServer::Router();
   router->get(rest_endpoint_, bind(&ParentResource::get, this));
-  router->post(rest_endpoint_, bind(&ParentResource::post, this));
-  router->put(rest_endpoint_, bind(&ParentResource::put, this));
-  router->patch(rest_endpoint_, bind(&ParentResource::patch, this));
+  if (configuration_) {
+    router->post(rest_endpoint_, bind(&ParentResource::post, this));
+    router->put(rest_endpoint_, bind(&ParentResource::put, this));
+    router->patch(rest_endpoint_, bind(&ParentResource::patch, this));
+  }
 }
 
 ParentResource::~ParentResource() {
@@ -56,9 +60,11 @@ ParentResource::~ParentResource() {
     using Pistache::Http::Method;
     auto router = Server::RestServer::Router();
     router->removeRoute(Method::Get, rest_endpoint_);
-    router->removeRoute(Method::Post, rest_endpoint_);
-    router->removeRoute(Method::Put, rest_endpoint_);
-    router->removeRoute(Method::Patch, rest_endpoint_);
+    if (configuration_) {
+      router->removeRoute(Method::Post, rest_endpoint_);
+      router->removeRoute(Method::Put, rest_endpoint_);
+      router->removeRoute(Method::Patch, rest_endpoint_);
+    }
   }
 }
 

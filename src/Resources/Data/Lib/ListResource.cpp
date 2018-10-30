@@ -15,6 +15,7 @@
  */
 #include "../../../../include/Resources/Data/Lib/ListResource.h"
 
+#include <Lib/ListResource.h>
 #include <string>
 
 #include "../../../../include/Resources/Data/Lib/KeyListArray.h"
@@ -43,10 +44,10 @@ ListResource::ListResource(
     std::shared_ptr<Endpoint::ParentResource> parent,
     std::vector<Body::ListKey> &&keys)
     : Body::ParentResource(std::move(name), std::move(module),
-                           std::move(parent), false),
+                           std::move(parent), true, false),
       Endpoint::ListResource(std::move(rest_endpoint),
-                             std::move(rest_endpoint_multiple),
-                             std::move(keys)),
+                             std::move(rest_endpoint_multiple), std::move(keys),
+                             true),
       create_entry_handler_{std::move(create_entry_handler)},
       replace_entry_handler_{std::move(replace_entry_handler)},
       update_entry_handler_{std::move(update_entry_handler)},
@@ -59,10 +60,41 @@ ListResource::ListResource(
       delete_whole_handler_{std::move(delete_whole_handler)},
       help_handler_{std::move(help_handler)} {}
 
+ListResource::ListResource(
+    std::function<Response(const char *, Key *, size_t)> read_entry_handler,
+    std::function<Response(const char *, Key *, size_t)> read_whole_handler,
+    std::string name, std::string module, std::string rest_endpoint,
+    std::string rest_endpoint_multiple,
+    std::shared_ptr<Endpoint::ParentResource> parent,
+    std::vector<Body::ListKey> &&keys)
+    : Body::ParentResource(std::move(name), std::move(module),
+                           std::move(parent), false, false),
+      Endpoint::ListResource(std::move(rest_endpoint),
+                             std::move(rest_endpoint_multiple), std::move(keys),
+                             false),
+      create_entry_handler_{},
+      replace_entry_handler_{},
+      update_entry_handler_{},
+      read_entry_handler_{std::move(read_entry_handler)},
+      delete_entry_handler_{},
+      create_whole_handler_{},
+      replace_whole_handler_{},
+      update_whole_handler_{},
+      read_whole_handler_{std::move(read_whole_handler)},
+      delete_whole_handler_{},
+      help_handler_{} {}
+
 const Response ListResource::ReadValue(const std::string &cube_name,
                                        PerListKeyValues &keys) const {
   auto key_params = KeyListArray::Generate(keys);
   return read_entry_handler_(cube_name.data(), key_params.data(),
+                             key_params.size());
+}
+
+const Response ListResource::ReadWhole(const std::string &cube_name,
+                                       PerListKeyValues &keys) const {
+  auto key_params = KeyListArray::Generate(keys);
+  return read_whole_handler_(cube_name.data(), key_params.data(),
                              key_params.size());
 }
 
@@ -80,6 +112,26 @@ Response ListResource::WriteValue(const std::string &cube_name,
                                   key_params.size(), value.dump().data());
   case Endpoint::Operation::kUpdate:
     return update_entry_handler_(cube_name.data(), key_params.data(),
+                                 key_params.size(), value.dump().data());
+  default:
+    throw std::runtime_error("Unreachable: fully covered enum");
+  }
+}
+
+Response ListResource::WriteWhole(const std::string &cube_name,
+                                  const nlohmann::json &value,
+                                  PerListKeyValues keys,
+                                  Endpoint::Operation operation) {
+  auto key_params = KeyListArray::Generate(keys);
+  switch (operation) {
+  case Endpoint::Operation::kCreate:
+    return create_whole_handler_(cube_name.data(), key_params.data(),
+                                 key_params.size(), value.dump().data());
+  case Endpoint::Operation::kReplace:
+    return replace_whole_handler_(cube_name.data(), key_params.data(),
+                                  key_params.size(), value.dump().data());
+  case Endpoint::Operation::kUpdate:
+    return update_whole_handler_(cube_name.data(), key_params.data(),
                                  key_params.size(), value.dump().data());
   default:
     throw std::runtime_error("Unreachable: fully covered enum");

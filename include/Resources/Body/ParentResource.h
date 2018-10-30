@@ -29,6 +29,7 @@ class ParentResource : public Resource {
  public:
   ParentResource(std::string name, std::string module,
                  std::shared_ptr<ParentResource> parent,
+                 bool configuration,
                  bool container_presence = false);
 
   ~ParentResource() override = default;

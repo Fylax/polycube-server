@@ -19,6 +19,8 @@
 #include <memory>
 #include <string>
 #include <utility>
+#include <Lib/ParentResource.h>
+
 
 #include "../../../../include/Resources/Body/ListKey.h"
 #include "../../../../include/Resources/Data/Lib/KeyListArray.h"
@@ -37,13 +39,26 @@ ParentResource::ParentResource(
     std::string name, std::string module, std::string rest_endpoint,
     std::shared_ptr<Endpoint::ParentResource> parent, bool container_presence)
     : Body::ParentResource(std::move(name), std::move(module),
-                           std::move(parent), container_presence),
-      Endpoint::ParentResource(std::move(rest_endpoint)),
+                           std::move(parent), true, container_presence),
+      Endpoint::ParentResource(std::move(rest_endpoint), true),
       create_handler_{std::move(create_handler)},
       replace_handler_{std::move(replace_handler)},
       update_handler_{std::move(update_handler)},
       read_handler_{std::move(read_handler)},
       delete_handler_{std::move(delete_handler)} {}
+
+ParentResource::ParentResource(
+    std::function<Response(const char *, Key *, size_t)> read_handler,
+    std::string name, std::string module, std::string rest_endpoint,
+    std::shared_ptr<Endpoint::ParentResource> parent, bool container_presence)
+    : Body::ParentResource(std::move(name), std::move(module),
+                           std::move(parent), false, container_presence),
+      Endpoint::ParentResource(std::move(rest_endpoint), false),
+      create_handler_{},
+      replace_handler_{},
+      update_handler_{},
+      read_handler_{std::move(read_handler)},
+      delete_handler_{} {}
 
 const Response ParentResource::ReadValue(const std::string &cube_name,
                                          PerListKeyValues &keys) const {

@@ -26,11 +26,11 @@ using Pistache::Rest::Request;
 LeafResource::LeafResource(std::string name, std::string module,
                            std::shared_ptr<ParentResource> parent,
                            std::unique_ptr<JsonBodyField> &&field,
-                           bool configurable, bool mandatory,
+                           bool configuration, bool mandatory,
                            std::unique_ptr<const std::string> &&default_value)
-    : Resource(std::move(name), std::move(module), std::move(parent)),
+    : Resource(std::move(name), std::move(module), std::move(parent),
+               configuration),
       field_(std::move(field)),
-      configuration_(configurable),
       mandatory_(mandatory),
       default_(std::move(default_value)) {}
 

@@ -29,7 +29,7 @@ Service::Service(
     std::function<Response(void)> help_handler,
     std::function<Response(const char *)> update_list_handler, std::string name,
     std::string base_address)
-    : Body::ParentResource(name, name, nullptr),
+    : Body::ParentResource(name, name, nullptr, true),
       Endpoint::Service(name, std::move(base_address)),
       create_handler_{std::move(create_handler)},
       update_handler_{std::move(update_handler)},
@@ -58,7 +58,7 @@ Response Service::WriteValue(const std::string &cube_name,
   case Endpoint::Operation::kUpdate:
     return update_handler_(cube_name.data(), value.dump().data());
   default:
-    throw std::runtime_error("Unreachable: fully covered enum");
+    throw std::runtime_error("Unreachable: fully covered enum.");
   }
 }
 

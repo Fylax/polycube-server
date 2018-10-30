@@ -157,7 +157,7 @@ Response update_helloworld_list_by_id(const char *name){
   return returns;
 }
 
-Response create_helloworld_ports_by_id(const char *name, const char *portsName, Key *keys, size_t num_keys, const char *value){
+Response create_helloworld_ports_by_id(const char *name, Key *keys, size_t num_keys, const char *value){
   Response returns = {kOk, ""};
   return returns;
 }

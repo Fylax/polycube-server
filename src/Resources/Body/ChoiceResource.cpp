@@ -26,7 +26,7 @@
 namespace polycube::polycubed::Rest::Resources::Body {
 ChoiceResource::ChoiceResource(
     bool mandatory, std::unique_ptr<const std::string> &&default_case)
-    : ParentResource("", "", nullptr),
+    : ParentResource("", "", nullptr, false),
       mandatory_(mandatory),
       default_case_(std::move(default_case)) {}
 
@@ -34,7 +34,8 @@ ChoiceResource::ChoiceResource(
     std::string name, std::string module,
     std::shared_ptr<ParentResource> parent, bool mandatory,
     std::unique_ptr<const std::string> &&default_case)
-    : ParentResource(std::move(name), std::move(module), std::move(parent)),
+    : ParentResource(std::move(name), std::move(module), std::move(parent),
+                     false),
       mandatory_(mandatory),
       default_case_(std::move(default_case)) {}
 

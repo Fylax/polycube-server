@@ -50,11 +50,26 @@ class ListResource : public Endpoint::ListResource {
       std::shared_ptr<Endpoint::ParentResource> parent,
       std::vector<Body::ListKey> &&keys);
 
+  ListResource(
+      std::function<Response(const char *, Key *, size_t)> read_entry_handler,
+      std::function<Response(const char *, Key *, size_t)> read_whole_handler,
+      std::string name, std::string module, std::string rest_endpoint,
+      std::string rest_endpoint_multiple,
+      std::shared_ptr<Endpoint::ParentResource> parent,
+      std::vector<Body::ListKey> &&keys);
+
   const Response ReadValue(const std::string &cube_name,
                            PerListKeyValues &keys) const final;
 
   Response WriteValue(const std::string &cube_name, const nlohmann::json &value,
                       PerListKeyValues &keys,
+                      Endpoint::Operation operation) final;
+
+  const Response ReadWhole(const std::string &cube_name,
+                           PerListKeyValues &keys) const final;
+
+  Response WriteWhole(const std::string &cube_name, const nlohmann::json &value,
+                      PerListKeyValues keys,
                       Endpoint::Operation operation) final;
 
  private:

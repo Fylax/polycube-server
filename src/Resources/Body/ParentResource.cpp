@@ -28,8 +28,9 @@ namespace polycube::polycubed::Rest::Resources::Body {
 
 ParentResource::ParentResource(std::string name, std::string module,
                                std::shared_ptr<ParentResource> parent,
-                               bool container_presence)
-    : Resource(std::move(name), std::move(module), std::move(parent)),
+                               bool configuration, bool container_presence)
+    : Resource(std::move(name), std::move(module), std::move(parent),
+               configuration),
       children_(),
       container_presence_(container_presence) {}
 
@@ -102,11 +103,12 @@ bool ParentResource::IsMandatory() const {
 }
 
 bool ParentResource::IsConfiguration() const {
-  return std::end(children_) !=
-         std::find_if(std::begin(children_), std::end(children_),
-                      [](const std::shared_ptr<Resource> &child) {
-                        return child->IsConfiguration();
-                      });
+  return configuration_ ||
+         std::end(children_) !=
+             std::find_if(std::begin(children_), std::end(children_),
+                          [](const std::shared_ptr<Resource> &child) {
+                            return child->IsConfiguration();
+                          });
 }
 
 void ParentResource::SetDefaultIfMissing(nlohmann::json &body) const {

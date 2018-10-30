@@ -40,6 +40,9 @@ class LeafResource : public Resource, public virtual Body::LeafResource {
   std::vector<Response> RequestValidate(
       const Request &request, const std::string &caller_name) const override;
 
+  void Keys(const Pistache::Rest::Request &request,
+            PerListKeyValues &parsed) const final;
+
  protected:
   explicit LeafResource(std::string rest_endpoint);
 

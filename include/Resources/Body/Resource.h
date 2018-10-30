@@ -15,11 +15,8 @@
  */
 #pragma once
 
-#include <pistache/router.h>
-
 #include <memory>
 #include <stack>
-#include <shared_mutex>
 #include <string>
 #include <utility>
 #include <vector>
@@ -35,13 +32,14 @@ namespace polycube::polycubed::Rest::Resources::Body {
 class ParentResource;
 class ListKey;
 
-using ListKeyValues = std::vector<std::pair<ListKey, std::string>>;
+using ListKeyValues = std::vector<std::pair<Body::ListKey, std::string>>;
 using PerListKeyValues = std::stack<ListKeyValues>;
 
 class Resource {
  public:
   Resource(std::string &&name, std::string &&module,
-           std::shared_ptr<ParentResource> &&parent);
+           std::shared_ptr<ParentResource> &&parent,
+           bool configuration);
 
   virtual ~Resource() = default;
 
@@ -69,5 +67,6 @@ class Resource {
   const std::string name_;
   std::shared_ptr<ParentResource> parent_;
   const std::string module_;
+  const bool configuration_;
 };
 }  // namespace polycube::polycubed::Rest::Resources::Body

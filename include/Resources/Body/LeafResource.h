@@ -49,7 +49,6 @@ class LeafResource : public Resource {
 
  protected:
   const std::unique_ptr<JsonBodyField> field_;
-  const bool configuration_;
   const bool mandatory_;
   const std::unique_ptr<const std::string> default_;
 };

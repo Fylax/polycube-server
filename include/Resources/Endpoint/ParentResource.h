@@ -23,17 +23,15 @@
 #include "Resource.h"
 
 namespace polycube::polycubed::Rest::Resources::Endpoint {
-using ListKeyValues = std::vector<std::pair<Body::ListKey, std::string>>;
-using PerListKeyValues = std::stack<ListKeyValues>;
 using Pistache::Http::ResponseWriter;
 using Pistache::Rest::Request;
 
 class ParentResource : public Resource, public virtual Body::ParentResource {
-
  public:
   ParentResource(std::string name, std::string module,
                  std::string rest_endpoint,
                  std::shared_ptr<ParentResource> parent,
+                 bool configuration,
                  bool container_presence = false);
 
   ~ParentResource() override;
@@ -46,8 +44,8 @@ class ParentResource : public Resource, public virtual Body::ParentResource {
                            Pistache::Http::ResponseWriter response,
                            bool update, bool check_mandatory) final;
 
-  virtual void Keys(const Pistache::Rest::Request &request,
-                    PerListKeyValues &parsed) const;
+  void Keys(const Pistache::Rest::Request &request,
+            PerListKeyValues &parsed) const override;
 
  protected:
   /**
@@ -59,7 +57,7 @@ class ParentResource : public Resource, public virtual Body::ParentResource {
   /**
    * Used by derived classes: no explicit virtual base construction
    */
-  explicit ParentResource(std::string rest_endpoint);
+  ParentResource(std::string rest_endpoint, bool configuration);
 
  private:
   const bool has_endpoints_;

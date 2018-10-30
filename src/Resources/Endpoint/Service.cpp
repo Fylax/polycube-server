@@ -27,8 +27,8 @@ using ListKeyValues = std::vector<std::pair<Body::ListKey, std::string>>;
 using PerListKeyValues = std::stack<ListKeyValues>;
 
 Service::Service(const std::string &name, std::string base_address)
-    : Body::ParentResource(name, name, nullptr),
-      ParentResource(base_address + name + "/:cube_name/"),
+    : Body::ParentResource(name, name, nullptr, true),
+      ParentResource(base_address + name + "/:cube_name/", true),
       Body::Service(),
       body_rest_endpoint_(base_address + name + '/'),
       path_param_{} {

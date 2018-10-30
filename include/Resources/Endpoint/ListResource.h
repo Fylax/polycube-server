@@ -35,7 +35,8 @@ class ListResource : public ParentResource, public Body::ListResource {
   ListResource(std::string name, std::string module,
                std::shared_ptr<ParentResource> parent,
                std::string rest_endpoint, std::string rest_endpoint_multiple,
-               std::vector<Body::ListKey> &&keys);
+               std::vector<Body::ListKey> &&keys,
+               bool configuration);
 
   ~ListResource() override;
 
@@ -48,13 +49,22 @@ class ListResource : public ParentResource, public Body::ListResource {
   void Keys(const Pistache::Rest::Request &request,
             PerListKeyValues &parsed) const final;
 
+  virtual Response WriteWhole(const std::string &cube_name,
+                              const nlohmann::json &value,
+                              PerListKeyValues keys,
+                              Operation operation) = 0;
+
  protected:
   ListResource(std::string rest_endpoint, std::string rest_endpoint_multiple,
-               std::vector<Body::ListKey> &&keys);
+               std::vector<Body::ListKey> &&keys, bool configuration);
 
  private:
   std::vector<PathParamField> key_params_;
   std::string multiple_endpoint_;
+
+  void CreateReplaceUpdateWhole(const Pistache::Rest::Request &request,
+                                Pistache::Http::ResponseWriter response,
+                                bool update, bool check_mandatory);
 
   void get_multiple(const Request &request, ResponseWriter response);
 

@@ -21,10 +21,12 @@
 
 namespace polycube::polycubed::Rest::Resources::Body {
 Resource::Resource(std::string &&name, std::string &&module,
-                   std::shared_ptr<ParentResource> &&parent)
+                   std::shared_ptr<ParentResource> &&parent,
+                   bool configuration)
     : name_(std::move(name)),
       parent_(std::move(parent)),
-      module_(std::move(module)) {}
+      module_(std::move(module)),
+      configuration_(configuration) {}
 
 const std::string &Resource::Name() const {
   return name_;

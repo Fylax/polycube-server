@@ -51,5 +51,8 @@ class Resource {
                                    bool update, bool check_mandatory) = 0;
 
   static Operation OperationType(bool update, bool check_mandatory);
+
+  virtual void Keys(const Pistache::Rest::Request &request,
+                    PerListKeyValues &parsed) const = 0;
 };
 }  // namespace polycube::polycubed::Rest::Resources::Endpoint

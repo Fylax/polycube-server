@@ -17,10 +17,10 @@
 
 namespace polycube::polycubed::Rest::Resources::Body {
 
-Service::Service(): ParentResource("", "", nullptr) {}
+Service::Service(): ParentResource("", "", nullptr, true) {}
 
 Service::Service(const std::string& name):
-    ParentResource(name, name, nullptr) {}
+    ParentResource(name, name, nullptr, true) {}
 
 bool Service::ValidateXPath(const std::string& xpath) const {
   if (xpath[0] != '/')
