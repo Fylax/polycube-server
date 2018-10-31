@@ -22,7 +22,6 @@ enum ErrorTag {
   /** No error.
    * Message will contain the response body. */
   kOk,
-  kCreated,
   /** Generic invalid-value error, no message provided */
   kInvalidValue,
   /** Required body field missing.
@@ -51,8 +50,10 @@ enum ErrorTag {
   kDataMissing,
   /** Wrong HTTP method used. */
   kOperationNotSupported,
-  /** This is for internal use only */
-  kUnparsableChoice = 100
+  /** These are for internal use only */
+  kCreated = 100,
+  kNoContent,
+  kUnparsableChoice
 };
 
 typedef struct Response {

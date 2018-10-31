@@ -28,40 +28,41 @@
 
 namespace polycube::polycubed::Rest::Resources {
 ServiceManager::ServiceManager()
-    : mutex_{}, existing_cubes_{}, existing_cubes_impl_{} {
+    : mutex_{}, services_{}, cubes_{} {
   using Pistache::Rest::Routes::bind;
   Server::RestServer::Router()->post("/", bind(&ServiceManager::post, this));
+  Server::RestServer::Router()->del("/", bind(&ServiceManager::del, this));
 }
 
 bool ServiceManager::ExistsCube(const std::string &name) const {
   std::unique_lock<std::shared_mutex> lock(mutex_);
-  return ServiceManager::existing_cubes_impl_.count(name) != 0;
+  return ServiceManager::cubes_.count(name) != 0;
 }
 
 std::shared_ptr<Body::Resource> ServiceManager::Cube(
     const std::string &service, const std::string &name) const {
   std::unique_lock<std::shared_mutex> lock(mutex_);
-  if (ServiceManager::existing_cubes_.count(service) == 0)
+  if (ServiceManager::services_.count(service) == 0)
     return nullptr;
-  return ServiceManager::existing_cubes_.at(service)->Child(name);
+  return ServiceManager::services_.at(service)->Child(name);
 }
 
 bool ServiceManager::CreateCube(const std::string &name) {
   std::unique_lock<std::shared_mutex> lock(mutex_);
-  return ServiceManager::existing_cubes_impl_.insert(name).second;
+  return ServiceManager::cubes_.insert(name).second;
 }
 
 void ServiceManager::RemoveCube(const std::string &name) {
   std::unique_lock<std::shared_mutex> lock(mutex_);
-  existing_cubes_impl_.erase(name);
+  cubes_.erase(name);
 }
 
 bool ServiceManager::ValidateXpath(const std::string &xpath,
                                    const std::string &context) const {
   std::shared_lock<std::shared_mutex> lock(mutex_);
-  if (existing_cubes_.count(context) == 0)
+  if (services_.count(context) == 0)
     return false;
-  return existing_cubes_.at(context)->ValidateXPath(xpath);
+  return services_.at(context)->ValidateXPath(xpath);
 }
 
 void ServiceManager::post(const Pistache::Rest::Request &request,
@@ -71,7 +72,7 @@ void ServiceManager::post(const Pistache::Rest::Request &request,
     nlohmann::json body = nlohmann::json::parse(request.body());
     auto factory = Data::AbstractFactory::Concrete(body);
 
-    if (existing_cubes_.count(Parser::Yang::ServiceName(factory->Yang())) !=
+    if (services_.count(Parser::Yang::ServiceName(factory->Yang())) !=
         0) {
       Server::ResponseGenerator::Generate(
           std::vector<Response>{{ErrorTag::kDataExists, ""}},
@@ -80,7 +81,7 @@ void ServiceManager::post(const Pistache::Rest::Request &request,
     }
 
     auto cube = Parser::Yang(std::move(factory)).Parse();
-    existing_cubes_[cube->Name()] = cube;
+    services_[cube->Name()] = cube;
     Server::ResponseGenerator::Generate(
         std::vector<Response>{{ErrorTag::kCreated, ""}}, std::move(response));
   } catch (const std::invalid_argument &e) {
@@ -88,5 +89,29 @@ void ServiceManager::post(const Pistache::Rest::Request &request,
   } catch (const std::exception& e) {
     response.send(Pistache::Http::Code::Internal_Server_Error, e.what());
   }
+}
+
+void ServiceManager::del(const Pistache::Rest::Request &request,
+                          Pistache::Http::ResponseWriter response) {
+  std::unique_lock<std::shared_mutex> lock(mutex_);
+  auto body = nlohmann::json::parse(request.body());
+  auto name = body["name"].get<std::string>();
+  if (services_.count(name) == 0) {
+    Server::ResponseGenerator::Generate(
+        std::vector<Response>{{ErrorTag::kBadAttribute, ":name"}},
+        std::move(response));
+    return;
+  }
+  const auto &service = services_.at(name);
+  if (service->HasCubes()) {
+    Server::ResponseGenerator::Generate(
+        std::vector<Response>{{ErrorTag::kBadAttribute, ":name"}},
+        std::move(response));
+    return;
+  }
+  services_.erase(name);
+  Server::ResponseGenerator::Generate(
+      std::vector<Response>{{ErrorTag::kNoContent, ""}},
+      std::move(response));
 }
 }  // namespace polycube::polycubed::Rest::Resources

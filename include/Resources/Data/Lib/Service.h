@@ -44,6 +44,9 @@ class Service : public Endpoint::Service {
                       PerListKeyValues &keys,
                       Endpoint::Operation operation) final;
 
+  Response DeleteValue(const std::string &cube_name,
+                       PerListKeyValues &keys) final;
+
  private:
   const std::function<Response(const char *, const char *)> create_handler_;
   const std::function<Response(const char *, const char *)> update_handler_;

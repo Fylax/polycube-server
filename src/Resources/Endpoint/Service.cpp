@@ -51,6 +51,10 @@ const std::string Service::Cube(const Pistache::Rest::Request& request) {
   return request.param(":cube_name").as<std::string>();
 }
 
+bool Service::HasCubes() const {
+  return !path_param_.Values().empty();
+}
+
 std::vector<Response> Service::RequestValidate(
     const Request &request,
     [[maybe_unused]] const std::string &caller_name) const {
@@ -126,6 +130,15 @@ void Service::patch(const Request &request, ResponseWriter response) {
   auto name = request.param(":cube_name").as<std::string>();
   CreateReplaceUpdate(name, nlohmann::json::parse(request.body()),
                       std::move(response), true, false);
+}
+
+void Service::del(const Pistache::Rest::Request& request,
+                  Pistache::Http::ResponseWriter response) {
+  auto name = request.param(":cube_name").as<std::string>();
+  if (ServiceManager::GetInstance().ExistsCube(name)) {
+    ServiceManager::GetInstance().RemoveCube(name);
+    path_param_.RemoveValue(name);
+  }
 }
 
 void Service::patch_body(const Request &request, ResponseWriter response) {

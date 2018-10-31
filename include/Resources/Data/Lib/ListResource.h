@@ -61,16 +61,23 @@ class ListResource : public Endpoint::ListResource {
   const Response ReadValue(const std::string &cube_name,
                            PerListKeyValues &keys) const final;
 
+  const Response ReadWhole(const std::string &cube_name,
+                           PerListKeyValues &keys) const final;
+
   Response WriteValue(const std::string &cube_name, const nlohmann::json &value,
                       PerListKeyValues &keys,
                       Endpoint::Operation operation) final;
 
-  const Response ReadWhole(const std::string &cube_name,
-                           PerListKeyValues &keys) const final;
+  Response DeleteValue(const std::string &cube_name,
+                       PerListKeyValues &keys) final;
 
   Response WriteWhole(const std::string &cube_name, const nlohmann::json &value,
-                      PerListKeyValues keys,
+                      PerListKeyValues &keys,
                       Endpoint::Operation operation) final;
+
+  Response DeleteWhole(const std::string &cube_name,
+                       PerListKeyValues &keys) final;
+
 
  private:
   const std::function<Response(const char *, Key *, size_t, const char *)>

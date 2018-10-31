@@ -52,6 +52,7 @@ ParentResource::ParentResource(std::string name, std::string module,
     router->post(rest_endpoint_, bind(&ParentResource::post, this));
     router->put(rest_endpoint_, bind(&ParentResource::put, this));
     router->patch(rest_endpoint_, bind(&ParentResource::patch, this));
+    router->del(rest_endpoint_, bind(&ParentResource::del, this));
   }
 }
 
@@ -64,6 +65,7 @@ ParentResource::~ParentResource() {
       router->removeRoute(Method::Post, rest_endpoint_);
       router->removeRoute(Method::Put, rest_endpoint_);
       router->removeRoute(Method::Patch, rest_endpoint_);
+      router->removeRoute(Method::Delete, rest_endpoint_);
     }
   }
 }
@@ -143,5 +145,25 @@ void ParentResource::put(const Request &request, ResponseWriter response) {
 
 void ParentResource::patch(const Request &request, ResponseWriter response) {
   CreateReplaceUpdate(request, std::move(response), true, false);
+}
+
+void ParentResource::del(const Request& request, ResponseWriter response) {
+  auto errors = RequestValidate(request, name_);
+  if (!errors.empty()) {
+    Server::ResponseGenerator::Generate(std::move(errors), std::move(response));
+    return;
+  }
+  const auto cube_name = Service::Cube(request);
+  PerListKeyValues keys{};
+  std::dynamic_pointer_cast<ParentResource>(parent_)->Keys(request, keys);
+  auto resp =  DeleteValue(cube_name, keys);
+  if (resp.error_tag == ErrorTag::kOk) {
+    Server::ResponseGenerator::Generate(
+        std::vector<Response>{{ErrorTag::kNoContent, ""}}, std::move(response));
+    errors.push_back({ErrorTag::kCreated, ""});
+  } else {
+    Server::ResponseGenerator::Generate(
+        std::vector<Response>{resp}, std::move(response));
+  }
 }
 }  // namespace polycube::polycubed::Rest::Resources::Endpoint

@@ -31,7 +31,7 @@ void InSetValidator::RemoveValue(const std::string &value) {
   invalid_values_.erase(value);
 }
 
-const std::unordered_set<std::string> &InSetValidator::Values() {
+const std::unordered_set<std::string> &InSetValidator::Values() const {
   return invalid_values_;
 }
 }  // namespace polycube::polycubed::Rest::Validators

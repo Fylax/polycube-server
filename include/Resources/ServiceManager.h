@@ -57,12 +57,15 @@ class ServiceManager {
  private:
   mutable std::shared_mutex mutex_;
   std::unordered_map<std::string, std::shared_ptr<Endpoint::Service>>
-      existing_cubes_;
-  std::unordered_set<std::string> existing_cubes_impl_;
+      services_;
+  std::unordered_set<std::string> cubes_;
 
   ServiceManager();
 
   void post(const Pistache::Rest::Request &request,
             Pistache::Http::ResponseWriter response);
+
+  void del(const Pistache::Rest::Request &request,
+           Pistache::Http::ResponseWriter response);
 };
 }  // namespace polycube::polycubed::Rest::Resources

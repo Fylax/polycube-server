@@ -62,4 +62,9 @@ Response Service::WriteValue(const std::string &cube_name,
   }
 }
 
+Response Service::DeleteValue(const std::string &cube_name,
+                              [[maybe_unused]] PerListKeyValues &keys) {
+  return delete_handler_(cube_name.data());
+}
+
 }  // namespace polycube::polycubed::Rest::Resources::Data::Lib

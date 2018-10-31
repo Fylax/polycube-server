@@ -58,7 +58,6 @@ LeafResource::~LeafResource() {
   auto router = Server::RestServer::Router();
   router->removeRoute(Method::Get, rest_endpoint_);
   if (configuration_) {
-    router->removeRoute(Method::Post, rest_endpoint_);
     router->removeRoute(Method::Put, rest_endpoint_);
   }
 }

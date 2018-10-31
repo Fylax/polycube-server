@@ -33,7 +33,7 @@ class InSetValidator : public Validator {
 
   void RemoveValue(const std::string &value);
 
-  const std::unordered_set<std::string> &Values();
+  const std::unordered_set<std::string> &Values() const;
 
  private:
   std::unordered_set<std::string> invalid_values_;

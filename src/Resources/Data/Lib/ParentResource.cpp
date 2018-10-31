@@ -85,4 +85,10 @@ Response ParentResource::WriteValue(const std::string &cube_name,
     throw std::runtime_error("Unreachable: fully covered enum");
   }
 }
+
+Response ParentResource::DeleteValue(const std::string &cube_name,
+                                     PerListKeyValues &keys) {
+  auto key_params = KeyListArray::Generate(keys);
+  return delete_handler_(cube_name.data(), key_params.data(), key_params.size());
+}
 }  // namespace polycube::polycubed::Rest::Resources::Data::Lib

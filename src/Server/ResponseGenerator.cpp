@@ -46,14 +46,15 @@ void ResponseGenerator::Generate(std::vector<Response> &&response,
     writer.send(Code::Created, response[0].message, mime);
     return;
   }
+  if (response[0].error_tag == kNoContent) {
+    writer.send(Code::No_Content);
+    return;
+  }
   auto body = errors;
   Code response_code = Code::Ok;
   for (const auto &err : response) {
     auto single = error;
     switch (err.error_tag) {
-    case kOk:
-    case kCreated:
-      break;
     case kInvalidValue:
       response_code = Code::Bad_Request;
       single["error-tag"] = "invalid-value";
@@ -86,7 +87,7 @@ void ResponseGenerator::Generate(std::vector<Response> &&response,
       response_code = Code::Method_Not_Allowed;
       single["error-tag"] = "operation-not-supported";
       break;
-    case kUnparsableChoice:
+    default:
       break;
     }
     if (std::strlen(err.message))

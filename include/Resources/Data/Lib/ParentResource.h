@@ -56,6 +56,9 @@ class ParentResource : public Endpoint::ParentResource {
                       PerListKeyValues &keys,
                       Endpoint::Operation operation) final;
 
+  Response DeleteValue(const std::string &cube_name,
+                       PerListKeyValues &keys) final;
+
  private:
   const std::function<Response(const char *, Key *, size_t, const char *)>
       create_handler_;

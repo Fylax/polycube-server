@@ -32,15 +32,12 @@ class ListResource : public virtual ParentResource {
                std::shared_ptr<ParentResource> parent,
                std::vector<ListKey> &&keys);
 
-  std::vector<Response> MultipleBodyValidate(nlohmann::json &body,
-                                             bool update) const;
-
   bool ValidateXPath(const std::string &xpath) const final;
 
   bool ValidateKeys(std::unordered_map<std::string, std::string> keys) const;
 
-  const Response ReadValue(
-      const std::string& cube_name, PerListKeyValues& keys) const override;
+  const Response ReadValue(const std::string &cube_name,
+                           PerListKeyValues &keys) const override;
 
   virtual const Response ReadWhole(const std::string &cube_name,
                                    PerListKeyValues &keys) const;

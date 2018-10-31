@@ -118,9 +118,16 @@ Response ListResource::WriteValue(const std::string &cube_name,
   }
 }
 
+Response ListResource::DeleteValue(const std::string& cube_name,
+                                   PerListKeyValues& keys) {
+  auto key_params = KeyListArray::Generate(keys);
+  return delete_entry_handler_(cube_name.data(), key_params.data(),
+                             key_params.size());
+}
+
 Response ListResource::WriteWhole(const std::string &cube_name,
                                   const nlohmann::json &value,
-                                  PerListKeyValues keys,
+                                  PerListKeyValues &keys,
                                   Endpoint::Operation operation) {
   auto key_params = KeyListArray::Generate(keys);
   switch (operation) {
@@ -136,5 +143,12 @@ Response ListResource::WriteWhole(const std::string &cube_name,
   default:
     throw std::runtime_error("Unreachable: fully covered enum");
   }
+}
+
+Response ListResource::DeleteWhole(const std::string& cube_name,
+                                   PerListKeyValues& keys) {
+  auto key_params = KeyListArray::Generate(keys);
+  return delete_whole_handler_(cube_name.data(), key_params.data(),
+                               key_params.size());
 }
 }  // namespace polycube::polycubed::Rest::Resources::Data::Lib

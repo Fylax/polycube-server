@@ -50,6 +50,7 @@ ListResource::ListResource(std::string name, std::string module,
     router->put(multiple_endpoint_, bind(&ListResource::put_multiple, this));
     router->patch(multiple_endpoint_,
                   bind(&ListResource::patch_multiple, this));
+    router->del(multiple_endpoint_, bind(&ListResource::del_multiple, this));
   }
 }
 
@@ -61,6 +62,7 @@ ListResource::~ListResource() {
     router->removeRoute(Method::Post, multiple_endpoint_);
     router->removeRoute(Method::Put, multiple_endpoint_);
     router->removeRoute(Method::Patch, multiple_endpoint_);
+    router->removeRoute(Method::Delete, multiple_endpoint_);
   }
 }
 
@@ -167,5 +169,21 @@ void ListResource::put_multiple(const Request &request,
 void ListResource::patch_multiple(const Request &request,
                                   ResponseWriter response) {
   CreateReplaceUpdateWhole(request, std::move(response), true, false);
+}
+
+void ListResource::del_multiple(const Request &request,
+                                   ResponseWriter response) {
+  std::vector<Response> errors;
+  if (parent_ != nullptr) {
+    std::dynamic_pointer_cast<ParentResource>(parent_)->RequestValidate(request,
+                                                                        name_);
+  }
+  if (errors.empty()) {
+    const auto &cube_name = Service::Cube(request);
+    PerListKeyValues keys{};
+    std::dynamic_pointer_cast<ParentResource>(parent_)->Keys(request, keys);
+    errors.push_back(DeleteWhole(cube_name, keys));
+  }
+  Server::ResponseGenerator::Generate(std::move(errors), std::move(response));
 }
 }  // namespace polycube::polycubed::Rest::Resources::Endpoint

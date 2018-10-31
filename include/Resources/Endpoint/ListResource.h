@@ -35,8 +35,7 @@ class ListResource : public ParentResource, public Body::ListResource {
   ListResource(std::string name, std::string module,
                std::shared_ptr<ParentResource> parent,
                std::string rest_endpoint, std::string rest_endpoint_multiple,
-               std::vector<Body::ListKey> &&keys,
-               bool configuration);
+               std::vector<Body::ListKey> &&keys, bool configuration);
 
   ~ListResource() override;
 
@@ -51,8 +50,11 @@ class ListResource : public ParentResource, public Body::ListResource {
 
   virtual Response WriteWhole(const std::string &cube_name,
                               const nlohmann::json &value,
-                              PerListKeyValues keys,
+                              PerListKeyValues &keys,
                               Operation operation) = 0;
+
+  virtual Response DeleteWhole(const std::string &cube_name,
+                               PerListKeyValues &keys) = 0;
 
  protected:
   ListResource(std::string rest_endpoint, std::string rest_endpoint_multiple,
@@ -73,5 +75,7 @@ class ListResource : public ParentResource, public Body::ListResource {
   void put_multiple(const Request &request, ResponseWriter response);
 
   void patch_multiple(const Request &request, ResponseWriter response);
+
+  void del_multiple(const Request &request, ResponseWriter response);
 };
 }  // namespace polycube::polycubed::Rest::Resources::Endpoint

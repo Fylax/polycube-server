@@ -47,6 +47,9 @@ class ParentResource : public Resource, public virtual Body::ParentResource {
   void Keys(const Pistache::Rest::Request &request,
             PerListKeyValues &parsed) const override;
 
+  virtual Response DeleteValue(const std::string &cube_name,
+                               PerListKeyValues &keys) = 0;
+
  protected:
   /**
    * Used by ChoiceResource and CaseResource: no endpoint and no
@@ -68,5 +71,7 @@ class ParentResource : public Resource, public virtual Body::ParentResource {
   virtual void put(const Request &request, ResponseWriter response);
 
   virtual void patch(const Request &request, ResponseWriter response);
+
+  virtual void del(const Request &request, ResponseWriter response);
 };
 }  // namespace polycube::polycubed::Rest::Resources::Endpoint

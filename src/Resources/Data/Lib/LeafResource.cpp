@@ -19,6 +19,8 @@
 #include <memory>
 #include <string>
 #include <utility>
+#include <Lib/LeafResource.h>
+
 
 #include "../../../../include/Resources/Data/Lib/KeyListArray.h"
 

@@ -41,7 +41,8 @@ class Resource {
 
   virtual Response WriteValue(const std::string &cube_name,
                               const nlohmann::json &value,
-                              PerListKeyValues &keys, Operation operation) = 0;
+                              PerListKeyValues &keys,
+                              Operation operation) = 0;
 
  protected:
   const std::string rest_endpoint_;

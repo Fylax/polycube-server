@@ -35,25 +35,6 @@ ListResource::ListResource(std::string name, std::string module,
                      false),
       keys_{std::move(keys)} {}
 
-std::vector<Response> ListResource::MultipleBodyValidate(nlohmann::json &body,
-                                                         bool update) const {
-  std::vector<Response> errors;
-  if (body.type() != nlohmann::detail::value_t::array) {
-    errors.push_back({ErrorTag::kBadAttribute, name_.data()});
-    return errors;
-  }
-
-  // TODO get list instantiated values (key needed)
-  for (auto element : body) {
-    bool check_mandatory = !update;  // TODO or exists name in list
-    auto element_errors = BodyValidate(element, check_mandatory);
-    errors.reserve(errors.size() + element_errors.size());
-    std::copy(std::begin(element_errors), std::end(element_errors),
-              std::back_inserter(errors));
-  }
-  return errors;
-}
-
 bool ListResource::ValidateXPath(const std::string &xpath) const {
   auto del_pos = xpath.find('/');  // current delimiter
   auto ns_pos = xpath.find(':');   // current namespace delimiter
