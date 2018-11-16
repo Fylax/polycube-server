@@ -71,22 +71,24 @@ void ServiceManager::post(const Pistache::Rest::Request &request,
   try {
     nlohmann::json body = nlohmann::json::parse(request.body());
     auto factory = Data::AbstractFactory::Concrete(body);
-
     auto service_name = Parser::Yang::ServiceName(factory->Yang());
-    if (services_.count(service_name) != 0) {
-      Server::ResponseGenerator::Generate(
-          std::vector<Response>{{ErrorTag::kDataExists, ""}},
-          std::move(response));
-      return;
-    }
+    try {
+      if (services_.count(service_name) != 0) {
+        Server::ResponseGenerator::Generate(
+            std::vector<Response>{{ErrorTag::kDataExists, ""}},
+            std::move(response));
+        return;
+      }
 
-    auto service = Parser::Yang(std::move(factory)).Parse();
-    services_[service_name] = service;
-    Server::ResponseGenerator::Generate(
-        std::vector<Response>{{ErrorTag::kCreated, ""}}, std::move(response));
-  } catch (const std::invalid_argument &e) {
-    response.send(Pistache::Http::Code::Bad_Request, e.what());
-  } catch (const std::exception& e) {
+      auto service = Parser::Yang(std::move(factory)).Parse();
+      services_[service_name] = service;
+      Server::ResponseGenerator::Generate(
+          std::vector<Response>{{ErrorTag::kCreated, ""}}, std::move(response));
+    } catch (const std::invalid_argument &e) {
+      Data::AbstractFactory::RemoveService(service_name);
+      response.send(Pistache::Http::Code::Bad_Request, e.what());
+    }
+  } catch (const std::exception &e) {
     response.send(Pistache::Http::Code::Internal_Server_Error, e.what());
   }
 }

@@ -39,8 +39,6 @@ constexpr OperationName operation_names_[] = {
     {Operation::kReplace, "replace_"sv},
     {Operation::kUpdate, "update_"sv},
     {Operation::kDelete, "delete_"sv}};
-
-std::unordered_map<std::string, std::shared_ptr<void>> handles_;
 }  // namespace
 
 std::string GenerateName(std::queue<std::string> names, Operation operation) {
@@ -59,19 +57,10 @@ std::string GenerateName(std::queue<std::string> names, Operation operation) {
     std::replace(std::begin(name), std::end(name), '-', '_');
     std::replace(std::begin(name), std::end(name), '.', '_');
 
-    entry_point_name.append(names.front() + '_');
-    names.pop();
+    entry_point_name.append(name + '_');
   }
 
   entry_point_name.append("by_id");
   return entry_point_name;
-}
-
-void AddService(std::string service_name, std::shared_ptr<void> handle) {
-  handles_[service_name] = std::move(handle);
-}
-
-void RemoveService(std::string service_name) {
-  handles_.erase(service_name);
 }
 }  // namespace polycube::polycubed::Rest::Resources::Data::Lib::EntryPoint

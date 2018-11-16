@@ -13,11 +13,15 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
+#include <AbstractFactory.h>
+
 #include "../../../include/Resources/Data/AbstractFactory.h"
 
 #include "../../../include/Resources/Data/Lib/ConcreteFactory.h"
 
 namespace polycube::polycubed::Rest::Resources::Data {
+std::unordered_map<std::string, Protocol> AbstractFactory::services_ = {};
+
 std::unique_ptr<AbstractFactory> AbstractFactory::Concrete(
     const nlohmann::json &request_body) {
   if (request_body.count("protocol") == 0) {
@@ -30,6 +34,19 @@ std::unique_ptr<AbstractFactory> AbstractFactory::Concrete(
   const auto &data = request_body.at("data").get<std::string>();
   if (protocol == "lib") {
     return std::make_unique<Lib::ConcreteFactory>(data);
+  }
+  throw std::invalid_argument("Unsupported protocol.");
+}
+
+void AbstractFactory::AddService(std::string name, Protocol protocol) {
+  services_[name] = protocol;
+}
+
+void AbstractFactory::RemoveService(const std::string &name) {
+  auto protocol = services_[name];
+  services_.erase(name);
+  switch (protocol) {
+    case Protocol::kLib: Lib::ConcreteFactory::UnregisterService(name);
   }
 }
 }  // namespace polycube::polycubed::Rest::Resources::Data

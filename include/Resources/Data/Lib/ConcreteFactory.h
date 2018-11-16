@@ -78,7 +78,11 @@ class ConcreteFactory : public Data::AbstractFactory {
   template <typename T>
   std::function<T> LoadHandler(const std::string &function_name) const;
 
+  static void UnregisterService(const std::string &name);
+
  private:
+  static std::unordered_map<std::string, std::shared_ptr<void>> handlers_;
+
   std::shared_ptr<void> handle_;
 };
 }  // namespace polycube::polycubed::Rest::Resources::Data::Lib

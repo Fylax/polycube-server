@@ -20,6 +20,8 @@
 #include <memory>
 #include <string>
 #include <vector>
+#include <Lib/ConcreteFactory.h>
+
 
 #include "../../../../include/Resources/Endpoint/LeafResource.h"
 #include "../../../../include/Resources/Endpoint/ListResource.h"
@@ -35,6 +37,9 @@
 namespace polycube::polycubed::Rest::Resources::Data::Lib {
 using EntryPoint::GenerateName;
 using EntryPoint::Operation;
+
+std::unordered_map<std::string, std::shared_ptr<void>> ConcreteFactory::handlers_ = {};
+
 ConcreteFactory::ConcreteFactory(const std::string &file_name)
     : handle_{::dlopen(file_name.data(), RTLD_NOW),
               [](void *h) { if(h != nullptr) ::dlclose(h); }} {
@@ -199,7 +204,7 @@ std::unique_ptr<Endpoint::Service> ConcreteFactory::RestService(
     [[maybe_unused]] const std::queue<std::string> &tree_names,
     std::string name, std::string base_endpoint) const {
   // Required for ensuring handle lifetime
-  EntryPoint::AddService(name, handle_);
+  handlers_[name] = handle_;
 
   std::string create_single{"create_" + name + "_by_id"};
   std::string update_single{"create_" + name + "_by_id"};
@@ -230,6 +235,10 @@ std::unique_ptr<Endpoint::Service> ConcreteFactory::RestService(
       std::move(delete_handler), std::move(read_list_handler),
       std::move(help_handler), std::move(update_list_handler), std::move(name),
       std::move(base_endpoint));
+}
+
+void ConcreteFactory::UnregisterService(const std::string& name) {
+handlers_.erase(name);
 }
 
 }  // namespace polycube::polycubed::Rest::Resources::Data::Lib

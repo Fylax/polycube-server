@@ -1063,6 +1063,7 @@ Response read_nat_internal_net_by_id(const char *name, Key *keys,
   return returns;
 }
 
+
 #ifdef __cplusplus
 }
 #endif
