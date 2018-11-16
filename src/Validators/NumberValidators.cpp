@@ -40,8 +40,13 @@ void NumberValidator<T>::AddRanges(std::unordered_map<T, T> ranges) {
 
 template <typename T>
 bool NumberValidator<T>::Validate(const std::string &value) const {
+  using boost::lexical_cast;
+  using boost::numeric_cast;
   try {
-    return Validate(boost::lexical_cast<T>(value));
+    if constexpr (std::is_same<T, int8_t>() || std::is_same<T, uint8_t>()) {
+      return Validate(numeric_cast<T>(lexical_cast<int>(value.data(), value.length())));
+    }
+    return Validate(lexical_cast<T>(value));
   } catch (const boost::bad_lexical_cast &) {
     return false;
   }
