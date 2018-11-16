@@ -112,6 +112,7 @@ void ServiceManager::del(const Pistache::Rest::Request &request,
     return;
   }
   services_.erase(name);
+  Data::AbstractFactory::RemoveService(name);
   Server::ResponseGenerator::Generate(
       std::vector<Response>{{ErrorTag::kNoContent, ""}},
       std::move(response));
