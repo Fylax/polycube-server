@@ -14,6 +14,7 @@
  * limitations under the License.
  */
 #include "../../../include/Resources/Data/AbstractFactory.h"
+
 #include "../../../include/Resources/Data/Lib/ConcreteFactory.h"
 
 namespace polycube::polycubed::Rest::Resources::Data {

@@ -36,8 +36,8 @@ namespace polycube::polycubed::Rest::Resources::Data::Lib {
 using EntryPoint::GenerateName;
 using EntryPoint::Operation;
 ConcreteFactory::ConcreteFactory(const std::string &file_name)
-    : handle_(::dlopen(file_name.data(), RTLD_LAZY),
-              [](void *h) { ::dlclose(h); }) {
+    : handle_{::dlopen(file_name.data(), RTLD_NOW),
+              [](void *h) { if(h != nullptr) ::dlclose(h); }} {
   if (!handle_) {
     throw std::logic_error("Cannot load service implementation " + file_name);
   }

@@ -65,7 +65,7 @@ class Resource {
 
  protected:
   const std::string name_;
-  std::shared_ptr<ParentResource> parent_;
+  const std::shared_ptr<ParentResource> &parent_;
   const std::string module_;
   const bool configuration_;
 };

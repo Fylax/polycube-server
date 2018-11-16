@@ -72,16 +72,16 @@ void ServiceManager::post(const Pistache::Rest::Request &request,
     nlohmann::json body = nlohmann::json::parse(request.body());
     auto factory = Data::AbstractFactory::Concrete(body);
 
-    if (services_.count(Parser::Yang::ServiceName(factory->Yang())) !=
-        0) {
+    auto service_name = Parser::Yang::ServiceName(factory->Yang());
+    if (services_.count(service_name) != 0) {
       Server::ResponseGenerator::Generate(
           std::vector<Response>{{ErrorTag::kDataExists, ""}},
           std::move(response));
       return;
     }
 
-    auto cube = Parser::Yang(std::move(factory)).Parse();
-    services_[cube->Name()] = cube;
+    auto service = Parser::Yang(std::move(factory)).Parse();
+    services_[service_name] = service;
     Server::ResponseGenerator::Generate(
         std::vector<Response>{{ErrorTag::kCreated, ""}}, std::move(response));
   } catch (const std::invalid_argument &e) {

@@ -373,7 +373,7 @@ void Yang::ParseRpcAction(
 
 const std::string Yang::ServiceName(const std::string &yang) {
   const auto &context =
-      ly_ctx_new("/home/nico/dev/iovnet/src/services/datamodel-common/", 0);
+      ly_ctx_new("/home/nico/dev/polycube/src/services/datamodel-common/", 0);
   if (!context) {
     throw std::runtime_error("cannot create new context");
   }
@@ -387,7 +387,7 @@ const std::string Yang::ServiceName(const std::string &yang) {
 
 const std::shared_ptr<Resources::Endpoint::Service> Yang::Parse() {
   const auto &context =
-      ly_ctx_new("/home/nico/dev/iovnet/src/services/datamodel-common/", 0);
+      ly_ctx_new("/home/nico/dev/polycube/src/services/datamodel-common/", 0);
   if (!context) {
     throw std::runtime_error("cannot create new context");
   }
