@@ -28,7 +28,7 @@ using PerListKeyValues = std::stack<ListKeyValues>;
 
 Service::Service(const std::string &name, std::string base_address)
     : Body::ParentResource(name, name, nullptr, true),
-      ParentResource(base_address + name + "/:cube_name/", true),
+      ParentResource(base_address + name + "/:cube_name/", true, false),
       Body::Service(),
       body_rest_endpoint_(base_address + name + '/'),
       path_param_{} {
@@ -139,6 +139,9 @@ void Service::del(const Pistache::Rest::Request& request,
     ServiceManager::GetInstance().RemoveCube(name);
     path_param_.RemoveValue(name);
   }
+  Server::ResponseGenerator::Generate(
+      std::vector<Response>{{ErrorTag::kNoContent, ""}},
+      std::move(response));
 }
 
 void Service::patch_body(const Request &request, ResponseWriter response) {

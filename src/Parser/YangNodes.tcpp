@@ -132,7 +132,7 @@ void Yang::ParseContainer(
     auto endpoint = e_parent->Endpoint() + data->name + '/';
     resource =
         factory_->RestGeneric(parsed_names, data->name, data->module->name,
-                              endpoint, e_parent, data->presence != nullptr);
+                              endpoint, e_parent, data->presence != nullptr, false);
   } else {
     resource = factory_->BodyGeneric(data->name, data->module->name, parent,
                                      data->presence != nullptr);
@@ -364,7 +364,7 @@ void Yang::ParseRpcAction(
       std::dynamic_pointer_cast<Resources::Endpoint::ParentResource>(parent);
   auto action =
       factory_->RestGeneric(parsed_names, data->name, data->module->name,
-                            e_parent->Endpoint() + data->name, e_parent, false);
+                            e_parent->Endpoint() + data->name, e_parent, false, true);
   auto child = data->child;
   while (child != nullptr) {
     ParseNode(child, parsed_names, std::move(action), false);

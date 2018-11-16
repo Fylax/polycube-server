@@ -179,10 +179,15 @@ std::unique_ptr<Endpoint::ParentResource> ConcreteFactory::RestGeneric(
     const std::queue<std::string> &tree_names, std::string name,
     std::string module, std::string rest_endpoint,
     std::shared_ptr<Endpoint::ParentResource> parent,
-    bool container_presence) const {
+    bool container_presence, bool rpc_action) const {
   auto create_handler =
       LoadHandler<Response(const char *, Key *, size_t, const char *)>(
           GenerateName(tree_names, Operation::kCreate));
+  if (rpc_action) {
+    return std::make_unique<ParentResource>(
+        std::move(create_handler), std::move(name), std::move(module),
+        std::move(rest_endpoint), std::move(parent));
+  }
   auto replace_handler =
       LoadHandler<Response(const char *, Key *, size_t, const char *)>(
           GenerateName(tree_names, Operation::kReplace));

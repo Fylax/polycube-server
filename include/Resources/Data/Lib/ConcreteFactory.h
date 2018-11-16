@@ -69,7 +69,7 @@ class ConcreteFactory : public Data::AbstractFactory {
       const std::queue<std::string> &tree_names, std::string name,
       std::string module, std::string rest_endpoint,
       std::shared_ptr<Endpoint::ParentResource> parent,
-      bool container_presence) const final;
+      bool container_presence, bool rpc_action) const final;
 
   std::unique_ptr<Endpoint::Service> RestService(
       const std::queue<std::string> &tree_names, std::string name,

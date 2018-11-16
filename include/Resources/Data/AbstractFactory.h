@@ -93,7 +93,7 @@ class AbstractFactory: public Body::AbstractFactory {
   RestGeneric(const std::queue<std::string>& tree_names, std::string name,
               std::string module, std::string rest_endpoint,
               std::shared_ptr<Endpoint::ParentResource> parent,
-              bool container_presence) const = 0;
+              bool container_presence, bool rpc_action) const = 0;
 
   virtual std::unique_ptr<Endpoint::Service>
   RestService(const std::queue<std::string>& tree_names, std::string name,

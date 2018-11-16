@@ -40,7 +40,7 @@ ParentResource::ParentResource(
     std::shared_ptr<Endpoint::ParentResource> parent, bool container_presence)
     : Body::ParentResource(std::move(name), std::move(module),
                            std::move(parent), true, container_presence),
-      Endpoint::ParentResource(std::move(rest_endpoint), true),
+      Endpoint::ParentResource(std::move(rest_endpoint), true, false),
       create_handler_{std::move(create_handler)},
       replace_handler_{std::move(replace_handler)},
       update_handler_{std::move(update_handler)},
@@ -48,12 +48,26 @@ ParentResource::ParentResource(
       delete_handler_{std::move(delete_handler)} {}
 
 ParentResource::ParentResource(
+    std::function<Response(const char *, Key *, size_t, const char *)>
+        create_handler,
+    std::string name, std::string module, std::string rest_endpoint,
+    std::shared_ptr<Endpoint::ParentResource> parent)
+    : Body::ParentResource(std::move(name), std::move(module),
+                           std::move(parent), false, false),
+      Endpoint::ParentResource(std::move(rest_endpoint), false, true),
+      create_handler_{std::move(create_handler)},
+      replace_handler_{},
+      update_handler_{},
+      read_handler_{},
+      delete_handler_{} {}
+
+ParentResource::ParentResource(
     std::function<Response(const char *, Key *, size_t)> read_handler,
     std::string name, std::string module, std::string rest_endpoint,
     std::shared_ptr<Endpoint::ParentResource> parent, bool container_presence)
     : Body::ParentResource(std::move(name), std::move(module),
                            std::move(parent), false, container_presence),
-      Endpoint::ParentResource(std::move(rest_endpoint), false),
+      Endpoint::ParentResource(std::move(rest_endpoint), false, false),
       create_handler_{},
       replace_handler_{},
       update_handler_{},

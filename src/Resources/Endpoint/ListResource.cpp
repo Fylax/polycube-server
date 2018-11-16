@@ -35,7 +35,7 @@ ListResource::ListResource(std::string name, std::string module,
                            bool configuration)
     : Body::ParentResource(std::move(name), std::move(module),
                            std::move(parent), false),
-      ParentResource(std::move(rest_endpoint), configuration),
+      ParentResource(std::move(rest_endpoint), configuration, false),
       Body::ListResource(std::move(keys)),
       key_params_{},
       multiple_endpoint_(std::move(rest_endpoint_multiple)) {

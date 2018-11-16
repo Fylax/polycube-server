@@ -30,21 +30,23 @@ namespace polycube::polycubed::Rest::Resources::Endpoint {
 ParentResource::ParentResource()
     : Body::ParentResource("", "", nullptr, false, false),
       Endpoint::Resource(""),
-      has_endpoints_(false) {}
+      has_endpoints_(false), rpc_action_(false) {}
 
-ParentResource::ParentResource(std::string rest_endpoint, bool configuration)
+ParentResource::ParentResource(std::string rest_endpoint, bool configuration,
+    bool rpc_action)
     : ParentResource("", "", std::move(rest_endpoint), nullptr, configuration,
-                     false) {}
+                     false, rpc_action) {}
 
 ParentResource::ParentResource(std::string name, std::string module,
                                std::string rest_endpoint,
                                std::shared_ptr<ParentResource> parent,
-                               bool configuration, bool container_presence)
+                               bool configuration, bool container_presence,
+                               bool rpc_action)
     : Body::ParentResource(std::move(name), std::move(module),
                            std::move(parent), configuration,
                            container_presence),
       Endpoint::Resource(std::move(rest_endpoint)),
-      has_endpoints_(true) {
+      has_endpoints_(true), rpc_action_(rpc_action) {
   using Pistache::Rest::Routes::bind;
   auto router = Server::RestServer::Router();
   router->get(rest_endpoint_, bind(&ParentResource::get, this));
@@ -53,6 +55,8 @@ ParentResource::ParentResource(std::string name, std::string module,
     router->put(rest_endpoint_, bind(&ParentResource::put, this));
     router->patch(rest_endpoint_, bind(&ParentResource::patch, this));
     router->del(rest_endpoint_, bind(&ParentResource::del, this));
+  } else if (rpc_action_) {
+    router->post(rest_endpoint_, bind(&ParentResource::post, this));
   }
 }
 
@@ -66,6 +70,8 @@ ParentResource::~ParentResource() {
       router->removeRoute(Method::Put, rest_endpoint_);
       router->removeRoute(Method::Patch, rest_endpoint_);
       router->removeRoute(Method::Delete, rest_endpoint_);
+    } else if (rpc_action_) {
+      router->removeRoute(Method::Post, rest_endpoint_);
     }
   }
 }

@@ -32,7 +32,8 @@ class ParentResource : public Resource, public virtual Body::ParentResource {
                  std::string rest_endpoint,
                  std::shared_ptr<ParentResource> parent,
                  bool configuration,
-                 bool container_presence = false);
+                 bool container_presence = false,
+                 bool rpc_action = false);
 
   ~ParentResource() override;
 
@@ -60,10 +61,11 @@ class ParentResource : public Resource, public virtual Body::ParentResource {
   /**
    * Used by derived classes: no explicit virtual base construction
    */
-  ParentResource(std::string rest_endpoint, bool configuration);
+  ParentResource(std::string rest_endpoint, bool configuration, bool rpc_action);
 
  private:
   const bool has_endpoints_;
+  const bool rpc_action_;
   void get(const Request &request, ResponseWriter response);
 
   virtual void post(const Request &request, ResponseWriter response);
