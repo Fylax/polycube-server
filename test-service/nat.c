@@ -878,7 +878,7 @@ Response replace_nat_rule_snat_entry_list_by_id(const char *name, Key *keys,
   Response returns = {kOk, ""};
   return returns;
 }
-Response update_nat_loglevel_by_id(const char *name, Key *keys, size_t num_keys,
+Response replace_nat_loglevel_by_id(const char *name, Key *keys, size_t num_keys,
                                    const char *value) {
   Response returns = {kOk, ""};
   return returns;
@@ -929,7 +929,7 @@ Response update_nat_ports_list_by_id(const char *name, Key *keys,
   Response returns = {kOk, ""};
   return returns;
 }
-Response update_nat_ports_peer_by_id(const char *name, Key *keys,
+Response replace_nat_ports_peer_by_id(const char *name, Key *keys,
                                      size_t num_keys, const char *value) {
   Response returns = {kOk, ""};
   return returns;
@@ -1053,6 +1053,12 @@ Response update_nat_rule_snat_entry_internal_net_by_id(const char *name,
 Response update_nat_rule_snat_entry_list_by_id(const char *name, Key *keys,
                                                size_t num_keys,
                                                const char *value) {
+  Response returns = {kOk, ""};
+  return returns;
+}
+Response read_nat_internal_net_by_id(const char *name, Key *keys,
+                                     size_t num_keys,
+                                     const char *value) {
   Response returns = {kOk, ""};
   return returns;
 }

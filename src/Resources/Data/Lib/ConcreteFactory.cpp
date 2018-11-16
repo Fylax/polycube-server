@@ -54,7 +54,7 @@ std::function<T> ConcreteFactory::LoadHandler(
   if (!result) {
     char *const error = ::dlerror();
     if (error) {
-      throw std::invalid_argument("Cannot find handler " + function_name);
+      throw std::invalid_argument(std::string{error});
     }
   }
   return reinterpret_cast<T *>(result);

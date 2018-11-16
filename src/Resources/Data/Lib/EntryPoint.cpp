@@ -51,6 +51,14 @@ std::string GenerateName(std::queue<std::string> names, Operation operation) {
 
   std::string entry_point_name{operation_name};
   while (!names.empty()) {
+    auto name = names.front();
+    names.pop();
+
+    // normalize name (replace all - and . with _, since cannot be
+    // part of a function name)
+    std::replace(std::begin(name), std::end(name), '-', '_');
+    std::replace(std::begin(name), std::end(name), '.', '_');
+
     entry_point_name.append(names.front() + '_');
     names.pop();
   }

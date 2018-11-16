@@ -99,6 +99,9 @@ const ValidatorsType Yang::ParseType(const lys_type type) {
 
 template <typename T>
 const std::unordered_map<T, T> Yang::ParseRange(std::string_view &range) {
+  using boost::lexical_cast;
+  using boost::numeric_cast;
+
   std::unordered_map<T, T> ranges;
   std::size_t pipe_pos = 0;
   do {
@@ -111,13 +114,25 @@ const std::unordered_map<T, T> Yang::ParseRange(std::string_view &range) {
     // split token in '..' separated ranges (if any)
     std::size_t range_pos = current.find("..");
     if (range_pos == std::string_view::npos) {  // exact value
-      T exact = boost::lexical_cast<T>(current.data(), current.length());
+      T exact;
+      if constexpr (std::is_same<T, int8_t>() || std::is_same<T, uint8_t>()) {
+        exact = numeric_cast<T>(lexical_cast<int>(current.data(), current.length()));
+      } else {
+        exact = lexical_cast<T>(current.data(), current.length());
+      }
       ranges.emplace(exact, exact);
     } else {  // ranges
       std::string_view min_ch = current.substr(0, range_pos);
       std::string_view max_ch = current.substr(range_pos + 2);
-      T min = boost::lexical_cast<T>(min_ch.data(), min_ch.length());
-      T max = boost::lexical_cast<T>(max_ch.data(), max_ch.length());
+      T min;
+      T max;
+      if constexpr (std::is_same<T, int8_t>() || std::is_same<T, uint8_t>()) {
+        min = numeric_cast<T>(lexical_cast<int>(min_ch.data(), min_ch.length()));
+        max = numeric_cast<T>(lexical_cast<int>(max_ch.data(), max_ch.length()));
+      } else {
+        min = numeric_cast<T>(lexical_cast<T>(min_ch.data(), min_ch.length()));
+        max = numeric_cast<T>(lexical_cast<T>(max_ch.data(), max_ch.length()));
+      }
       ranges.emplace(min, max);
     }
   } while (pipe_pos != std::string_view::npos);
