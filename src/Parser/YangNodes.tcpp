@@ -96,7 +96,9 @@ void Yang::ParseNode(
                    std::move(parsed_names), parent);
     break;
   case LYS_INPUT:
-    ParseNode(data->child, std::move(parsed_names), parent, false);
+    if (data->child != nullptr) {
+      ParseNode(data->child, std::move(parsed_names), parent, false);
+    }
     break;
   case LYS_OUTPUT:
     break;

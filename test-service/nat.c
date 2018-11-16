@@ -1098,6 +1098,12 @@ Response replace_nat_rule_snat_entry_external_ip_by_id(const char *name, Key *ke
   Response returns = {kOk, ""};
   return returns;
 }
+Response replace_nat_rule_masquerade_enabled_by_id(const char *name, Key *keys,
+                                                   size_t num_keys,
+                                                   const char *value) {
+  Response returns = {kOk, ""};
+  return returns;
+}
 
 #ifdef __cplusplus
 }
