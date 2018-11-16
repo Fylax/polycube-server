@@ -104,8 +104,8 @@ class Yang {
       const std::shared_ptr<Resources::Body::ParentResource> &parent,
       bool generate_endpoint) const;
 
-  void ParseGrouping(
-      const lys_node_grp *group, std::queue<std::string> parsed_names,
+  void ParseUses(
+      const lys_node_uses *group, std::queue<std::string> parsed_names,
       const std::shared_ptr<Resources::Body::ParentResource> &parent,
       bool generate_endpoint) const;
 

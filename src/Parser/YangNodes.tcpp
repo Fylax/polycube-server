@@ -92,18 +92,19 @@ void Yang::ParseNode(
   case LYS_NOTIF:
     throw std::invalid_argument("notification not supported");
   case LYS_RPC:
-    return ParseRpcAction(reinterpret_cast<const lys_node_rpc_action *>(data),
-                          std::move(parsed_names), parent);
+    ParseRpcAction(reinterpret_cast<const lys_node_rpc_action *>(data),
+                   std::move(parsed_names), parent);
+    break;
   case LYS_INPUT:
     ParseNode(data->child, std::move(parsed_names), parent, false);
     break;
   case LYS_OUTPUT:
     break;
   case LYS_GROUPING:
-    ParseGrouping(reinterpret_cast<const lys_node_grp *>(data),
-                  std::move(parsed_names), parent, generate_endpoint);
     break;
   case LYS_USES:
+    ParseUses(reinterpret_cast<const lys_node_uses *>(data),
+                                std::move(parsed_names), parent, generate_endpoint);
     break;
   case LYS_AUGMENT:
     break;
@@ -144,8 +145,8 @@ void Yang::ParseContainer(
   parent->AddChild(resource);
 }
 
-void Yang::ParseGrouping(
-    const lys_node_grp *group, std::queue<std::string> parsed_names,
+void Yang::ParseUses(
+    const lys_node_uses *group, std::queue<std::string> parsed_names,
     const std::shared_ptr<Resources::Body::ParentResource> &parent,
     const bool generate_endpoint) const {
   auto child = group->child;

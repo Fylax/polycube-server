@@ -1062,6 +1062,25 @@ Response read_nat_internal_net_by_id(const char *name, Key *keys,
   Response returns = {kOk, ""};
   return returns;
 }
+Response replace_nat_internal_net_by_id(const char *name, Key *keys,
+                                     size_t num_keys,
+                                     const char *value) {
+  Response returns = {kOk, ""};
+  return returns;
+}
+Response read_nat_external_ip_by_id(const char *name, Key *keys,
+                                     size_t num_keys,
+                                     const char *value) {
+  Response returns = {kOk, ""};
+  return returns;
+}
+Response replace_nat_external_ip_by_id(const char *name, Key *keys,
+                                    size_t num_keys,
+                                    const char *value) {
+  Response returns = {kOk, ""};
+  return returns;
+}
+
 
 
 #ifdef __cplusplus
