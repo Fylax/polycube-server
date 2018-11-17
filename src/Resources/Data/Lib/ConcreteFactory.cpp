@@ -140,12 +140,16 @@ std::unique_ptr<Endpoint::ListResource> ConcreteFactory::RestList(
   auto delete_entry_handler =
       LoadHandler<Response(const char *, Key *, size_t)>(delete_name);
 
-  std::string replace = name + "_list";
-  create_name.replace(create_name.find(name), name.length(), replace);
-  replace_name.replace(replace_name.find(name), name.length(), replace);
-  update_name.replace(update_name.find(name), name.length(), replace);
-  read_name.replace(read_name.find(name), name.length(), replace);
-  delete_name.replace(delete_name.find(name), name.length(), replace);
+  auto sname = name;
+  auto length = sname.length();
+  std::replace(std::begin(sname), std::end(sname), '-', '_');
+  std::replace(std::begin(sname), std::end(sname), '.', '_');
+  std::string replace = sname + "_list";
+  create_name.replace(create_name.find(sname), length, replace);
+  replace_name.replace(replace_name.find(sname), length, replace);
+  update_name.replace(update_name.find(sname), length, replace);
+  read_name.replace(read_name.find(sname), length, replace);
+  delete_name.replace(delete_name.find(sname), length, replace);
 
   auto create_whole_handler =
       LoadHandler<Response(const char *, Key *, size_t, const char *)>(
