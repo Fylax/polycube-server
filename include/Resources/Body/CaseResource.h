@@ -23,7 +23,7 @@ namespace polycube::polycubed::Rest::Resources::Body {
 class CaseResource : public virtual ParentResource {
 public:
   CaseResource(std::string name, std::string module,
-               std::shared_ptr<ParentResource> parent);
+               const ParentResource * parent);
 
   ~CaseResource() override = default;
 

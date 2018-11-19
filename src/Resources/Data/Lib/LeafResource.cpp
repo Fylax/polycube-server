@@ -28,10 +28,10 @@ namespace polycube::polycubed::Rest::Resources::Data::Lib {
 LeafResource::LeafResource(
     std::function<Response(const char *, Key *, size_t)> read_handler,
     std::string name, std::string module, std::string rest_endpoint,
-    std::shared_ptr<Endpoint::ParentResource> parent,
+    const Body::ParentResource * const parent,
     std::unique_ptr<Body::JsonBodyField> &&field, bool mandatory,
     std::unique_ptr<const std::string> &&default_value)
-    : Body::LeafResource(std::move(name), std::move(module), std::move(parent),
+    : Body::LeafResource(std::move(name), std::move(module), parent,
                          std::move(field), false, mandatory,
                          std::move(default_value)),
       Endpoint::LeafResource(std::move(rest_endpoint)),
@@ -43,10 +43,10 @@ LeafResource::LeafResource(
         replace_handler,
     std::function<Response(const char *, Key *, size_t)> read_handler,
     std::string name, std::string module, std::string rest_endpoint,
-    std::shared_ptr<Endpoint::ParentResource> parent,
+    const Body::ParentResource * const parent,
     std::unique_ptr<Body::JsonBodyField> &&field, bool mandatory,
     std::unique_ptr<const std::string> &&default_value)
-    : Body::LeafResource(std::move(name), std::move(module), std::move(parent),
+    : Body::LeafResource(std::move(name), std::move(module), parent,
                          std::move(field), true, mandatory,
                          std::move(default_value)),
       Endpoint::LeafResource(std::move(rest_endpoint)),

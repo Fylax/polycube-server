@@ -33,7 +33,7 @@ class PathParamField;
 class ListResource : public ParentResource, public Body::ListResource {
  public:
   ListResource(std::string name, std::string module,
-               std::shared_ptr<ParentResource> parent,
+               const ParentResource * parent,
                std::string rest_endpoint, std::string rest_endpoint_multiple,
                std::vector<Body::ListKey> &&keys, bool configuration);
 

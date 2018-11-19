@@ -25,7 +25,6 @@ namespace polycube::polycubed::Rest::Resources::Body {
 CaseResource::CaseResource() : ParentResource("", "", nullptr, false) {}
 
 CaseResource::CaseResource(std::string name, std::string module,
-                           std::shared_ptr<ParentResource> parent)
-    : ParentResource(std::move(name), std::move(module), std::move(parent),
-                     false) {}
+                           const ParentResource * const parent)
+    : ParentResource(std::move(name), std::move(module), parent, false) {}
 } // namespace polycube::polycubed::Rest::Resources::Body

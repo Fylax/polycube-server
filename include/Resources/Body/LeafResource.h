@@ -29,7 +29,7 @@ class JsonBodyField;
 class LeafResource : public Resource {
  public:
   LeafResource(std::string name, std::string module,
-               std::shared_ptr<ParentResource> parent,
+               const ParentResource * parent,
                std::unique_ptr<JsonBodyField> &&field, bool configuration,
                bool mandatory,
                std::unique_ptr<const std::string> &&default_value);

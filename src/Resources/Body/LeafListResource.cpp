@@ -30,11 +30,11 @@ LeafListResource::LeafListResource(std::vector<std::string> &&default_value)
       default_(std::move(default_value)) {}
 
 LeafListResource::LeafListResource(std::string name, std::string module,
-                                   std::shared_ptr<ParentResource> parent,
+                                   const ParentResource * const parent,
                                    std::unique_ptr<JsonBodyField> &&field,
                                    bool configurable, bool mandatory,
                                    std::vector<std::string> &&default_value)
-    : LeafResource(std::move(name), std::move(module), std::move(parent),
+    : LeafResource(std::move(name), std::move(module), parent,
                    std::move(field), configurable, mandatory, nullptr),
       default_(std::move(default_value)) {}
 

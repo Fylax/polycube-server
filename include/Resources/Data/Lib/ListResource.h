@@ -47,7 +47,7 @@ class ListResource : public Endpoint::ListResource {
       std::function<Response(const char *, Key *, size_t)> help_handler,
       std::string name, std::string module, std::string rest_endpoint,
       std::string rest_endpoint_multiple,
-      std::shared_ptr<Endpoint::ParentResource> parent,
+      const Body::ParentResource * parent,
       std::vector<Body::ListKey> &&keys);
 
   ListResource(
@@ -55,7 +55,7 @@ class ListResource : public Endpoint::ListResource {
       std::function<Response(const char *, Key *, size_t)> read_whole_handler,
       std::string name, std::string module, std::string rest_endpoint,
       std::string rest_endpoint_multiple,
-      std::shared_ptr<Endpoint::ParentResource> parent,
+      const Body::ParentResource * parent,
       std::vector<Body::ListKey> &&keys);
 
   const Response ReadValue(const std::string &cube_name,

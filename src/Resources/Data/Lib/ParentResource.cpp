@@ -37,9 +37,9 @@ ParentResource::ParentResource(
     std::function<Response(const char *, Key *, size_t)> read_handler,
     std::function<Response(const char *, Key *, size_t)> delete_handler,
     std::string name, std::string module, std::string rest_endpoint,
-    std::shared_ptr<Endpoint::ParentResource> parent, bool container_presence)
+    const Body::ParentResource * const parent, bool container_presence)
     : Body::ParentResource(std::move(name), std::move(module),
-                           std::move(parent), true, container_presence),
+                           parent, true, container_presence),
       Endpoint::ParentResource(std::move(rest_endpoint), true, false),
       create_handler_{std::move(create_handler)},
       replace_handler_{std::move(replace_handler)},
@@ -51,9 +51,9 @@ ParentResource::ParentResource(
     std::function<Response(const char *, Key *, size_t, const char *)>
         create_handler,
     std::string name, std::string module, std::string rest_endpoint,
-    std::shared_ptr<Endpoint::ParentResource> parent)
+    const Body::ParentResource * const parent)
     : Body::ParentResource(std::move(name), std::move(module),
-                           std::move(parent), false, false),
+                           parent, false, false),
       Endpoint::ParentResource(std::move(rest_endpoint), false, true),
       create_handler_{std::move(create_handler)},
       replace_handler_{},
@@ -64,9 +64,9 @@ ParentResource::ParentResource(
 ParentResource::ParentResource(
     std::function<Response(const char *, Key *, size_t)> read_handler,
     std::string name, std::string module, std::string rest_endpoint,
-    std::shared_ptr<Endpoint::ParentResource> parent, bool container_presence)
+    const Body::ParentResource * const parent, bool container_presence)
     : Body::ParentResource(std::move(name), std::move(module),
-                           std::move(parent), false, container_presence),
+                           parent, false, container_presence),
       Endpoint::ParentResource(std::move(rest_endpoint), false, false),
       create_handler_{},
       replace_handler_{},

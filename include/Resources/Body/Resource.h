@@ -38,8 +38,12 @@ using PerListKeyValues = std::stack<ListKeyValues>;
 class Resource {
  public:
   Resource(std::string &&name, std::string &&module,
-           std::shared_ptr<ParentResource> &&parent,
+           const ParentResource * parent,
            bool configuration);
+
+  Resource(const Resource&) = delete;
+
+  Resource &operator=(const Resource&) = delete;
 
   virtual ~Resource() = default;
 
@@ -58,14 +62,14 @@ class Resource {
 
   virtual void SetDefaultIfMissing(nlohmann::json &body) const = 0;
 
-  std::shared_ptr<ParentResource> Parent() const;
+  const std::shared_ptr<ParentResource> Parent() const;
 
   virtual const Response ReadValue(const std::string &cube_name,
                                    PerListKeyValues &keys) const;
 
  protected:
   const std::string name_;
-  const std::shared_ptr<ParentResource> &parent_;
+  const ParentResource * const parent_;
   const std::string module_;
   const bool configuration_;
 };

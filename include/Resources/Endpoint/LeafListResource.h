@@ -31,7 +31,7 @@ class LeafListResource : public LeafResource, public Body::LeafListResource {
  public:
   LeafListResource(std::string name, std::string module,
                    std::string rest_endpoint,
-                   std::shared_ptr<ParentResource> parent,
+                   const ParentResource * parent,
                    std::unique_ptr<Body::JsonBodyField> &&field,
                    bool configuration, bool mandatory,
                    std::vector<std::string> &&default_value);

@@ -30,7 +30,7 @@ class ParentResource : public Resource, public virtual Body::ParentResource {
  public:
   ParentResource(std::string name, std::string module,
                  std::string rest_endpoint,
-                 std::shared_ptr<ParentResource> parent,
+                 const ParentResource * parent,
                  bool configuration,
                  bool container_presence = false,
                  bool rpc_action = false);

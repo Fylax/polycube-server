@@ -30,10 +30,10 @@ using Pistache::Rest::Request;
 class ChoiceResource : public ParentResource, public Body::ChoiceResource {
  public:
   ChoiceResource(std::string name, std::string module,
-                 std::shared_ptr<ParentResource> parent, bool mandatory,
+                 const ParentResource * parent, bool mandatory,
                  std::unique_ptr<const std::string> &&default_case);
 
-  void AddChild(std::shared_ptr<Body::Resource> child) final;
+  void AddChild(const std::shared_ptr<Body::Resource> &&child) final;
 
   using Body::ChoiceResource::IsMandatory;
   using Body::ChoiceResource::SetDefaultIfMissing;

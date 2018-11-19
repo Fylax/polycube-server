@@ -29,9 +29,9 @@ ListResource::ListResource(std::vector<ListKey> &&keys)
     : ParentResource("", "", nullptr, false), keys_{std::move(keys)} {}
 
 ListResource::ListResource(std::string name, std::string module,
-                           std::shared_ptr<ParentResource> parent,
+                           const ParentResource * const parent,
                            std::vector<ListKey> &&keys)
-    : ParentResource(std::move(name), std::move(module), std::move(parent),
+    : ParentResource(std::move(name), std::move(module), parent,
                      false),
       keys_{std::move(keys)} {}
 

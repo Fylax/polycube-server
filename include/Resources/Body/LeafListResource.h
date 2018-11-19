@@ -25,7 +25,7 @@ namespace polycube::polycubed::Rest::Resources::Body {
 class LeafListResource : public virtual LeafResource {
  public:
   LeafListResource(std::string name, std::string module,
-                   std::shared_ptr<ParentResource> parent,
+                   const ParentResource * parent,
                    std::unique_ptr<JsonBodyField> &&field, bool configuration,
                    bool mandatory, std::vector<std::string> &&default_value);
 

@@ -38,7 +38,7 @@ class LeafResource : public Endpoint::LeafResource {
   LeafResource(
       std::function<Response(const char *, Key *, size_t)> read_handler,
       std::string name, std::string module, std::string rest_endpoint,
-      std::shared_ptr<Endpoint::ParentResource> parent,
+      const Body::ParentResource * parent,
       std::unique_ptr<Body::JsonBodyField> &&field, bool mandatory,
       std::unique_ptr<const std::string> &&default_value);
 
@@ -47,7 +47,7 @@ class LeafResource : public Endpoint::LeafResource {
           replace_handler,
       std::function<Response(const char *, Key *, size_t)> read_handler,
       std::string name, std::string module, std::string rest_endpoint,
-      std::shared_ptr<Endpoint::ParentResource> parent,
+      const Body::ParentResource * parent,
       std::unique_ptr<Body::JsonBodyField> &&field, bool mandatory,
       std::unique_ptr<const std::string> &&default_value);
 

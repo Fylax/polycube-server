@@ -36,12 +36,12 @@ LeafResource::LeafResource(std::string rest_endpoint)
 
 LeafResource::LeafResource(
     std::string name, std::string module, std::string rest_endpoint,
-    std::shared_ptr<ParentResource> parent,
+    const ParentResource * const parent,
     std::unique_ptr<polycube::polycubed::Rest::Resources::Body::JsonBodyField>
         &&field,
     bool configurable, bool mandatory,
     std::unique_ptr<const std::string> &&default_value)
-    : Body::LeafResource(std::move(name), std::move(module), std::move(parent),
+    : Body::LeafResource(std::move(name), std::move(module), parent,
                          std::move(field), configurable, mandatory,
                          std::move(default_value)),
       Endpoint::Resource(std::move(rest_endpoint)) {
@@ -64,18 +64,23 @@ LeafResource::~LeafResource() {
 
 void LeafResource::Keys(const Pistache::Rest::Request &request,
                         PerListKeyValues &parsed) const {
-  return std::dynamic_pointer_cast<ParentResource>(parent_)->Keys(request,
+  return dynamic_cast<const ParentResource* const>(parent_)->Keys(request,
                                                                   parsed);
 }
 
 void LeafResource::get(const Request &request, ResponseWriter response) {
-  auto errors =
-      std::dynamic_pointer_cast<ParentResource>(parent_)->RequestValidate(
-          request, name_);
+  std::vector<Response> errors;
+  if (parent_ != nullptr) {
+    auto rerrors =
+        dynamic_cast<const ParentResource *const>(parent_)->RequestValidate(
+            request, name_);
+    errors.reserve(rerrors.size());
+    std::copy(std::begin(rerrors), std::end(rerrors), std::back_inserter(errors));
+  }
   if (errors.empty()) {
     const auto &cube_name = Service::Cube(request);
     PerListKeyValues keys{};
-    std::dynamic_pointer_cast<ParentResource>(parent_)->Keys(request, keys);
+    dynamic_cast<const ParentResource * const>(parent_)->Keys(request, keys);
     errors.push_back(ReadValue(cube_name, keys));
   }
   Server::ResponseGenerator::Generate(std::move(errors), std::move(response));
@@ -84,6 +89,7 @@ void LeafResource::get(const Request &request, ResponseWriter response) {
 void LeafResource::CreateReplaceUpdate(const Pistache::Rest::Request &request,
                                        Pistache::Http::ResponseWriter response,
                                        bool update, bool check_mandatory) {
+  auto start = std::chrono::high_resolution_clock::now();
   auto errors = RequestValidate(request, name_);
   nlohmann::json jbody;
   if (request.body().empty()) {
@@ -102,7 +108,7 @@ void LeafResource::CreateReplaceUpdate(const Pistache::Rest::Request &request,
     auto op = OperationType(update, check_mandatory);
     const auto cube_name = Service::Cube(request);
     PerListKeyValues keys{};
-    std::dynamic_pointer_cast<ParentResource>(parent_)->Keys(request, keys);
+    dynamic_cast<const ParentResource * const>(parent_)->Keys(request, keys);
     auto resp = WriteValue(cube_name, jbody, keys, op);
     if (resp.error_tag == ErrorTag::kOk) {
       errors.push_back({ErrorTag::kCreated, ""});
@@ -110,14 +116,25 @@ void LeafResource::CreateReplaceUpdate(const Pistache::Rest::Request &request,
       errors.push_back(resp);
     }
   }
-  Server::ResponseGenerator::Generate(std::move(errors), std::move(response));
+  auto end = std::chrono::high_resolution_clock::now();
+  std::chrono::nanoseconds diff = end - start;
+  Server::ResponseGenerator::Generate(
+      std::vector<Response>{{ErrorTag::kOk, std::to_string(diff.count()).data()}}, std::move(response));
+  // Server::ResponseGenerator::Generate(std::move(errors), std::move(response));
 }
 
 std::vector<Response> LeafResource::RequestValidate(
     const Pistache::Rest::Request &request,
     [[maybe_unused]] const std::string &caller_name) const {
-  return std::dynamic_pointer_cast<ParentResource>(parent_)->RequestValidate(
-      request, name_);
+  std::vector<Response> errors;
+  if (parent_ != nullptr) {
+    auto rerrors =
+        dynamic_cast<const ParentResource *const>(parent_)->RequestValidate(
+            request, name_);
+    errors.reserve(rerrors.size());
+    std::copy(std::begin(rerrors), std::end(rerrors), std::back_inserter(errors));
+  }
+  return errors;
 }
 
 void LeafResource::put(const Request &request, ResponseWriter response) {

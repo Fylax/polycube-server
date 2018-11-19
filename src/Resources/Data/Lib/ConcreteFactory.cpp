@@ -68,14 +68,14 @@ std::function<T> ConcreteFactory::LoadHandler(
 std::unique_ptr<Endpoint::CaseResource> ConcreteFactory::RestCase(
     const std::queue<std::string> &tree_names, std::string name,
     std::string module,
-    std::shared_ptr<Endpoint::ParentResource> parent) const {
+    const Body::ParentResource * const parent) const {
   throw std::invalid_argument(
       "Yang case node not supported with shared object protocol.");
 }
 
 std::unique_ptr<Endpoint::ChoiceResource> ConcreteFactory::RestChoice(
     const std::queue<std::string> &tree_names, std::string name,
-    std::string module, std::shared_ptr<Endpoint::ParentResource> parent,
+    std::string module, const Body::ParentResource * const parent,
     bool mandatory, std::unique_ptr<const std::string> &&default_case) const {
   throw std::invalid_argument(
       "Yang choice node not supported with shared object protocol.");
@@ -84,7 +84,7 @@ std::unique_ptr<Endpoint::ChoiceResource> ConcreteFactory::RestChoice(
 std::unique_ptr<Endpoint::LeafResource> ConcreteFactory::RestLeaf(
     const std::queue<std::string> &tree_names, std::string name,
     std::string module, std::string rest_endpoint,
-    std::shared_ptr<Endpoint::ParentResource> parent,
+    const Body::ParentResource * const parent,
     std::unique_ptr<Body::JsonBodyField> &&field, bool configuration,
     bool mandatory, std::unique_ptr<const std::string> &&default_value) const {
   auto read_handler = LoadHandler<Response(const char *, Key *, size_t)>(
@@ -92,7 +92,7 @@ std::unique_ptr<Endpoint::LeafResource> ConcreteFactory::RestLeaf(
   if (!configuration) {
     return std::make_unique<LeafResource>(
         std::move(read_handler), std::move(name), std::move(module),
-        std::move(rest_endpoint), std::move(parent), std::move(field),
+        std::move(rest_endpoint), parent, std::move(field),
         mandatory, std::move(default_value));
   }
   auto replace_handler =
@@ -100,14 +100,14 @@ std::unique_ptr<Endpoint::LeafResource> ConcreteFactory::RestLeaf(
           GenerateName(tree_names, Operation::kReplace));
   return std::make_unique<LeafResource>(
       std::move(replace_handler), std::move(read_handler), std::move(name),
-      std::move(module), std::move(rest_endpoint), std::move(parent),
+      std::move(module), std::move(rest_endpoint), parent,
       std::move(field), mandatory, std::move(default_value));
 }
 
 std::unique_ptr<Endpoint::LeafListResource> ConcreteFactory::RestLeafList(
     const std::queue<std::string> &tree_names, std::string name,
     std::string module, std::string rest_endpoint,
-    std::shared_ptr<Endpoint::ParentResource> parent,
+    const Body::ParentResource * const parent,
     std::unique_ptr<Body::JsonBodyField> &&field, bool configuration,
     bool mandatory, std::vector<std::string> &&default_value) const {
   throw std::invalid_argument(
@@ -118,7 +118,7 @@ std::unique_ptr<Endpoint::ListResource> ConcreteFactory::RestList(
     const std::queue<std::string> &tree_names, std::string name,
     std::string module, std::string rest_endpoint,
     std::string rest_endpoint_whole_list,
-    std::shared_ptr<Endpoint::ParentResource> parent,
+    const Body::ParentResource * const parent,
     std::vector<Resources::Body::ListKey> &&keys) const {
   auto create_name = GenerateName(tree_names, Operation::kCreate);
   auto replace_name = GenerateName(tree_names, Operation::kReplace);
@@ -176,13 +176,13 @@ std::unique_ptr<Endpoint::ListResource> ConcreteFactory::RestList(
       std::move(read_whole_handler), std::move(delete_whole_handler),
       std::move(help_handler), std::move(name), std::move(module),
       std::move(rest_endpoint), std::move(rest_endpoint_whole_list),
-      std::move(parent), std::move(keys));
+      parent, std::move(keys));
 }
 
-std::unique_ptr<Endpoint::ParentResource> ConcreteFactory::RestGeneric(
+std::unique_ptr<Body::ParentResource> ConcreteFactory::RestGeneric(
     const std::queue<std::string> &tree_names, std::string name,
     std::string module, std::string rest_endpoint,
-    std::shared_ptr<Endpoint::ParentResource> parent,
+    const Body::ParentResource * const parent,
     bool container_presence, bool rpc_action) const {
   auto create_handler =
       LoadHandler<Response(const char *, Key *, size_t, const char *)>(
@@ -190,7 +190,7 @@ std::unique_ptr<Endpoint::ParentResource> ConcreteFactory::RestGeneric(
   if (rpc_action) {
     return std::make_unique<ParentResource>(
         std::move(create_handler), std::move(name), std::move(module),
-        std::move(rest_endpoint), std::move(parent));
+        std::move(rest_endpoint), parent);
   }
   auto replace_handler =
       LoadHandler<Response(const char *, Key *, size_t, const char *)>(
@@ -206,7 +206,7 @@ std::unique_ptr<Endpoint::ParentResource> ConcreteFactory::RestGeneric(
       std::move(create_handler), std::move(replace_handler),
       std::move(update_handler), std::move(read_handler),
       std::move(delete_handler), std::move(name), std::move(module),
-      std::move(rest_endpoint), std::move(parent), container_presence);
+      std::move(rest_endpoint), parent, container_presence);
 }
 
 std::unique_ptr<Endpoint::Service> ConcreteFactory::RestService(

@@ -23,16 +23,16 @@
 namespace polycube::polycubed::Rest::Resources::Endpoint {
 ChoiceResource::ChoiceResource(
     std::string name, std::string module,
-    std::shared_ptr<ParentResource> parent, bool mandatory,
+    const ParentResource * const parent, bool mandatory,
     std::unique_ptr<const std::string> &&default_case)
     : Body::ParentResource(std::move(name), std::move(module),
-                           std::move(parent), false),
+                           parent, false),
       ParentResource(),
       Body::ChoiceResource(mandatory, std::move(default_case)),
       choice_{} {}
 
-void ChoiceResource::AddChild(std::shared_ptr<Body::Resource> child) {
-  Body::ParentResource::AddChild(child);
+void ChoiceResource::AddChild(const std::shared_ptr<Body::Resource> &&child) {
   choice_.AddValue(child->Name());
+  Body::ParentResource::AddChild(std::move(child));
 }
 }  // namespace polycube::polycubed::Rest::Resources::Endpoint

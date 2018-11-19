@@ -28,13 +28,13 @@
 
 namespace polycube::polycubed::Rest::Resources::Endpoint {
 ListResource::ListResource(std::string name, std::string module,
-                           std::shared_ptr<ParentResource> parent,
+                           const ParentResource * const parent,
                            std::string rest_endpoint,
                            std::string rest_endpoint_multiple,
                            std::vector<Body::ListKey> &&keys,
                            bool configuration)
     : Body::ParentResource(std::move(name), std::move(module),
-                           std::move(parent), false),
+                           parent, false),
       ParentResource(std::move(rest_endpoint), configuration, false),
       Body::ListResource(std::move(keys)),
       key_params_{},
@@ -86,7 +86,7 @@ void ListResource::Keys(const Pistache::Rest::Request &request,
     keys.emplace_back(k, request.param(k.Name()).as<std::string>());
   }
   parsed.push(std::move(keys));
-  std::dynamic_pointer_cast<ParentResource>(parent_)->Keys(request, parsed);
+  dynamic_cast<const ParentResource * const>(parent_)->Keys(request, parsed);
 }
 
 ListResource::ListResource(std::string rest_endpoint,
@@ -100,9 +100,14 @@ ListResource::ListResource(std::string rest_endpoint,
 void ListResource::CreateReplaceUpdateWhole(
     const Pistache::Rest::Request &request, ResponseWriter response,
     bool update, bool check_mandatory) {
-  std::vector<Response> errors =
-      std::dynamic_pointer_cast<ParentResource>(parent_)->RequestValidate(
-          request, name_);
+  std::vector<Response> errors;
+  if (parent_ != nullptr) {
+    auto rerrors =
+        dynamic_cast<const ParentResource *const>(parent_)->RequestValidate(
+            request, name_);
+    errors.reserve(rerrors.size());
+    std::copy(std::begin(rerrors), std::end(rerrors), std::back_inserter(errors));
+  }
 
   nlohmann::json jbody;
   if (request.body().empty()) {
@@ -129,7 +134,7 @@ void ListResource::CreateReplaceUpdateWhole(
     auto op = OperationType(update, check_mandatory);
     const auto cube_name = Service::Cube(request);
     PerListKeyValues keys{};
-    std::dynamic_pointer_cast<ParentResource>(parent_)->Keys(request, keys);
+    dynamic_cast<const ParentResource * const>(parent_)->Keys(request, keys);
     auto resp = WriteWhole(cube_name, jbody, keys, op);
     if (resp.error_tag == ErrorTag::kOk) {
       errors.push_back({ErrorTag::kCreated, ""});
@@ -144,13 +149,16 @@ void ListResource::get_multiple(const Request &request,
                                 ResponseWriter response) {
   std::vector<Response> errors;
   if (parent_ != nullptr) {
-    std::dynamic_pointer_cast<ParentResource>(parent_)->RequestValidate(request,
-                                                                        name_);
+    auto rerrors =
+        dynamic_cast<const ParentResource *const>(parent_)->RequestValidate(
+            request, name_);
+    errors.reserve(rerrors.size());
+    std::copy(std::begin(rerrors), std::end(rerrors), std::back_inserter(errors));
   }
   if (errors.empty()) {
     const auto &cube_name = Service::Cube(request);
     PerListKeyValues keys{};
-    std::dynamic_pointer_cast<ParentResource>(parent_)->Keys(request, keys);
+    dynamic_cast<const ParentResource * const>(parent_)->Keys(request, keys);
     errors.push_back(ReadWhole(cube_name, keys));
   }
   Server::ResponseGenerator::Generate(std::move(errors), std::move(response));
@@ -175,13 +183,16 @@ void ListResource::del_multiple(const Request &request,
                                    ResponseWriter response) {
   std::vector<Response> errors;
   if (parent_ != nullptr) {
-    std::dynamic_pointer_cast<ParentResource>(parent_)->RequestValidate(request,
-                                                                        name_);
+    auto rerrors =
+        dynamic_cast<const ParentResource *const>(parent_)->RequestValidate(
+            request, name_);
+    errors.reserve(rerrors.size());
+    std::copy(std::begin(rerrors), std::end(rerrors), std::back_inserter(errors));
   }
   if (errors.empty()) {
     const auto &cube_name = Service::Cube(request);
     PerListKeyValues keys{};
-    std::dynamic_pointer_cast<ParentResource>(parent_)->Keys(request, keys);
+    dynamic_cast<const ParentResource * const>(parent_)->Keys(request, keys);
     errors.push_back(DeleteWhole(cube_name, keys));
   }
   Server::ResponseGenerator::Generate(std::move(errors), std::move(response));

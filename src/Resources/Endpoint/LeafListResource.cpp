@@ -29,11 +29,11 @@
 namespace polycube::polycubed::Rest::Resources::Endpoint {
 LeafListResource::LeafListResource(std::string name, std::string module,
                                    std::string rest_endpoint,
-                                   std::shared_ptr<ParentResource> parent,
+                                   const ParentResource * const parent,
                                    std::unique_ptr<Body::JsonBodyField> &&field,
                                    bool configurable, bool mandatory,
                                    std::vector<std::string> &&default_value)
-    : Body::LeafResource(std::move(name), std::move(module), std::move(parent),
+    : Body::LeafResource(std::move(name), std::move(module), parent,
                          std::move(field), configurable, mandatory, nullptr),
       LeafResource(std::move(rest_endpoint)),
       Body::LeafListResource(std::move(default_value)) {
@@ -51,9 +51,14 @@ LeafListResource::~LeafListResource() {
 
 void LeafListResource::get_entry(const Request &request,
                                  ResponseWriter response) {
-  auto errors =
-      std::dynamic_pointer_cast<ParentResource>(parent_)->RequestValidate(
-          request, name_);
+  std::vector<Response> errors;
+  if (parent_ != nullptr) {
+    auto rerrors =
+        dynamic_cast<const ParentResource *const>(parent_)->RequestValidate(
+            request, name_);
+    errors.reserve(rerrors.size());
+    std::copy(std::begin(rerrors), std::end(rerrors), std::back_inserter(errors));
+  }
   auto value = nlohmann::json::parse(request.param(":entry").as<std::string>());
   auto body = LeafResource::BodyValidate(value, false);
   errors.reserve(errors.size() + body.size());

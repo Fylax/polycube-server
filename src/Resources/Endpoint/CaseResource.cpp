@@ -21,8 +21,8 @@
 
 namespace polycube::polycubed::Rest::Resources::Endpoint {
 CaseResource::CaseResource(std::string name, std::string module,
-                           std::shared_ptr<ParentResource> parent)
-    : Body::ParentResource(std::move(name), std::move(module), std::move(parent)),
+                           const ParentResource * const parent)
+    : Body::ParentResource(std::move(name), std::move(module), parent),
     ParentResource(),
       Body::CaseResource() {}
 }  // namespace polycube::polycubed::Rest::Resources::Endpoint

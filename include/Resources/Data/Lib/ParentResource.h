@@ -40,19 +40,19 @@ class ParentResource : public Endpoint::ParentResource {
       std::function<Response(const char *, Key *, size_t)> read_handler,
       std::function<Response(const char *, Key *, size_t)> delete_handler,
       std::string name, std::string module, std::string rest_endpoint,
-      std::shared_ptr<Endpoint::ParentResource> parent,
+      const Body::ParentResource * parent,
       bool container_presence = false);
 
   ParentResource(
       std::function<Response(const char *, Key *, size_t, const char *)>
       create_handler,
       std::string name, std::string module, std::string rest_endpoint,
-      std::shared_ptr<Endpoint::ParentResource> parent);
+      const Body::ParentResource * parent);
 
   ParentResource(
       std::function<Response(const char *, Key *, size_t)> read_handler,
       std::string name, std::string module, std::string rest_endpoint,
-      std::shared_ptr<Endpoint::ParentResource> parent,
+      const Body::ParentResource * parent,
       bool container_presence = false);
 
   const Response ReadValue(const std::string &cube_name,

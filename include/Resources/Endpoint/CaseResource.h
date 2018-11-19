@@ -25,7 +25,7 @@ namespace polycube::polycubed::Rest::Resources::Endpoint {
 class CaseResource : public ParentResource, public Body::CaseResource {
  public:
   CaseResource(std::string name, std::string module,
-               std::shared_ptr<ParentResource> parent);
+               const ParentResource * parent);
 
   ~CaseResource() override = default;
 };

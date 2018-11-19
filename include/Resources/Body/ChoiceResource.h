@@ -26,7 +26,7 @@ namespace polycube::polycubed::Rest::Resources::Body {
 class ChoiceResource: public virtual ParentResource {
 public:
   ChoiceResource(std::string name, std::string module,
-                 std::shared_ptr<ParentResource> parent, bool mandatory,
+                 const ParentResource * parent, bool mandatory,
                  std::unique_ptr<const std::string>&& default_case);
 
   std::vector<Response> BodyValidate(nlohmann::json& body,

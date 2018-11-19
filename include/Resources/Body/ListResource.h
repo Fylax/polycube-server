@@ -29,7 +29,7 @@ class ListKey;
 class ListResource : public virtual ParentResource {
  public:
   ListResource(std::string name, std::string module,
-               std::shared_ptr<ParentResource> parent,
+               const ParentResource * parent,
                std::vector<ListKey> &&keys);
 
   bool ValidateXPath(const std::string &xpath) const final;

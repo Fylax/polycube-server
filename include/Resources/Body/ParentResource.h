@@ -28,7 +28,7 @@ namespace polycube::polycubed::Rest::Resources::Body {
 class ParentResource : public Resource {
  public:
   ParentResource(std::string name, std::string module,
-                 std::shared_ptr<ParentResource> parent,
+                 const ParentResource * parent,
                  bool configuration,
                  bool container_presence = false);
 
@@ -37,7 +37,7 @@ class ParentResource : public Resource {
   std::vector<Response> BodyValidate(nlohmann::json &body,
                                      bool check_mandatory) const override;
 
-  virtual void AddChild(std::shared_ptr<Resource> child);
+  virtual void AddChild(const std::shared_ptr<Resource> &&child);
 
   bool IsMandatory() const override;
 

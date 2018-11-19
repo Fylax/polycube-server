@@ -68,6 +68,7 @@ bool ServiceManager::ValidateXpath(const std::string &xpath,
 void ServiceManager::post(const Pistache::Rest::Request &request,
                           Pistache::Http::ResponseWriter response) {
   std::unique_lock<std::shared_mutex> lock(mutex_);
+  auto start = std::chrono::high_resolution_clock::now();
   try {
     nlohmann::json body = nlohmann::json::parse(request.body());
     auto factory = Data::AbstractFactory::Concrete(body);
@@ -80,10 +81,11 @@ void ServiceManager::post(const Pistache::Rest::Request &request,
         return;
       }
 
-      auto service = Parser::Yang(std::move(factory)).Parse();
-      services_[service_name] = service;
+      services_[service_name] = Parser::Yang(std::move(factory)).Parse();
+      auto end = std::chrono::high_resolution_clock::now();
+      std::chrono::nanoseconds diff = end - start;
       Server::ResponseGenerator::Generate(
-          std::vector<Response>{{ErrorTag::kCreated, ""}}, std::move(response));
+          std::vector<Response>{{ErrorTag::kCreated, std::to_string(diff.count()).data()}}, std::move(response));
     } catch (const std::invalid_argument &e) {
       Data::AbstractFactory::RemoveService(service_name);
       response.send(Pistache::Http::Code::Bad_Request, e.what());

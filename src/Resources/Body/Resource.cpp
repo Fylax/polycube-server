@@ -21,10 +21,10 @@
 
 namespace polycube::polycubed::Rest::Resources::Body {
 Resource::Resource(std::string &&name, std::string &&module,
-                   std::shared_ptr<ParentResource> &&parent,
+                   const ParentResource * const parent,
                    bool configuration)
     : name_(std::move(name)),
-      parent_(std::move(parent)),
+      parent_(parent),
       module_(std::move(module)),
       configuration_(configuration) {}
 
@@ -36,8 +36,8 @@ const std::string &Resource::ModuleName() const {
   return module_;
 }
 
-std::shared_ptr<ParentResource> Resource::Parent() const {
-  return parent_;
+const std::shared_ptr<ParentResource> Resource::Parent() const {
+  return std::shared_ptr<ParentResource>(const_cast<ParentResource*>(parent_));
 }
 
 const Response Resource::ReadValue(const std::string &cube_name,

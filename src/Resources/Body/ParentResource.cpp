@@ -27,10 +27,9 @@
 namespace polycube::polycubed::Rest::Resources::Body {
 
 ParentResource::ParentResource(std::string name, std::string module,
-                               std::shared_ptr<ParentResource> parent,
+                               const ParentResource * const parent,
                                bool configuration, bool container_presence)
-    : Resource(std::move(name), std::move(module), std::move(parent),
-               configuration),
+    : Resource(std::move(name), std::move(module), parent, configuration),
       children_(),
       container_presence_(container_presence) {}
 
@@ -88,7 +87,7 @@ std::vector<Response> ParentResource::BodyValidate(nlohmann::json &body,
   return errors;
 }
 
-void ParentResource::AddChild(std::shared_ptr<Resource> child) {
+void ParentResource::AddChild(const std::shared_ptr<Resource> &&child) {
   children_.push_back(std::move(child));
 }
 

@@ -48,33 +48,33 @@ class AbstractFactory {
 
   std::unique_ptr<CaseResource> BodyCase(
       std::string name, std::string module,
-      std::shared_ptr<ParentResource> parent) const;
+      const ParentResource * parent) const;
 
   std::unique_ptr<ChoiceResource> BodyChoice(
       std::string name, std::string module,
-      std::shared_ptr<ParentResource> parent, bool mandatory,
+      const ParentResource * parent, bool mandatory,
       std::unique_ptr<const std::string> &&default_case) const;
 
   std::unique_ptr<LeafResource> BodyLeaf(
       std::string name, std::string module,
-      std::shared_ptr<ParentResource> parent,
+      const ParentResource * parent,
       std::unique_ptr<Body::JsonBodyField> &&field, bool configuration,
       bool mandatory, std::unique_ptr<const std::string> &&default_value) const;
 
   std::unique_ptr<LeafListResource> BodyLeafList(
       std::string name, std::string module,
-      std::shared_ptr<ParentResource> parent,
+      const ParentResource * parent,
       std::unique_ptr<Body::JsonBodyField> &&field, bool configuration,
       bool mandatory, std::vector<std::string> &&default_value) const;
 
   std::unique_ptr<ListResource> BodyList(
       std::string name, std::string module,
-      std::shared_ptr<ParentResource> parent,
+      const ParentResource * parent,
       std::vector<Resources::Body::ListKey> &&keys) const;
 
   std::unique_ptr<ParentResource> BodyGeneric(
       std::string name, std::string module,
-      std::shared_ptr<ParentResource> parent, bool container_presence) const;
+      const ParentResource * parent, bool container_presence) const;
 
  protected:
   AbstractFactory() = default;

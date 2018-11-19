@@ -32,9 +32,9 @@ ChoiceResource::ChoiceResource(
 
 ChoiceResource::ChoiceResource(
     std::string name, std::string module,
-    std::shared_ptr<ParentResource> parent, bool mandatory,
+    const ParentResource * const parent, bool mandatory,
     std::unique_ptr<const std::string> &&default_case)
-    : ParentResource(std::move(name), std::move(module), std::move(parent),
+    : ParentResource(std::move(name), std::move(module), parent,
                      false),
       mandatory_(mandatory),
       default_case_(std::move(default_case)) {}
@@ -83,7 +83,7 @@ std::vector<Response> ChoiceResource::BodyValidate(nlohmann::json &body,
 
 bool ChoiceResource::IsMandatory() const {
   return mandatory_ &&
-         std::dynamic_pointer_cast<CaseResource>(parent_) != nullptr;
+        dynamic_cast<const CaseResource* const>(parent_) != nullptr;
 }
 
 void ChoiceResource::SetDefaultIfMissing(nlohmann::json &body) const {

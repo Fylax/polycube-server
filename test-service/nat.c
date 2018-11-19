@@ -1146,6 +1146,24 @@ Response replace_nat_rule_port_forwarding_entry_internal_port_by_id(const char *
   Response returns = {kOk, ""};
   return returns;
 }
+Response replace_nat_natting_table_originating_rule_by_id(const char *name, Key *keys,
+                                                          size_t num_keys,
+                                                          const char *value) {
+  Response returns = {kOk, ""};
+  return returns;
+}
+Response replace_nat_natting_table_external_ip_by_id(const char *name, Key *keys,
+                                                     size_t num_keys,
+                                                     const char *value) {
+  Response returns = {kOk, ""};
+  return returns;
+}
+Response replace_nat_natting_table_external_port_by_id(const char *name, Key *keys,
+                                                       size_t num_keys,
+                                                       const char *value) {
+  Response returns = {kOk, ""};
+  return returns;
+}
 
 #ifdef __cplusplus
 }

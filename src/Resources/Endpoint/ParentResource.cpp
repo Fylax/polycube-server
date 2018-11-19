@@ -39,11 +39,11 @@ ParentResource::ParentResource(std::string rest_endpoint, bool configuration,
 
 ParentResource::ParentResource(std::string name, std::string module,
                                std::string rest_endpoint,
-                               std::shared_ptr<ParentResource> parent,
+                               const ParentResource * const parent,
                                bool configuration, bool container_presence,
                                bool rpc_action)
     : Body::ParentResource(std::move(name), std::move(module),
-                           std::move(parent), configuration,
+                           parent, configuration,
                            container_presence),
       Endpoint::Resource(std::move(rest_endpoint)),
       has_endpoints_(true), rpc_action_(rpc_action) {
@@ -80,9 +80,14 @@ void ParentResource::CreateReplaceUpdate(
     const Pistache::Rest::Request &request,
     Pistache::Http::ResponseWriter response,
     bool update, bool check_mandatory) {
-  std::vector<Response> errors =
-      std::dynamic_pointer_cast<ParentResource>(parent_)->RequestValidate(
-          request, name_);
+  std::vector<Response> errors;
+  if (parent_ != nullptr) {
+    auto rerrors =
+        dynamic_cast<const ParentResource *const>(parent_)->RequestValidate(
+            request, name_);
+    errors.reserve(rerrors.size());
+    std::copy(std::begin(rerrors), std::end(rerrors), std::back_inserter(errors));
+  }
 
   nlohmann::json jbody;
   if (request.body().empty()) {
@@ -115,27 +120,37 @@ void ParentResource::CreateReplaceUpdate(
 std::vector<Response> ParentResource::RequestValidate(
     const Pistache::Rest::Request &request,
     [[maybe_unused]] const std::string &caller_name) const {
-  return std::dynamic_pointer_cast<ParentResource>(parent_)->RequestValidate(
-      request, name_);
+  std::vector<Response> errors;
+  if (parent_ != nullptr) {
+    auto rerrors =
+        dynamic_cast<const ParentResource *const>(parent_)->RequestValidate(
+            request, name_);
+    errors.reserve(rerrors.size());
+    std::copy(std::begin(rerrors), std::end(rerrors), std::back_inserter(errors));
+  }
+  return errors;
 }
 
 void ParentResource::Keys(const Pistache::Rest::Request &request,
                           PerListKeyValues &parsed) const {
   if (parent_ != nullptr) {
-    std::dynamic_pointer_cast<ParentResource>(parent_)->Keys(request, parsed);
+    dynamic_cast<const ParentResource * const>(parent_)->Keys(request, parsed);
   }
 }
 
 void ParentResource::get(const Request &request, ResponseWriter response) {
   std::vector<Response> errors;
   if (parent_ != nullptr) {
-    std::dynamic_pointer_cast<ParentResource>(parent_)->RequestValidate(request,
-                                                                        name_);
+    auto rerrors =
+        dynamic_cast<const ParentResource *const>(parent_)->RequestValidate(
+            request, name_);
+    errors.reserve(rerrors.size());
+    std::copy(std::begin(rerrors), std::end(rerrors), std::back_inserter(errors));
   }
   if (errors.empty()) {
     const auto &cube_name = Service::Cube(request);
     PerListKeyValues keys{};
-    std::dynamic_pointer_cast<ParentResource>(parent_)->Keys(request, keys);
+    dynamic_cast<const ParentResource * const>(parent_)->Keys(request, keys);
     errors.push_back(ReadValue(cube_name, keys));
   }
   Server::ResponseGenerator::Generate(std::move(errors), std::move(response));
@@ -161,7 +176,7 @@ void ParentResource::del(const Request& request, ResponseWriter response) {
   }
   const auto cube_name = Service::Cube(request);
   PerListKeyValues keys{};
-  std::dynamic_pointer_cast<ParentResource>(parent_)->Keys(request, keys);
+  dynamic_cast<const ParentResource * const>(parent_)->Keys(request, keys);
   auto resp =  DeleteValue(cube_name, keys);
   if (resp.error_tag == ErrorTag::kOk) {
     Server::ResponseGenerator::Generate(

@@ -129,14 +129,14 @@ void Yang::ParseContainer(
   std::shared_ptr<Resources::Body::ParentResource> resource;
   parsed_names.emplace(data->name);
   if (generate_endpoint) {
-    auto e_parent =
+    const auto &e_parent =
         std::dynamic_pointer_cast<Resources::Endpoint::ParentResource>(parent);
     auto endpoint = e_parent->Endpoint() + data->name + '/';
     resource =
         factory_->RestGeneric(parsed_names, data->name, data->module->name,
-                              endpoint, e_parent, data->presence != nullptr, false);
+                              endpoint, parent.get(), data->presence != nullptr, false);
   } else {
-    resource = factory_->BodyGeneric(data->name, data->module->name, parent,
+    resource = factory_->BodyGeneric(data->name, data->module->name, parent.get(),
                                      data->presence != nullptr);
   }
   auto child = data->child;
@@ -144,7 +144,7 @@ void Yang::ParseContainer(
     ParseNode(child, parsed_names, resource, generate_endpoint);
     child = child->next;
   }
-  parent->AddChild(resource);
+  parent->AddChild(std::move(resource));
 }
 
 void Yang::ParseUses(
@@ -198,13 +198,11 @@ void Yang::ParseList(
 
   std::shared_ptr<Resources::Body::ListResource> resource;
   if (generate_endpoint) {
-    auto e_parent =
-        std::dynamic_pointer_cast<Resources::Endpoint::ParentResource>(parent);
     resource = factory_->RestList(parsed_names, list->name, list->module->name,
                                   rest_endpoint, rest_endpoint_multiple,
-                                  e_parent, std::move(keys));
+                                  parent.get(), std::move(keys));
   } else {
-    resource = factory_->BodyList(list->name, list->module->name, parent,
+    resource = factory_->BodyList(list->name, list->module->name, parent.get(),
                                   std::move(keys));
   }
   // parse each child using the generic "node" parsing function
@@ -215,7 +213,7 @@ void Yang::ParseList(
     }
     child = child->next;
   }
-  parent->AddChild(resource);
+  parent->AddChild(std::move(resource));
 }
 
 void Yang::ParseLeaf(
@@ -233,15 +231,15 @@ void Yang::ParseLeaf(
   }
   std::unique_ptr<Resources::Body::LeafResource> leaf_res;
   if (generate_endpoint) {
-    auto e_parent =
+    const auto &e_parent =
         std::dynamic_pointer_cast<Resources::Endpoint::ParentResource>(parent);
     auto endpoint = e_parent->Endpoint() + leaf->name;
     leaf_res = factory_->RestLeaf(std::move(parsed_names), leaf->name,
-                                  leaf->module->name, endpoint, e_parent,
+                                  leaf->module->name, endpoint, parent.get(),
                                   std::move(field), configuration, mandatory,
                                   std::move(default_value));
   } else {
-    leaf_res = factory_->BodyLeaf(leaf->name, leaf->module->name, parent,
+    leaf_res = factory_->BodyLeaf(leaf->name, leaf->module->name, parent.get(),
                                   std::move(field), configuration, mandatory,
                                   std::move(default_value));
   }
@@ -267,16 +265,16 @@ void Yang::ParseLeafList(
   }
   std::shared_ptr<Resources::Body::LeafListResource> resource;
   if (generate_endpoint) {
-    auto e_parent =
+    const auto &e_parent =
         std::dynamic_pointer_cast<Resources::Endpoint::ParentResource>(parent);
     auto endpoint = e_parent->Endpoint() + leaflist->name;
     resource = factory_->RestLeafList(std::move(parsed_names), leaflist->name,
                                       leaflist->module->name, endpoint,
-                                      e_parent, std::move(field), configuration,
+                                      parent.get(), std::move(field), configuration,
                                       mandatory, std::move(default_value));
   } else {
     resource = factory_->BodyLeafList(leaflist->name, leaflist->module->name,
-                                      parent, std::move(field), configuration,
+                                      parent.get(), std::move(field), configuration,
                                       mandatory, std::move(default_value));
   }
   parent->AddChild(std::move(resource));
@@ -294,13 +292,11 @@ void Yang::ParseChoice(
   }
   std::shared_ptr<Resources::Body::ChoiceResource> resource;
   if (generate_endpoint) {
-    auto e_parent =
-        std::dynamic_pointer_cast<Resources::Endpoint::ParentResource>(parent);
     resource =
         factory_->RestChoice(parsed_names, choice->name, choice->module->name,
-                             e_parent, mandatory, std::move(default_case));
+                             parent.get(), mandatory, std::move(default_case));
   } else {
-    resource = factory_->BodyChoice(choice->name, choice->module->name, parent,
+    resource = factory_->BodyChoice(choice->name, choice->module->name, parent.get(),
                                     mandatory, std::move(default_case));
   }
   auto child = choice->child;
@@ -318,13 +314,11 @@ void Yang::ParseCase(
   // TODO not clear how to manage parsed_names here
   std::shared_ptr<Resources::Body::CaseResource> resource;
   if (generate_endpoint) {
-    auto e_parent =
-        std::dynamic_pointer_cast<Resources::Endpoint::ParentResource>(parent);
     resource = factory_->RestCase(parsed_names, case_node->name,
-                                  case_node->module->name, e_parent);
+                                  case_node->module->name, parent.get());
   } else {
     resource =
-        factory_->BodyCase(case_node->name, case_node->module->name, parent);
+        factory_->BodyCase(case_node->name, case_node->module->name, parent.get());
   }
   auto child = case_node->child;
   while (child != nullptr) {
@@ -344,14 +338,14 @@ void Yang::ParseAny(
   parsed_names.emplace(data->name);
   std::unique_ptr<Resources::Body::LeafResource> resource;
   if (generate_endpoint) {
-    auto e_parent =
+    const auto &e_parent =
         std::dynamic_pointer_cast<Resources::Endpoint::ParentResource>(parent);
     auto endpoint = e_parent->Endpoint() + data->name;
     resource = factory_->RestLeaf(
         std::move(parsed_names), data->name, data->module->name, endpoint,
-        e_parent, factory_->JsonBodyField(), configuration, mandatory, nullptr);
+        parent.get(), factory_->JsonBodyField(), configuration, mandatory, nullptr);
   } else {
-    resource = factory_->BodyLeaf(data->name, data->module->name, parent,
+    resource = factory_->BodyLeaf(data->name, data->module->name, parent.get(),
                                   factory_->JsonBodyField(), configuration,
                                   mandatory, nullptr);
   }
@@ -362,11 +356,11 @@ void Yang::ParseRpcAction(
     const lys_node_rpc_action *data, std::queue<std::string> parsed_names,
     const std::shared_ptr<Resources::Body::ParentResource> &parent) const {
   parsed_names.emplace(data->name);
-  auto e_parent =
+  const auto &e_parent =
       std::dynamic_pointer_cast<Resources::Endpoint::ParentResource>(parent);
   auto action =
       factory_->RestGeneric(parsed_names, data->name, data->module->name,
-                            e_parent->Endpoint() + data->name, e_parent, false, true);
+                            e_parent->Endpoint() + data->name, parent.get(), false, true);
   auto child = data->child;
   while (child != nullptr) {
     ParseNode(child, parsed_names, std::move(action), false);
@@ -411,6 +405,6 @@ const std::shared_ptr<Resources::Endpoint::Service> Yang::Parse() {
   }
   ParseModule(module, parsed_names, cube);
   typedef_validators_->clear();
-  return cube;
+  return std::move(cube);
 }
 }  // namespace polycube::polycubed::Rest::Parser
